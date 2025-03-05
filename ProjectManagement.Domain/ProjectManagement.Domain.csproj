@@ -3,8 +3,14 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+	<Nullable>enable</Nullable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Entities\TeamMembers\**" />
+    <EmbeddedResource Remove="Entities\TeamMembers\**" />
+    <None Remove="Entities\TeamMembers\**" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.8" />
@@ -12,15 +18,6 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Entities\Projects\" />
-    <Folder Include="Entities\Teams\" />
-    <Folder Include="Entities\TeamMembers\" />
-    <Folder Include="Entities\TestReports\" />
-    <Folder Include="Entities\Certificates\" />
-    <Folder Include="Entities\Logs\" />
   </ItemGroup>
 
 </Project>

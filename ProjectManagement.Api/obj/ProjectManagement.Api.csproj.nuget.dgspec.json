@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\User\\Desktop\\ProjectManagement\\ProjectManagement.Api\\ProjectManagement.Api.csproj": {}
+    "C:\\Users\\User\\Desktop\\Management\\ProjectManagement.Api\\ProjectManagement.Api.csproj": {}
   },
   "projects": {
-    "C:\\Users\\User\\Desktop\\ProjectManagement\\ProjectManagement.Api\\ProjectManagement.Api.csproj": {
+    "C:\\Users\\User\\Desktop\\Management\\ProjectManagement.Api\\ProjectManagement.Api.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\User\\Desktop\\ProjectManagement\\ProjectManagement.Api\\ProjectManagement.Api.csproj",
+        "projectUniqueName": "C:\\Users\\User\\Desktop\\Management\\ProjectManagement.Api\\ProjectManagement.Api.csproj",
         "projectName": "ProjectManagement.Api",
-        "projectPath": "C:\\Users\\User\\Desktop\\ProjectManagement\\ProjectManagement.Api\\ProjectManagement.Api.csproj",
+        "projectPath": "C:\\Users\\User\\Desktop\\Management\\ProjectManagement.Api\\ProjectManagement.Api.csproj",
         "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\User\\Desktop\\ProjectManagement\\ProjectManagement.Api\\obj\\",
+        "outputPath": "C:\\Users\\User\\Desktop\\Management\\ProjectManagement.Api\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -33,14 +33,14 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\User\\Desktop\\ProjectManagement\\ProjectManagement.Domain\\ProjectManagement.Domain.csproj": {
-                "projectPath": "C:\\Users\\User\\Desktop\\ProjectManagement\\ProjectManagement.Domain\\ProjectManagement.Domain.csproj"
+              "C:\\Users\\User\\Desktop\\Management\\ProjectManagement.Domain\\ProjectManagement.Domain.csproj": {
+                "projectPath": "C:\\Users\\User\\Desktop\\Management\\ProjectManagement.Domain\\ProjectManagement.Domain.csproj"
               },
-              "C:\\Users\\User\\Desktop\\ProjectManagement\\ProjectManagement.Infrastructure\\ProjectManagement.Infrastructure.csproj": {
-                "projectPath": "C:\\Users\\User\\Desktop\\ProjectManagement\\ProjectManagement.Infrastructure\\ProjectManagement.Infrastructure.csproj"
+              "C:\\Users\\User\\Desktop\\Management\\ProjectManagement.Infrastructure\\ProjectManagement.Infrastructure.csproj": {
+                "projectPath": "C:\\Users\\User\\Desktop\\Management\\ProjectManagement.Infrastructure\\ProjectManagement.Infrastructure.csproj"
               },
-              "C:\\Users\\User\\Desktop\\ProjectManagement\\ProjectManagement.Service\\ProjectManagement.Service.csproj": {
-                "projectPath": "C:\\Users\\User\\Desktop\\ProjectManagement\\ProjectManagement.Service\\ProjectManagement.Service.csproj"
+              "C:\\Users\\User\\Desktop\\Management\\ProjectManagement.Service\\ProjectManagement.Service.csproj": {
+                "projectPath": "C:\\Users\\User\\Desktop\\Management\\ProjectManagement.Service\\ProjectManagement.Service.csproj"
               }
             }
           }
@@ -54,8 +54,7 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        },
-        "SdkAnalysisLevel": "9.0.200"
+        }
       },
       "frameworks": {
         "net8.0": {
@@ -70,6 +69,12 @@
               "suppressParent": "All",
               "target": "Package",
               "version": "[8.0.8, )"
+            },
+            "Microsoft.EntityFrameworkCore.Tools": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[8.0.0, )"
             },
             "Npgsql.EntityFrameworkCore.PostgreSQL": {
               "target": "Package",
@@ -103,18 +108,18 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.200/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.303/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Users\\User\\Desktop\\ProjectManagement\\ProjectManagement.Domain\\ProjectManagement.Domain.csproj": {
+    "C:\\Users\\User\\Desktop\\Management\\ProjectManagement.Domain\\ProjectManagement.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\User\\Desktop\\ProjectManagement\\ProjectManagement.Domain\\ProjectManagement.Domain.csproj",
+        "projectUniqueName": "C:\\Users\\User\\Desktop\\Management\\ProjectManagement.Domain\\ProjectManagement.Domain.csproj",
         "projectName": "ProjectManagement.Domain",
-        "projectPath": "C:\\Users\\User\\Desktop\\ProjectManagement\\ProjectManagement.Domain\\ProjectManagement.Domain.csproj",
+        "projectPath": "C:\\Users\\User\\Desktop\\Management\\ProjectManagement.Domain\\ProjectManagement.Domain.csproj",
         "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\User\\Desktop\\ProjectManagement\\ProjectManagement.Domain\\obj\\",
+        "outputPath": "C:\\Users\\User\\Desktop\\Management\\ProjectManagement.Domain\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -147,8 +152,7 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        },
-        "SdkAnalysisLevel": "9.0.200"
+        }
       },
       "frameworks": {
         "net8.0": {
@@ -181,18 +185,18 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.200/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.303/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Users\\User\\Desktop\\ProjectManagement\\ProjectManagement.Infrastructure\\ProjectManagement.Infrastructure.csproj": {
+    "C:\\Users\\User\\Desktop\\Management\\ProjectManagement.Infrastructure\\ProjectManagement.Infrastructure.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\User\\Desktop\\ProjectManagement\\ProjectManagement.Infrastructure\\ProjectManagement.Infrastructure.csproj",
+        "projectUniqueName": "C:\\Users\\User\\Desktop\\Management\\ProjectManagement.Infrastructure\\ProjectManagement.Infrastructure.csproj",
         "projectName": "ProjectManagement.Infrastructure",
-        "projectPath": "C:\\Users\\User\\Desktop\\ProjectManagement\\ProjectManagement.Infrastructure\\ProjectManagement.Infrastructure.csproj",
+        "projectPath": "C:\\Users\\User\\Desktop\\Management\\ProjectManagement.Infrastructure\\ProjectManagement.Infrastructure.csproj",
         "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\User\\Desktop\\ProjectManagement\\ProjectManagement.Infrastructure\\obj\\",
+        "outputPath": "C:\\Users\\User\\Desktop\\Management\\ProjectManagement.Infrastructure\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -214,8 +218,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\User\\Desktop\\ProjectManagement\\ProjectManagement.Domain\\ProjectManagement.Domain.csproj": {
-                "projectPath": "C:\\Users\\User\\Desktop\\ProjectManagement\\ProjectManagement.Domain\\ProjectManagement.Domain.csproj"
+              "C:\\Users\\User\\Desktop\\Management\\ProjectManagement.Domain\\ProjectManagement.Domain.csproj": {
+                "projectPath": "C:\\Users\\User\\Desktop\\Management\\ProjectManagement.Domain\\ProjectManagement.Domain.csproj"
               }
             }
           }
@@ -229,8 +233,7 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        },
-        "SdkAnalysisLevel": "9.0.200"
+        }
       },
       "frameworks": {
         "net8.0": {
@@ -263,18 +266,18 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.200/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.303/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Users\\User\\Desktop\\ProjectManagement\\ProjectManagement.Service\\ProjectManagement.Service.csproj": {
+    "C:\\Users\\User\\Desktop\\Management\\ProjectManagement.Service\\ProjectManagement.Service.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\User\\Desktop\\ProjectManagement\\ProjectManagement.Service\\ProjectManagement.Service.csproj",
+        "projectUniqueName": "C:\\Users\\User\\Desktop\\Management\\ProjectManagement.Service\\ProjectManagement.Service.csproj",
         "projectName": "ProjectManagement.Service",
-        "projectPath": "C:\\Users\\User\\Desktop\\ProjectManagement\\ProjectManagement.Service\\ProjectManagement.Service.csproj",
+        "projectPath": "C:\\Users\\User\\Desktop\\Management\\ProjectManagement.Service\\ProjectManagement.Service.csproj",
         "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\User\\Desktop\\ProjectManagement\\ProjectManagement.Service\\obj\\",
+        "outputPath": "C:\\Users\\User\\Desktop\\Management\\ProjectManagement.Service\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -296,11 +299,11 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\User\\Desktop\\ProjectManagement\\ProjectManagement.Domain\\ProjectManagement.Domain.csproj": {
-                "projectPath": "C:\\Users\\User\\Desktop\\ProjectManagement\\ProjectManagement.Domain\\ProjectManagement.Domain.csproj"
+              "C:\\Users\\User\\Desktop\\Management\\ProjectManagement.Domain\\ProjectManagement.Domain.csproj": {
+                "projectPath": "C:\\Users\\User\\Desktop\\Management\\ProjectManagement.Domain\\ProjectManagement.Domain.csproj"
               },
-              "C:\\Users\\User\\Desktop\\ProjectManagement\\ProjectManagement.Infrastructure\\ProjectManagement.Infrastructure.csproj": {
-                "projectPath": "C:\\Users\\User\\Desktop\\ProjectManagement\\ProjectManagement.Infrastructure\\ProjectManagement.Infrastructure.csproj"
+              "C:\\Users\\User\\Desktop\\Management\\ProjectManagement.Infrastructure\\ProjectManagement.Infrastructure.csproj": {
+                "projectPath": "C:\\Users\\User\\Desktop\\Management\\ProjectManagement.Infrastructure\\ProjectManagement.Infrastructure.csproj"
               }
             }
           }
@@ -314,8 +317,7 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        },
-        "SdkAnalysisLevel": "9.0.200"
+        }
       },
       "frameworks": {
         "net8.0": {
@@ -356,7 +358,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.200/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.303/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
