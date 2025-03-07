@@ -1,4 +1,6 @@
-﻿namespace ProjectManagement.Domain.Entities.Companies;
+﻿using ProjectManagement.Domain.Commons;
+
+namespace ProjectManagement.Domain.Entities.Companies;
 public class Companies : Auditable
 {
     public required string CompanyName { get; set; }

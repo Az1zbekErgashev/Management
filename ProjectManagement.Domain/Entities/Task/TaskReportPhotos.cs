@@ -1,4 +1,6 @@
-﻿namespace ProjectManagement.Domain.Entities.Task;
+﻿using ProjectManagement.Domain.Commons;
+
+namespace ProjectManagement.Domain.Entities.Task;
 public class TaskReportPhotos : Auditable
 {
     public int ImageId { get; set; }

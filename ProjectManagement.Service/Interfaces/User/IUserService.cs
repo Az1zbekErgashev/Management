@@ -2,6 +2,7 @@
 using ProjectManagement.Domain.Models.User;
 using ProjectManagement.Service.DTOs.User;
 using ProjectManagement.Service.DTOs.UserForCreationDTO;
+using System.Security.Claims;
 
 namespace ProjectManagement.Service.Interfaces.User
 {
@@ -10,6 +11,10 @@ namespace ProjectManagement.Service.Interfaces.User
         ValueTask<bool> CreateUser(UserForCreationDTO @dto);
         ValueTask<bool> UpdateUser(UserForUpdateDTO @dto);
         ValueTask<LoginModel> Login(UserForLoginDTO @dto);
-        ValueTask<PagedResult<UserModel>> GetAsync();
+        ValueTask<PagedResult<UserModel>> GetAsync(UserForFilterDTO @dto);
+        public string TokenGenerator(IEnumerable<Claim> claims);
+        ValueTask<List<TeamLeadersNameModel>> GetTeamLeadrsName();
+        ValueTask<List<CompanyNameModel>> GetCompanyName();
+        ValueTask<string> DeleteUser(int userId);
     }
 }

@@ -1,13 +1,13 @@
-﻿using ProjectManagement.Domain.Entities.Certificates;
+﻿
 using ProjectManagement.Domain.Entities.Teams;
-using ProjectManagement.Domain.Enum;
+using ProjectManagement.Domain.Commons;
 
 namespace ProjectManagement.Domain.Entities.Projects;
 public class Project : Auditable
 {
     public required string ProjectName { get; set; }
     public int AssignedCompanyId { get; set; }
-    public virtual required Companies.Companies Companies { get; set; }
+    public virtual Companies.Companies Companies { get; set; }
     public int? TeamId { get; set; }
     public Team? Team { get; set; }
     public int PartnerId { get; set; }

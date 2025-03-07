@@ -4,5 +4,6 @@ public enum Role
     TeamLead,
     Developer,
     QAEngineer,
-    Viewer
+    Viewer,
+    SuperAdmin
 }

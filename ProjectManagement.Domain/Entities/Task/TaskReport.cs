@@ -1,4 +1,6 @@
-﻿namespace ProjectManagement.Domain.Entities.Task;
+﻿using ProjectManagement.Domain.Commons;
+
+namespace ProjectManagement.Domain.Entities.Task;
 public class TaskReport : Auditable
 {
     public int UserId { get; set; }

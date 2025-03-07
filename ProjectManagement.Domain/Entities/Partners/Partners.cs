@@ -1,4 +1,6 @@
-﻿namespace ProjectManagement.Domain.Entities.Partners;
+﻿using ProjectManagement.Domain.Commons;
+
+namespace ProjectManagement.Domain.Entities.Partners;
 public class Partners : Auditable
 {
     public required string Name { get; set; }

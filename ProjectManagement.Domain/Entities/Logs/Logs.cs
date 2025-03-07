@@ -1,4 +1,6 @@
-﻿namespace ProjectManagement.Domain.Entities.Logs;
+﻿using ProjectManagement.Domain.Commons;
+
+namespace ProjectManagement.Domain.Entities.Logs;
 public class Logs : Auditable
 {
     public int UserId { get; set; }

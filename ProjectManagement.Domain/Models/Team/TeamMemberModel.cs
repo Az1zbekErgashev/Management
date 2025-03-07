@@ -7,8 +7,6 @@ namespace ProjectManagement.Domain.Models.Team
     {
         public int Id { get; set; }
         public UserModel? User { get; set; }
-        public Role Role { get; set; }
-        public bool IsCurrent { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
 
@@ -16,8 +14,6 @@ namespace ProjectManagement.Domain.Models.Team
         {
             Id = entity.Id;
             User = entity.User is not null ? new UserModel().MapFromEntity(entity.User) : null;
-            Role = entity.Role;
-            IsCurrent = entity.IsCurrent;
             CreatedAt = entity.CreatedAt;
             UpdatedAt = entity.UpdatedAt;
             return this;

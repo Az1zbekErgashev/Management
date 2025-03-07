@@ -1,12 +1,13 @@
 ﻿using ProjectManagement.Domain.Enum;
+using ProjectManagement.Domain.Commons;
+using ProjectManagement.Domain.Entities.User;
 
 namespace ProjectManagement.Domain.Entities.Teams;
 public class TeamMember : Auditable
 {
-    public int UserId { get; set; }
-    public virtual required User.User User { get; set; }
-    public required Role Role { get; set; }
     public int TeamId { get; set; }
-    public virtual required Team Team { get; set; }
-    public bool IsCurrent { get; set; }
+    public virtual Team Team { get; set; }
+
+    public int UserId { get; set; }
+    public virtual User.User User { get; set; }
 }

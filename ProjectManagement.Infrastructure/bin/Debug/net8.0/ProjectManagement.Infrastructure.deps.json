@@ -530,7 +530,10 @@
           "Microsoft.EntityFrameworkCore": "8.0.8"
         },
         "runtime": {
-          "ProjectManagement.Domain.dll": {}
+          "ProjectManagement.Domain.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
         }
       }
     }

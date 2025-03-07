@@ -9,7 +9,7 @@ namespace ProjectManagement.Domain.Models.Team
         public string Location { get; set; }
         public string Name { get; set; }
         public List<TeamMemberModel>? TeamMembers { get; set; }
-        public TaskModel? Task { get; set; }
+        public List<TaskModel>? Task { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
 
@@ -18,11 +18,10 @@ namespace ProjectManagement.Domain.Models.Team
         {
             Id = entity.Id;
             Location = entity.Location;
-            Name = entity.Name;
             TeamMembers = entity.TeamMembers is not null ? entity.TeamMembers.Select(x => new TeamMemberModel().MapFromEntity(x)).ToList() : null;
             CreatedAt = entity.CreatedAt;
             UpdatedAt = entity.UpdatedAt;
-            Task = entity.Task is not null ? new TaskModel().MapFromEntity(entity.Task) : null;
+            Task = entity.Task is not null ? entity.Task.Select(x => new TaskModel().MapFromEntity(x)).ToList() : null;
             return this;
         }
     }

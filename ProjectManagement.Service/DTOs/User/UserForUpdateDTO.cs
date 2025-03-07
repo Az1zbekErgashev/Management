@@ -14,6 +14,7 @@ namespace ProjectManagement.Service.DTOs.User
         public  string? Password { get; set; }
         public  string? Surname { get; set; }
         public  string? PhoneNumber { get; set; }
-        public List<int>? TeamId { get; set; }
+        public int? TeamId { get; set; }
+        public int CompanyId { get; set; }
     }
 }

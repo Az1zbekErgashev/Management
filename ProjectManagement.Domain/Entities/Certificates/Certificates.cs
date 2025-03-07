@@ -1,4 +1,6 @@
-﻿namespace ProjectManagement.Domain.Entities.Certificates;
+﻿using ProjectManagement.Domain.Commons;
+
+namespace ProjectManagement.Domain.Entities.Certificates;
 public class Certificates : Auditable
 {
     public int ProjectId { get; set; }
