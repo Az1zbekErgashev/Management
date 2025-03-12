@@ -1,6 +1,4 @@
-﻿using ProjectManagement.Domain.Enum;
-using ProjectManagement.Domain.Commons;
-using ProjectManagement.Domain.Entities.User;
+﻿using ProjectManagement.Domain.Commons;
 
 namespace ProjectManagement.Domain.Entities.Teams;
 public class TeamMember : Auditable

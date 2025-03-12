@@ -13,7 +13,6 @@ namespace ProjectManagement.Service.DTOs.UserForCreationDTO
         public int? TeamLeaderId { get; set; }
         public required int CompanyId { get; set; }
         public required Role Role { get; set; }
-        public bool IsIndependent { get; set; } = false;
         public IFormFile? Image { get; set; }
         public int CountryId { get; set; }
     }

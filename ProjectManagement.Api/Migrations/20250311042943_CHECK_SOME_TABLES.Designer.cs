@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using ProjectManagement.Infrastructure.Contexts;
@@ -11,9 +12,11 @@ using ProjectManagement.Infrastructure.Contexts;
 namespace ProjectManagement.Api.Migrations
 {
     [DbContext(typeof(ProjectManagementDB))]
-    partial class ProjectManagementDBModelSnapshot : ModelSnapshot
+    [Migration("20250311042943_CHECK_SOME_TABLES")]
+    partial class CHECK_SOME_TABLES
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -136,7 +139,7 @@ namespace ProjectManagement.Api.Migrations
                             Id = 1,
                             CompanyCode = "WISESTONET",
                             CompanyName = "WISESTONE T",
-                            CreatedAt = new DateTime(2025, 3, 12, 6, 27, 0, 344, DateTimeKind.Utc).AddTicks(7),
+                            CreatedAt = new DateTime(2025, 3, 11, 4, 29, 42, 925, DateTimeKind.Utc).AddTicks(6223),
                             IsDeleted = 0,
                             Location = "South Korea"
                         },
@@ -145,7 +148,7 @@ namespace ProjectManagement.Api.Migrations
                             Id = 2,
                             CompanyCode = "WISESTONEU",
                             CompanyName = "WISESTONE U",
-                            CreatedAt = new DateTime(2025, 3, 12, 6, 27, 0, 344, DateTimeKind.Utc).AddTicks(9),
+                            CreatedAt = new DateTime(2025, 3, 11, 4, 29, 42, 925, DateTimeKind.Utc).AddTicks(6226),
                             IsDeleted = 0,
                             Location = "Uzbekistan"
                         },
@@ -154,7 +157,7 @@ namespace ProjectManagement.Api.Migrations
                             Id = 3,
                             CompanyCode = "WISESTONE",
                             CompanyName = "WISESTONE",
-                            CreatedAt = new DateTime(2025, 3, 12, 6, 27, 0, 344, DateTimeKind.Utc).AddTicks(11),
+                            CreatedAt = new DateTime(2025, 3, 11, 4, 29, 42, 925, DateTimeKind.Utc).AddTicks(6227),
                             IsDeleted = 0,
                             Location = "South Korea"
                         });
@@ -2507,17 +2510,11 @@ namespace ProjectManagement.Api.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int?>("UserId1")
-                        .HasColumnType("integer");
-
                     b.HasKey("UserId", "TeamId");
 
                     b.HasIndex("TeamId");
 
                     b.HasIndex("UserId");
-
-                    b.HasIndex("UserId1")
-                        .IsUnique();
 
                     b.ToTable("TeamMembers");
                 });
@@ -2594,7 +2591,7 @@ namespace ProjectManagement.Api.Migrations
                             Id = 1,
                             CompanyId = 1,
                             CountryId = 1,
-                            CreatedAt = new DateTime(2025, 3, 12, 6, 27, 0, 344, DateTimeKind.Utc).AddTicks(158),
+                            CreatedAt = new DateTime(2025, 3, 11, 4, 29, 42, 925, DateTimeKind.Utc).AddTicks(6382),
                             DateOfBirth = new DateTime(2023, 11, 23, 16, 13, 56, 461, DateTimeKind.Utc),
                             Email = "admin@gmail.com",
                             IndividualRole = 4,
@@ -2781,14 +2778,10 @@ namespace ProjectManagement.Api.Migrations
                         .IsRequired();
 
                     b.HasOne("ProjectManagement.Domain.Entities.User.User", "User")
-                        .WithMany()
+                        .WithMany("TeamMembers")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("ProjectManagement.Domain.Entities.User.User", null)
-                        .WithOne("TeamMember")
-                        .HasForeignKey("ProjectManagement.Domain.Entities.Teams.TeamMember", "UserId1");
 
                     b.Navigation("Team");
 
@@ -2849,7 +2842,7 @@ namespace ProjectManagement.Api.Migrations
 
             modelBuilder.Entity("ProjectManagement.Domain.Entities.User.User", b =>
                 {
-                    b.Navigation("TeamMember");
+                    b.Navigation("TeamMembers");
                 });
 #pragma warning restore 612, 618
         }

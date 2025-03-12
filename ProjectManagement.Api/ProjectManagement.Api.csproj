@@ -28,5 +28,9 @@
 	<ProjectReference Include="../ProjectManagement.Infrastructure\ProjectManagement.Infrastructure.csproj" />
 	<ProjectReference Include="../ProjectManagement.Service\ProjectManagement.Service.csproj" />
 	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="wwwroot\images\" />
+	</ItemGroup>
 	
 </Project>

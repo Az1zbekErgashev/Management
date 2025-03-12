@@ -26,7 +26,7 @@ namespace ProjectManagement.Api.Controllers.User
 
         [HttpPost("create-new-user")]
         [Authorize]
-        public async ValueTask<IActionResult> CreateNewUser([FromBody] UserForCreationDTO model) => ResponseHandler.ReturnIActionResponse(await userService.CreateUser(model));
+        public async ValueTask<IActionResult> CreateNewUser([FromForm] UserForCreationDTO model) => ResponseHandler.ReturnIActionResponse(await userService.CreateUser(model));
 
 
         [HttpGet("filter")]
@@ -36,18 +36,27 @@ namespace ProjectManagement.Api.Controllers.User
 
         [HttpGet("team-leaders")]
         [Authorize]
-        public async ValueTask<IActionResult> GetAllUserAsync() => ResponseHandler.ReturnIActionResponse(await userService.GetTeamLeadrsName());
+        public async ValueTask<IActionResult> GetAllUserAsync(int? companyId) => ResponseHandler.ReturnIActionResponse(await userService.GetTeamLeadrsName(companyId));
 
 
 
         [HttpGet("all-companys")]
         [Authorize]
-        public async ValueTask<IActionResult> GetAllCompanies() => ResponseHandler.ReturnIActionResponse(await userService.GetCompanyName());
+        public async ValueTask<IActionResult> GetAllCompanies(int? teamLeaderId) => ResponseHandler.ReturnIActionResponse(await userService.GetCompanyName(teamLeaderId));
 
 
 
         [HttpDelete("delete")]
         [Authorize]
         public async ValueTask<IActionResult> DeleteOrRecover([Required] int userId) => ResponseHandler.ReturnIActionResponse(await userService.DeleteUser(userId));
+
+
+        [HttpPatch("update")]
+        [Authorize]
+        public async ValueTask<IActionResult> UpdateUser([FromForm] UserForUpdateDTO dto) => ResponseHandler.ReturnIActionResponse(await userService.UpdateUser(dto));
+
+
+        [HttpGet("{id}")]
+        public async ValueTask<IActionResult> GetByIdAsync([Required] int id) => ResponseHandler.ReturnIActionResponse(await userService.GetByIdAsync(id));
     }
 }

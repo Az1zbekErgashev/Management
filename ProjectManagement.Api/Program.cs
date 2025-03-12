@@ -7,6 +7,7 @@ using ProjectManagement.Service.Extencions;
 using ProjectManagement.Service.Interfaces.IRepositories;
 using ProjectManagement.Service.Service.Repositories;
 using System.Text;
+using static ProjectManagement.Service.Service.Attachment.AttachmentService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,7 +33,6 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddAuthorization();
 builder.Services.ConfigureJwt(builder.Configuration);
 builder.Services.AddSwaggerService();
-
 var jwtKey = builder.Configuration.GetValue<string>("JWT:Key");
 
 builder.Services.AddAuthentication("Bearer")
@@ -52,7 +52,6 @@ builder.Services.AddAuthentication("Bearer")
 
 builder.Services.AddAuthorization();
 
-
 builder.Services.AddCustomServices();
 
 var app = builder.Build();
@@ -62,8 +61,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+app.Services.GetRequiredService<IWebHostEnvironment>();
 app.UseCors(options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+
+EnvironmentHelper.WebRootPath = app.Services.GetRequiredService<IWebHostEnvironment>()?.WebRootPath;
 
 app.UseAuthentication();
 app.UseHttpsRedirection();

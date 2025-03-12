@@ -1,20 +1,24 @@
-﻿using ProjectManagement.Domain.Entities.Teams;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Http;
+using ProjectManagement.Domain.Enum;
+using System.ComponentModel.DataAnnotations;
 
 namespace ProjectManagement.Service.DTOs.User
 {
     public class UserForUpdateDTO
     {
         public required string Email { get; set; }
-        public  string? Name { get; set; }
+        public required string Name { get; set; }
         public  string? Password { get; set; }
-        public  string? Surname { get; set; }
-        public  string? PhoneNumber { get; set; }
-        public int? TeamId { get; set; }
+        public required string Surname { get; set; }
+        public required string PhoneNumber { get; set; }
+        public int? TeamLeaderId { get; set; }
         public int CompanyId { get; set; }
+
+        [Required]
+        public int UserId { get; set; }
+        public required Role Role { get; set; }
+        public IFormFile? Image { get; set; }
+        public bool UpdateImage { get; set; }
+        public int CountryId { get; set; }
     }
 }

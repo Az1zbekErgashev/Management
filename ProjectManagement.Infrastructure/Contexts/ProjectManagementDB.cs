@@ -100,7 +100,7 @@ namespace ProjectManagement.Infrastructure.Contexts
 
             modelBuilder.Entity<TeamMember>()
                 .HasOne(tm => tm.User)
-                .WithMany(u => u.TeamMembers)
+                .WithMany()
                 .HasForeignKey(tm => tm.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
@@ -127,7 +127,7 @@ namespace ProjectManagement.Infrastructure.Contexts
                 Surname = "System",
                 CompanyId = 1,
                 CreatedAt = DateTime.UtcNow,
-                TeamMembers = null,
+                TeamMember = null,
                 IndividualRole = Domain.Enum.Role.SuperAdmin,
                 CountryId = 1,
                 DateOfBirth = new DateTime(2023, 11, 23, 16, 13, 56, 461, DateTimeKind.Utc)

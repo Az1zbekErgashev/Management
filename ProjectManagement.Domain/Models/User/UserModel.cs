@@ -14,6 +14,7 @@ namespace ProjectManagement.Domain.Models.User
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public string CompanyName { get; set; }
+        public int CompanyId { get; set; }
         public string Role { get; set; }
         public int IsDeleted { get; set; }
         public CountryModel? Country { get; set; }
@@ -33,6 +34,7 @@ namespace ProjectManagement.Domain.Models.User
             IsDeleted = entity.IsDeleted;
             Country = entity.Country is not null ? new CountryModel().MapFromEntity(entity.Country) : null;
             Image = entity.Image is not null ? new AttachmentModel().MapFromEntity(entity.Image) : null;
+            CompanyId = entity.CompanyId;
             return this;
         }
 

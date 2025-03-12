@@ -11,6 +11,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using ProjectManagement.Service.Interfaces.Attachment;
 using ProjectManagement.Service.Service.Attachment;
 using ProjectManagement.Domain.Entities.Attachment;
+using ProjectManagement.Domain.Entities.Country;
+using ProjectManagement.Service.Interfaces.Country;
+using ProjectManagement.Service.Service.Country;
 
 namespace ProjectManagement.Api.Extensions
 {
@@ -22,6 +25,7 @@ namespace ProjectManagement.Api.Extensions
             services.AddScoped<IGenericRepository<TeamMember>, GenericRepository<TeamMember>>();
             services.AddScoped<IGenericRepository<Team>, GenericRepository<Team>>();
             services.AddScoped<IGenericRepository<Attachment>, GenericRepository<Attachment>>();
+            services.AddScoped<IGenericRepository<Country>, GenericRepository<Country>>();
         }
 
         public static void AddCustomServices(this IServiceCollection services)
@@ -29,6 +33,7 @@ namespace ProjectManagement.Api.Extensions
             services.AddDependencies();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IAttachmentService, AttachmentService>();
+            services.AddScoped<ICountryService, CountryService>();
         }
         public static void AddSwaggerService(this IServiceCollection services)
         {

@@ -11,7 +11,7 @@ public class User : Auditable
     public required string Surname { get; set; }
     public required string PhoneNumber { get; set; }
     public Role IndividualRole { get; set; }
-    public virtual ICollection<TeamMember>? TeamMembers { get; set; }
+    public virtual TeamMember? TeamMember { get; set; }
     public int CompanyId { get; set; } = 2;
     public virtual Companies.Companies Companies { get; set; }
     public virtual Attachment.Attachment? Image { get; set; }
