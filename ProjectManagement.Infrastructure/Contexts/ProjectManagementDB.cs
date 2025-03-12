@@ -96,12 +96,12 @@ namespace ProjectManagement.Infrastructure.Contexts
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<TeamMember>()
-                .HasKey(tm => new { tm.UserId, tm.TeamId }); 
+                .HasKey(tm => new { tm.UserId, tm.TeamId });
 
             modelBuilder.Entity<TeamMember>()
-                .HasOne(tm => tm.User)
-                .WithMany()
-                .HasForeignKey(tm => tm.UserId)
+                .HasOne(tm => tm.Team)
+                .WithMany(t => t.TeamMembers) 
+                .HasForeignKey(tm => tm.TeamId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<TeamMember>()

@@ -94,12 +94,12 @@ namespace ProjectManagement.Service.Service.User
             if (dto.TeamLeaderId is not null)
             {
                 var teamLeader = await _userRepository
-                    .GetAll(x => x.Id == dto.TeamLeaderId && x.IsDeleted == 0 && x.TeamMember.IsDeleted == 0)
+                    .GetAll(x => x.Id == dto.TeamLeaderId && x.IsDeleted == 0)
                     .Include(x => x.TeamMember)
                     .ThenInclude(x => x.Team)
                     .FirstOrDefaultAsync();
 
-                if (teamLeader == null || teamLeader.TeamMember == null)
+                if (teamLeader == null)
                 {
                     throw new ProjectManagementException(400, "user_not_found");
                 }
