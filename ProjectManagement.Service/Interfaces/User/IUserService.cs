@@ -17,5 +17,6 @@ namespace ProjectManagement.Service.Interfaces.User
         ValueTask<List<TeamLeadersNameModel>> GetTeamLeadrsName(int? companyId);
         ValueTask<List<CompanyNameModel>> GetCompanyName(int? teamLeaderId);
         ValueTask<string> DeleteUser(int userId);
+        ValueTask<List<UserEmailsModel>> GetUserEmails();
     }
 }

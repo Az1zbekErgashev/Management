@@ -1,6 +1,12 @@
 ﻿using Microsoft.AspNetCore.Http;
 using ProjectManagement.Domain.Configuration;
+using ProjectManagement.Domain.Entities.Logs;
+using ProjectManagement.Domain.Entities.User;
 using ProjectManagement.Service.DTOs.Attachment;
+using ProjectManagement.Service.Interfaces.IRepositories;
+using System.Net;
+using System.Security.Authentication;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -45,6 +51,32 @@ namespace ProjectManagement.Service.StringExtensions
             }
 
             return null;
+        }
+
+
+        public static async ValueTask<bool> SaveLogAsync(IGenericRepository<Logs> logRepository, IHttpContextAccessor _httpContextAccessor, Domain.Enum.LogAction logAction)
+        {
+            var context = _httpContextAccessor.HttpContext;
+
+            if (!int.TryParse(context.User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
+            {
+                throw new InvalidCredentialException();
+            }
+            var ipAddress = context?.Connection?.RemoteIpAddress?.ToString();
+
+            var ip = System.Net.IPAddress.Parse(ipAddress); 
+            
+            var bytes = ip.GetAddressBytes();
+
+            if (BitConverter.IsLittleEndian)
+                Array.Reverse(bytes); 
+
+            var longIp = BitConverter.ToInt64(bytes, 0);
+
+            var log = new Logs { Action = logAction, CreatedAt = DateTime.UtcNow, UserId = userId, Ip = longIp };
+            await logRepository.CreateAsync(log);
+            await logRepository.SaveChangesAsync();
+            return true;
         }
     }
 }

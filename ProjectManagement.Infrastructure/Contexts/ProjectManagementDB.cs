@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using ProjectManagement.Domain.Configuration;
 using ProjectManagement.Domain.Entities.Attachment;
 using ProjectManagement.Domain.Entities.Certificates;
 using ProjectManagement.Domain.Entities.Companies;
@@ -111,9 +110,9 @@ namespace ProjectManagement.Infrastructure.Contexts
                 .OnDelete(DeleteBehavior.Cascade);
 
              modelBuilder.Entity<Companies>().HasData(
-                new Companies { Id = 1, CompanyCode = "WISESTONET", CompanyName = "WISESTONE T", Location = "South Korea", CreatedAt = DateTime.UtcNow },
-                new Companies { Id = 2, CompanyCode = "WISESTONEU", CompanyName = "WISESTONE U", Location = "Uzbekistan", CreatedAt = DateTime.UtcNow },
-                new Companies { Id = 3, CompanyCode = "WISESTONE", CompanyName = "WISESTONE", Location = "South Korea", CreatedAt = DateTime.UtcNow }
+                new Companies { Id = 1, CompanyCode = "WISESTONET", CompanyName = "WISESTONE T", CountryId = 1, CreatedAt = DateTime.UtcNow },
+                new Companies { Id = 2, CompanyCode = "WISESTONEU", CompanyName = "WISESTONE U", CountryId = 67 , CreatedAt = DateTime.UtcNow },
+                new Companies { Id = 3, CompanyCode = "WISESTONE", CompanyName = "WISESTONE", CountryId = 45 , CreatedAt = DateTime.UtcNow }
             );
 
 

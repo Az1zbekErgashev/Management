@@ -57,6 +57,11 @@ namespace ProjectManagement.Api.Controllers.User
 
 
         [HttpGet("{id}")]
+        [Authorize]
         public async ValueTask<IActionResult> GetByIdAsync([Required] int id) => ResponseHandler.ReturnIActionResponse(await userService.GetByIdAsync(id));
+
+        [HttpGet("user-email")]
+        [Authorize]
+        public async ValueTask<IActionResult> GetUserEmailsync() => ResponseHandler.ReturnIActionResponse(await userService.GetUserEmails());
     }
 }

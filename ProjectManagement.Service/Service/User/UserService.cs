@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using ProjectManagement.Domain.Entities.Logs;
 using ProjectManagement.Domain.Entities.Teams;
 using ProjectManagement.Domain.Models.PagedResult;
 using ProjectManagement.Domain.Models.User;
@@ -28,6 +29,7 @@ namespace ProjectManagement.Service.Service.User
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IConfiguration configuration;
         private readonly IAttachmentService attachmentService;
+        private readonly IGenericRepository<Logs> _logRepository;
         public UserService(IGenericRepository<
             Domain.Entities.User.User> userRepository,
             IHttpContextAccessor httpContextAccessor,
@@ -35,7 +37,8 @@ namespace ProjectManagement.Service.Service.User
             IGenericRepository<Domain.Entities.Companies.Companies> companyRepository,
             IConfiguration configuration,
             IAttachmentService attachmentService,
-            IGenericRepository<Domain.Entities.Teams.Team> teamRepository)
+            IGenericRepository<Domain.Entities.Teams.Team> teamRepository,
+            IGenericRepository<Logs> logRepository)
         {
             _userRepository = userRepository;
             _httpContextAccessor = httpContextAccessor;
@@ -44,6 +47,7 @@ namespace ProjectManagement.Service.Service.User
             this.configuration = configuration;
             this.attachmentService = attachmentService;
             _teamRepository = teamRepository;
+            _logRepository = logRepository;
         }
 
         public async ValueTask<bool> CreateUser(UserForCreationDTO dto)
@@ -54,6 +58,7 @@ namespace ProjectManagement.Service.Service.User
             {
                 throw new InvalidCredentialException();
             }
+            var ipAddress = context?.Connection?.RemoteIpAddress?.ToString();
 
             var checkUserRole = await _userRepository.GetAsync(x => x.Id == userId && x.IsDeleted == 0);
 
@@ -151,6 +156,9 @@ namespace ProjectManagement.Service.Service.User
                 await _teamMemberRepository.CreateAsync(newTeamMember);
                 await _teamMemberRepository.SaveChangesAsync();
             }
+
+
+            await StringExtensions.StringExtensions.SaveLogAsync(_logRepository, _httpContextAccessor, Domain.Enum.LogAction.CreateAccount);
             return true;
         }
 
@@ -174,7 +182,9 @@ namespace ProjectManagement.Service.Service.User
             _userRepository.UpdateAsync(user);
             await _userRepository.SaveChangesAsync();
 
-            if(isDelete) return "user_deleted";
+            await StringExtensions.StringExtensions.SaveLogAsync(_logRepository, _httpContextAccessor, Domain.Enum.LogAction.UpdateUser);
+
+            if (isDelete) return "user_deleted";
             else return "user_recovered";
         }
 
@@ -338,6 +348,15 @@ namespace ProjectManagement.Service.Service.User
             return model;
         }
 
+        public async ValueTask<List<UserEmailsModel>> GetUserEmails()
+        {
+            var users = await _userRepository.GetAll(x => x.IsDeleted == 0).ToListAsync();
+
+            var model = users.Select(x => new UserEmailsModel().MapFromEntity(x)).ToList();
+
+            return model;
+        }
+
         public async ValueTask<LoginModel> Login(UserForLoginDTO dto)
         {
             var user = await _userRepository.GetAll(u =>
@@ -347,6 +366,8 @@ namespace ProjectManagement.Service.Service.User
                 throw new ProjectManagementException(400, "login_or_password_is_incorrect", false);
 
             var token = await GenerateToken(user.Id);
+
+            await StringExtensions.StringExtensions.SaveLogAsync(_logRepository, _httpContextAccessor, Domain.Enum.LogAction.Login);
 
             return new LoginModel().MapFromEntity(user, user.IndividualRole, token);
         }
@@ -445,11 +466,12 @@ namespace ProjectManagement.Service.Service.User
 
                         await _teamMemberRepository.CreateAsync(newTeamMember);
                     }
-
+                          
                     await _teamMemberRepository.SaveChangesAsync();
                 }
             }
 
+            await StringExtensions.StringExtensions.SaveLogAsync(_logRepository, _httpContextAccessor, Domain.Enum.LogAction.UpdateUser);
             return true;
         }
 

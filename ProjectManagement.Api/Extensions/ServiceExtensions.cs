@@ -14,6 +14,9 @@ using ProjectManagement.Domain.Entities.Attachment;
 using ProjectManagement.Domain.Entities.Country;
 using ProjectManagement.Service.Interfaces.Country;
 using ProjectManagement.Service.Service.Country;
+using ProjectManagement.Domain.Entities.Logs;
+using ProjectManagement.Service.Interfaces.Log;
+using ProjectManagement.Service.Service.Log;
 
 namespace ProjectManagement.Api.Extensions
 {
@@ -26,6 +29,7 @@ namespace ProjectManagement.Api.Extensions
             services.AddScoped<IGenericRepository<Team>, GenericRepository<Team>>();
             services.AddScoped<IGenericRepository<Attachment>, GenericRepository<Attachment>>();
             services.AddScoped<IGenericRepository<Country>, GenericRepository<Country>>();
+            services.AddScoped<IGenericRepository<Logs>, GenericRepository<Logs>>();
         }
 
         public static void AddCustomServices(this IServiceCollection services)
@@ -34,6 +38,7 @@ namespace ProjectManagement.Api.Extensions
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IAttachmentService, AttachmentService>();
             services.AddScoped<ICountryService, CountryService>();
+            services.AddScoped<ILogService, LogService>();
         }
         public static void AddSwaggerService(this IServiceCollection services)
         {
