@@ -1,1 +1,6 @@
-.vs/
+**/.idea
+**/.vs
+**/.vscode
+**/bin
+**/obj
+**/wwwroot
