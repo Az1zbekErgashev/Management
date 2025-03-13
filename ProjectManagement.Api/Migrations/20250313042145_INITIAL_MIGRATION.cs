@@ -9,32 +9,26 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ProjectManagement.Api.Migrations
 {
     /// <inheritdoc />
-    public partial class UPDATE_USER_TABLE_ADDED_IMAGE : Migration
+    public partial class INITIAL_MIGRATION : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_Users_Companies_CompanyId",
-                table: "Users");
-
-            migrationBuilder.AddColumn<int>(
-                name: "CountryId",
-                table: "Users",
-                type: "integer",
-                nullable: true);
-
-            migrationBuilder.AddColumn<DateTime>(
-                name: "DateOfBirth",
-                table: "Users",
-                type: "timestamp with time zone",
-                nullable: true);
-
-            migrationBuilder.AddColumn<int>(
-                name: "ImageId",
-                table: "Users",
-                type: "integer",
-                nullable: true);
+            migrationBuilder.CreateTable(
+                name: "Attachments",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Path = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    IsDeleted = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Attachments", x => x.Id);
+                });
 
             migrationBuilder.CreateTable(
                 name: "Countrys",
@@ -52,26 +46,390 @@ namespace ProjectManagement.Api.Migrations
                     table.PrimaryKey("PK_Countrys", x => x.Id);
                 });
 
-            migrationBuilder.UpdateData(
-                table: "Companies",
-                keyColumn: "Id",
-                keyValue: 1,
-                column: "CreatedAt",
-                value: new DateTime(2025, 3, 7, 12, 34, 59, 131, DateTimeKind.Utc).AddTicks(8273));
+            migrationBuilder.CreateTable(
+                name: "Companies",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    CompanyName = table.Column<string>(type: "text", nullable: false),
+                    CompanyCode = table.Column<string>(type: "text", nullable: false),
+                    EmployeesCount = table.Column<string>(type: "text", nullable: true),
+                    Description = table.Column<string>(type: "text", nullable: true),
+                    Site = table.Column<string>(type: "text", nullable: true),
+                    CountryId = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    IsDeleted = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Companies", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Companies_Countrys_CountryId",
+                        column: x => x.CountryId,
+                        principalTable: "Countrys",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
 
-            migrationBuilder.UpdateData(
-                table: "Companies",
-                keyColumn: "Id",
-                keyValue: 2,
-                column: "CreatedAt",
-                value: new DateTime(2025, 3, 7, 12, 34, 59, 131, DateTimeKind.Utc).AddTicks(8275));
+            migrationBuilder.CreateTable(
+                name: "Partners",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    CompanyCode = table.Column<string>(type: "text", nullable: false),
+                    CountryId = table.Column<int>(type: "integer", nullable: false),
+                    ImageId = table.Column<int>(type: "integer", nullable: true),
+                    Site = table.Column<string>(type: "text", nullable: true),
+                    EmployeesCount = table.Column<string>(type: "text", nullable: true),
+                    Description = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    IsDeleted = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Partners", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Partners_Attachments_ImageId",
+                        column: x => x.ImageId,
+                        principalTable: "Attachments",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Partners_Countrys_CountryId",
+                        column: x => x.CountryId,
+                        principalTable: "Countrys",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
 
-            migrationBuilder.UpdateData(
-                table: "Companies",
-                keyColumn: "Id",
-                keyValue: 3,
-                column: "CreatedAt",
-                value: new DateTime(2025, 3, 7, 12, 34, 59, 131, DateTimeKind.Utc).AddTicks(8276));
+            migrationBuilder.CreateTable(
+                name: "Teams",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Location = table.Column<string>(type: "text", nullable: false),
+                    AssignedCompanyId = table.Column<int>(type: "integer", nullable: true),
+                    CompaniesId = table.Column<int>(type: "integer", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    IsDeleted = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Teams", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Teams_Companies_AssignedCompanyId",
+                        column: x => x.AssignedCompanyId,
+                        principalTable: "Companies",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Teams_Companies_CompaniesId",
+                        column: x => x.CompaniesId,
+                        principalTable: "Companies",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Users",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Email = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Password = table.Column<string>(type: "text", nullable: false),
+                    Surname = table.Column<string>(type: "text", nullable: false),
+                    PhoneNumber = table.Column<string>(type: "text", nullable: false),
+                    IndividualRole = table.Column<int>(type: "integer", nullable: false),
+                    CompanyId = table.Column<int>(type: "integer", nullable: false),
+                    ImageId = table.Column<int>(type: "integer", nullable: true),
+                    CountryId = table.Column<int>(type: "integer", nullable: true),
+                    DateOfBirth = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    IsDeleted = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Users", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Users_Attachments_ImageId",
+                        column: x => x.ImageId,
+                        principalTable: "Attachments",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Users_Companies_CompanyId",
+                        column: x => x.CompanyId,
+                        principalTable: "Companies",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_Users_Countrys_CountryId",
+                        column: x => x.CountryId,
+                        principalTable: "Countrys",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Projects",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    ProjectName = table.Column<string>(type: "text", nullable: false),
+                    AssignedCompanyId = table.Column<int>(type: "integer", nullable: false),
+                    TeamId = table.Column<int>(type: "integer", nullable: true),
+                    PartnerId = table.Column<int>(type: "integer", nullable: false),
+                    CertificateId = table.Column<int>(type: "integer", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    IsDeleted = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Projects", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Projects_Companies_AssignedCompanyId",
+                        column: x => x.AssignedCompanyId,
+                        principalTable: "Companies",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Projects_Partners_PartnerId",
+                        column: x => x.PartnerId,
+                        principalTable: "Partners",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Projects_Teams_TeamId",
+                        column: x => x.TeamId,
+                        principalTable: "Teams",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Logs",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserId = table.Column<int>(type: "integer", nullable: false),
+                    Ip = table.Column<string>(type: "text", nullable: false),
+                    Action = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    IsDeleted = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Logs", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Logs_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TeamMembers",
+                columns: table => new
+                {
+                    TeamId = table.Column<int>(type: "integer", nullable: false),
+                    UserId = table.Column<int>(type: "integer", nullable: false),
+                    Id = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    IsDeleted = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TeamMembers", x => new { x.UserId, x.TeamId });
+                    table.ForeignKey(
+                        name: "FK_TeamMembers_Teams_TeamId",
+                        column: x => x.TeamId,
+                        principalTable: "Teams",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_TeamMembers_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Certificates",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    ProjectId = table.Column<int>(type: "integer", nullable: false),
+                    IssuedByUser = table.Column<int>(type: "integer", nullable: false),
+                    UserId = table.Column<int>(type: "integer", nullable: false),
+                    CompaniesId = table.Column<int>(type: "integer", nullable: false),
+                    IssuerToCompanies = table.Column<int>(type: "integer", nullable: false),
+                    ImageId = table.Column<int>(type: "integer", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    IsDeleted = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Certificates", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Certificates_Attachments_ImageId",
+                        column: x => x.ImageId,
+                        principalTable: "Attachments",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Certificates_Companies_CompaniesId",
+                        column: x => x.CompaniesId,
+                        principalTable: "Companies",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Certificates_Projects_ProjectId",
+                        column: x => x.ProjectId,
+                        principalTable: "Projects",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Certificates_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Tasks",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    ProjectId = table.Column<int>(type: "integer", nullable: false),
+                    IssuesFound = table.Column<int>(type: "integer", nullable: false),
+                    TotalHourse = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    TeamId = table.Column<int>(type: "integer", nullable: true),
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    IsDeleted = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Tasks", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Tasks_Projects_ProjectId",
+                        column: x => x.ProjectId,
+                        principalTable: "Projects",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Tasks_Teams_TeamId",
+                        column: x => x.TeamId,
+                        principalTable: "Teams",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TaskPhotos",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    ImageId = table.Column<int>(type: "integer", nullable: false),
+                    AttachmentId = table.Column<int>(type: "integer", nullable: false),
+                    TaskId = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    IsDeleted = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TaskPhotos", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_TaskPhotos_Attachments_AttachmentId",
+                        column: x => x.AttachmentId,
+                        principalTable: "Attachments",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_TaskPhotos_Tasks_TaskId",
+                        column: x => x.TaskId,
+                        principalTable: "Tasks",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TaskReports",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserId = table.Column<int>(type: "integer", nullable: false),
+                    TaskId = table.Column<int>(type: "integer", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: false),
+                    SpentTime = table.Column<TimeSpan>(type: "interval", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    IsDeleted = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TaskReports", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_TaskReports_Tasks_TaskId",
+                        column: x => x.TaskId,
+                        principalTable: "Tasks",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_TaskReports_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TaskReportPhotos",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    ImageId = table.Column<int>(type: "integer", nullable: false),
+                    AttachmentId = table.Column<int>(type: "integer", nullable: false),
+                    TaskReportId = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    IsDeleted = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TaskReportPhotos", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_TaskReportPhotos_Attachments_AttachmentId",
+                        column: x => x.AttachmentId,
+                        principalTable: "Attachments",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_TaskReportPhotos_TaskReports_TaskReportId",
+                        column: x => x.TaskReportId,
+                        principalTable: "TaskReports",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
 
             migrationBuilder.InsertData(
                 table: "Countrys",
@@ -329,12 +687,152 @@ namespace ProjectManagement.Api.Migrations
                     { 249, new DateTime(2023, 11, 23, 16, 13, 56, 461, DateTimeKind.Utc), 0, "Zimbabwe", new DateTime(2023, 11, 23, 16, 13, 56, 461, DateTimeKind.Utc) }
                 });
 
-            migrationBuilder.UpdateData(
+            migrationBuilder.InsertData(
+                table: "Companies",
+                columns: new[] { "Id", "CompanyCode", "CompanyName", "CountryId", "CreatedAt", "Description", "EmployeesCount", "IsDeleted", "Site", "UpdatedAt" },
+                values: new object[,]
+                {
+                    { 1, "WISESTONET", "WISESTONE T", 1, new DateTime(2025, 3, 13, 4, 21, 45, 178, DateTimeKind.Utc).AddTicks(4877), null, null, 0, null, null },
+                    { 2, "WISESTONEU", "WISESTONE U", 67, new DateTime(2025, 3, 13, 4, 21, 45, 178, DateTimeKind.Utc).AddTicks(4879), null, null, 0, null, null },
+                    { 3, "WISESTONE", "WISESTONE", 45, new DateTime(2025, 3, 13, 4, 21, 45, 178, DateTimeKind.Utc).AddTicks(4881), null, null, 0, null, null }
+                });
+
+            migrationBuilder.InsertData(
                 table: "Users",
-                keyColumn: "Id",
-                keyValue: 1,
-                columns: new[] { "CountryId", "CreatedAt", "DateOfBirth", "ImageId" },
-                values: new object[] { 1, new DateTime(2025, 3, 7, 12, 34, 59, 131, DateTimeKind.Utc).AddTicks(8386), new DateTime(2023, 11, 23, 16, 13, 56, 461, DateTimeKind.Utc), null });
+                columns: new[] { "Id", "CompanyId", "CountryId", "CreatedAt", "DateOfBirth", "Email", "ImageId", "IndividualRole", "IsDeleted", "Name", "Password", "PhoneNumber", "Surname", "UpdatedAt" },
+                values: new object[] { 1, 1, 1, new DateTime(2025, 3, 13, 4, 21, 45, 178, DateTimeKind.Utc).AddTicks(4982), new DateTime(2023, 11, 23, 16, 13, 56, 461, DateTimeKind.Utc), "admin@gmail.com", null, 4, 0, "Admin", "web123$", "998881422030", "System", null });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Certificates_CompaniesId",
+                table: "Certificates",
+                column: "CompaniesId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Certificates_ImageId",
+                table: "Certificates",
+                column: "ImageId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Certificates_ProjectId",
+                table: "Certificates",
+                column: "ProjectId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Certificates_UserId",
+                table: "Certificates",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Companies_CountryId",
+                table: "Companies",
+                column: "CountryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Logs_UserId",
+                table: "Logs",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Partners_CountryId",
+                table: "Partners",
+                column: "CountryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Partners_ImageId",
+                table: "Partners",
+                column: "ImageId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Partners_Name",
+                table: "Partners",
+                column: "Name");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Projects_AssignedCompanyId",
+                table: "Projects",
+                column: "AssignedCompanyId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Projects_PartnerId",
+                table: "Projects",
+                column: "PartnerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Projects_TeamId",
+                table: "Projects",
+                column: "TeamId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TaskPhotos_AttachmentId",
+                table: "TaskPhotos",
+                column: "AttachmentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TaskPhotos_TaskId",
+                table: "TaskPhotos",
+                column: "TaskId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TaskReportPhotos_AttachmentId",
+                table: "TaskReportPhotos",
+                column: "AttachmentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TaskReportPhotos_TaskReportId",
+                table: "TaskReportPhotos",
+                column: "TaskReportId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TaskReports_TaskId",
+                table: "TaskReports",
+                column: "TaskId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TaskReports_UserId",
+                table: "TaskReports",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Tasks_ProjectId",
+                table: "Tasks",
+                column: "ProjectId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Tasks_Status",
+                table: "Tasks",
+                column: "Status");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Tasks_TeamId",
+                table: "Tasks",
+                column: "TeamId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TeamMembers_TeamId",
+                table: "TeamMembers",
+                column: "TeamId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TeamMembers_UserId",
+                table: "TeamMembers",
+                column: "UserId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Teams_AssignedCompanyId",
+                table: "Teams",
+                column: "AssignedCompanyId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Teams_CompaniesId",
+                table: "Teams",
+                column: "CompaniesId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_CompanyId",
+                table: "Users",
+                column: "CompanyId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Users_CountryId",
@@ -342,106 +840,65 @@ namespace ProjectManagement.Api.Migrations
                 column: "CountryId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Users_Email",
+                table: "Users",
+                column: "Email");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Users_ImageId",
                 table: "Users",
                 column: "ImageId");
 
-            migrationBuilder.AddForeignKey(
-                name: "FK_Users_Attachments_ImageId",
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_Name",
                 table: "Users",
-                column: "ImageId",
-                principalTable: "Attachments",
-                principalColumn: "Id");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Users_Companies_CompanyId",
-                table: "Users",
-                column: "CompanyId",
-                principalTable: "Companies",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.SetNull);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Users_Countrys_CountryId",
-                table: "Users",
-                column: "CountryId",
-                principalTable: "Countrys",
-                principalColumn: "Id");
+                column: "Name");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_Users_Attachments_ImageId",
-                table: "Users");
+            migrationBuilder.DropTable(
+                name: "Certificates");
 
-            migrationBuilder.DropForeignKey(
-                name: "FK_Users_Companies_CompanyId",
-                table: "Users");
+            migrationBuilder.DropTable(
+                name: "Logs");
 
-            migrationBuilder.DropForeignKey(
-                name: "FK_Users_Countrys_CountryId",
-                table: "Users");
+            migrationBuilder.DropTable(
+                name: "TaskPhotos");
+
+            migrationBuilder.DropTable(
+                name: "TaskReportPhotos");
+
+            migrationBuilder.DropTable(
+                name: "TeamMembers");
+
+            migrationBuilder.DropTable(
+                name: "TaskReports");
+
+            migrationBuilder.DropTable(
+                name: "Tasks");
+
+            migrationBuilder.DropTable(
+                name: "Users");
+
+            migrationBuilder.DropTable(
+                name: "Projects");
+
+            migrationBuilder.DropTable(
+                name: "Partners");
+
+            migrationBuilder.DropTable(
+                name: "Teams");
+
+            migrationBuilder.DropTable(
+                name: "Attachments");
+
+            migrationBuilder.DropTable(
+                name: "Companies");
 
             migrationBuilder.DropTable(
                 name: "Countrys");
-
-            migrationBuilder.DropIndex(
-                name: "IX_Users_CountryId",
-                table: "Users");
-
-            migrationBuilder.DropIndex(
-                name: "IX_Users_ImageId",
-                table: "Users");
-
-            migrationBuilder.DropColumn(
-                name: "CountryId",
-                table: "Users");
-
-            migrationBuilder.DropColumn(
-                name: "DateOfBirth",
-                table: "Users");
-
-            migrationBuilder.DropColumn(
-                name: "ImageId",
-                table: "Users");
-
-            migrationBuilder.UpdateData(
-                table: "Companies",
-                keyColumn: "Id",
-                keyValue: 1,
-                column: "CreatedAt",
-                value: new DateTime(2025, 3, 7, 7, 17, 46, 508, DateTimeKind.Utc).AddTicks(465));
-
-            migrationBuilder.UpdateData(
-                table: "Companies",
-                keyColumn: "Id",
-                keyValue: 2,
-                column: "CreatedAt",
-                value: new DateTime(2025, 3, 7, 7, 17, 46, 508, DateTimeKind.Utc).AddTicks(467));
-
-            migrationBuilder.UpdateData(
-                table: "Companies",
-                keyColumn: "Id",
-                keyValue: 3,
-                column: "CreatedAt",
-                value: new DateTime(2025, 3, 7, 7, 17, 46, 508, DateTimeKind.Utc).AddTicks(468));
-
-            migrationBuilder.UpdateData(
-                table: "Users",
-                keyColumn: "Id",
-                keyValue: 1,
-                column: "CreatedAt",
-                value: new DateTime(2025, 3, 7, 7, 17, 46, 508, DateTimeKind.Utc).AddTicks(557));
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Users_Companies_CompanyId",
-                table: "Users",
-                column: "CompanyId",
-                principalTable: "Companies",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Restrict);
         }
     }
 }

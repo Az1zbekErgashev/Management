@@ -53,27 +53,27 @@ namespace ProjectManagement.Service.StringExtensions
             return null;
         }
 
+        public static string GetIp(HttpContext context)
+        {
+            return context.Request.Headers.ContainsKey("Cf-Connecting-Ip")
+                ? context.Request.Headers["Cf-Connecting-Ip"].ToString()
+                : context.Request.Headers.ContainsKey("X-Forwarded-For")
+                    ? context.Request.Headers["X-Forwarded-For"].ToString()
+                    : context.Connection.RemoteIpAddress.ToString();
+        }
 
-        public static async ValueTask<bool> SaveLogAsync(IGenericRepository<Logs> logRepository, IHttpContextAccessor _httpContextAccessor, Domain.Enum.LogAction logAction)
+        public static async ValueTask<bool> SaveLogAsync(IGenericRepository<Logs> logRepository, IHttpContextAccessor _httpContextAccessor, Domain.Enum.LogAction logAction, int? userIdFromDatabase = null)
         {
             var context = _httpContextAccessor.HttpContext;
 
-            if (!int.TryParse(context.User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
+            var id = userIdFromDatabase;
+
+            if (int.TryParse(context.User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
             {
-                throw new InvalidCredentialException();
+                id = userId;
             }
-            var ipAddress = context?.Connection?.RemoteIpAddress?.ToString();
 
-            var ip = System.Net.IPAddress.Parse(ipAddress); 
-            
-            var bytes = ip.GetAddressBytes();
-
-            if (BitConverter.IsLittleEndian)
-                Array.Reverse(bytes); 
-
-            var longIp = BitConverter.ToInt64(bytes, 0);
-
-            var log = new Logs { Action = logAction, CreatedAt = DateTime.UtcNow, UserId = userId, Ip = longIp };
+            var log = new Logs { Action = logAction, CreatedAt = DateTime.UtcNow, UserId = id ?? 0, Ip = GetIp(context) };
             await logRepository.CreateAsync(log);
             await logRepository.SaveChangesAsync();
             return true;

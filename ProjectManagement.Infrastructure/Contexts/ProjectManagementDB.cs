@@ -68,10 +68,10 @@ namespace ProjectManagement.Infrastructure.Contexts
 
             modelBuilder.Entity<Logs>()
                 .HasOne(l => l.User)
-                .WithMany()
+                .WithMany(u => u.Logs)
                 .HasForeignKey(l => l.UserId)
-                .OnDelete(DeleteBehavior.Cascade); 
-            
+                .OnDelete(DeleteBehavior.Cascade);
+
             modelBuilder.Entity<User>()
                 .HasOne(l => l.Companies)
                 .WithMany()

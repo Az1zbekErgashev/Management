@@ -12,7 +12,7 @@ namespace ProjectManagement.Domain.Models.Log
         public string FullName { get; set; }
         public string PhoneNumber { get; set; }
         public LogAction Action { get; set; }
-        public long? IpAddress { get; set; }
+        public string? IpAddress { get; set; }
 
 
         public virtual LogsModel MapFromEntity(Logs entity)

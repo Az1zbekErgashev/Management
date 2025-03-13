@@ -8,6 +8,6 @@
         Report,
         UpdateTranslation,
         UpdateUser,
-        CompanyInformation
+        UpdateCompanyInformation
     }
 }

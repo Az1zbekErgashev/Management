@@ -367,7 +367,7 @@ namespace ProjectManagement.Service.Service.User
 
             var token = await GenerateToken(user.Id);
 
-            await StringExtensions.StringExtensions.SaveLogAsync(_logRepository, _httpContextAccessor, Domain.Enum.LogAction.Login);
+            await StringExtensions.StringExtensions.SaveLogAsync(_logRepository, _httpContextAccessor, Domain.Enum.LogAction.Login, user.Id);
 
             return new LoginModel().MapFromEntity(user, user.IndividualRole, token);
         }

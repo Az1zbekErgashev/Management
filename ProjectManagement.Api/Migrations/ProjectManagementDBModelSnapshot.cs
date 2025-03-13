@@ -147,7 +147,7 @@ namespace ProjectManagement.Api.Migrations
                             CompanyCode = "WISESTONET",
                             CompanyName = "WISESTONE T",
                             CountryId = 1,
-                            CreatedAt = new DateTime(2025, 3, 12, 12, 16, 32, 751, DateTimeKind.Utc).AddTicks(1547),
+                            CreatedAt = new DateTime(2025, 3, 13, 4, 21, 45, 178, DateTimeKind.Utc).AddTicks(4877),
                             IsDeleted = 0
                         },
                         new
@@ -156,7 +156,7 @@ namespace ProjectManagement.Api.Migrations
                             CompanyCode = "WISESTONEU",
                             CompanyName = "WISESTONE U",
                             CountryId = 67,
-                            CreatedAt = new DateTime(2025, 3, 12, 12, 16, 32, 751, DateTimeKind.Utc).AddTicks(1549),
+                            CreatedAt = new DateTime(2025, 3, 13, 4, 21, 45, 178, DateTimeKind.Utc).AddTicks(4879),
                             IsDeleted = 0
                         },
                         new
@@ -165,7 +165,7 @@ namespace ProjectManagement.Api.Migrations
                             CompanyCode = "WISESTONE",
                             CompanyName = "WISESTONE",
                             CountryId = 45,
-                            CreatedAt = new DateTime(2025, 3, 12, 12, 16, 32, 751, DateTimeKind.Utc).AddTicks(1551),
+                            CreatedAt = new DateTime(2025, 3, 13, 4, 21, 45, 178, DateTimeKind.Utc).AddTicks(4881),
                             IsDeleted = 0
                         });
                 });
@@ -2204,8 +2204,9 @@ namespace ProjectManagement.Api.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<long>("Ip")
-                        .HasColumnType("bigint");
+                    b.Property<string>("Ip")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<int>("IsDeleted")
                         .HasColumnType("integer");
@@ -2609,7 +2610,7 @@ namespace ProjectManagement.Api.Migrations
                             Id = 1,
                             CompanyId = 1,
                             CountryId = 1,
-                            CreatedAt = new DateTime(2025, 3, 12, 12, 16, 32, 751, DateTimeKind.Utc).AddTicks(1694),
+                            CreatedAt = new DateTime(2025, 3, 13, 4, 21, 45, 178, DateTimeKind.Utc).AddTicks(4982),
                             DateOfBirth = new DateTime(2023, 11, 23, 16, 13, 56, 461, DateTimeKind.Utc),
                             Email = "admin@gmail.com",
                             IndividualRole = 4,
@@ -2668,7 +2669,7 @@ namespace ProjectManagement.Api.Migrations
             modelBuilder.Entity("ProjectManagement.Domain.Entities.Logs.Logs", b =>
                 {
                     b.HasOne("ProjectManagement.Domain.Entities.User.User", "User")
-                        .WithMany()
+                        .WithMany("Logs")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -2879,6 +2880,8 @@ namespace ProjectManagement.Api.Migrations
 
             modelBuilder.Entity("ProjectManagement.Domain.Entities.User.User", b =>
                 {
+                    b.Navigation("Logs");
+
                     b.Navigation("TeamMember");
                 });
 #pragma warning restore 612, 618
