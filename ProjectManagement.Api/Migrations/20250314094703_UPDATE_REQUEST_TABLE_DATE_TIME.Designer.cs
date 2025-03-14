@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using ProjectManagement.Infrastructure.Contexts;
@@ -11,9 +12,11 @@ using ProjectManagement.Infrastructure.Contexts;
 namespace ProjectManagement.Api.Migrations
 {
     [DbContext(typeof(ProjectManagementDB))]
-    partial class ProjectManagementDBModelSnapshot : ModelSnapshot
+    [Migration("20250314094703_UPDATE_REQUEST_TABLE_DATE_TIME")]
+    partial class UPDATE_REQUEST_TABLE_DATE_TIME
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -147,7 +150,7 @@ namespace ProjectManagement.Api.Migrations
                             CompanyCode = "WISESTONET",
                             CompanyName = "WISESTONE T",
                             CountryId = 1,
-                            CreatedAt = new DateTime(2025, 3, 13, 4, 29, 39, 768, DateTimeKind.Utc),
+                            CreatedAt = new DateTime(2025, 3, 14, 9, 47, 3, 556, DateTimeKind.Utc).AddTicks(4662),
                             IsDeleted = 0
                         },
                         new
@@ -156,7 +159,7 @@ namespace ProjectManagement.Api.Migrations
                             CompanyCode = "WISESTONEU",
                             CompanyName = "WISESTONE U",
                             CountryId = 67,
-                            CreatedAt = new DateTime(2025, 3, 13, 4, 29, 39, 768, DateTimeKind.Utc),
+                            CreatedAt = new DateTime(2025, 3, 14, 9, 47, 3, 556, DateTimeKind.Utc).AddTicks(4664),
                             IsDeleted = 0
                         },
                         new
@@ -165,7 +168,7 @@ namespace ProjectManagement.Api.Migrations
                             CompanyCode = "WISESTONE",
                             CompanyName = "WISESTONE",
                             CountryId = 45,
-                            CreatedAt = new DateTime(2025, 3, 13, 4, 29, 39, 768, DateTimeKind.Utc),
+                            CreatedAt = new DateTime(2025, 3, 14, 9, 47, 3, 556, DateTimeKind.Utc).AddTicks(4665),
                             IsDeleted = 0
                         });
                 });
@@ -2702,7 +2705,7 @@ namespace ProjectManagement.Api.Migrations
                         {
                             Id = 1,
                             CountryId = 1,
-                            CreatedAt = new DateTime(2025, 3, 14, 11, 45, 23, 40, DateTimeKind.Utc).AddTicks(8487),
+                            CreatedAt = new DateTime(2025, 3, 14, 9, 47, 3, 556, DateTimeKind.Utc).AddTicks(4764),
                             DateOfBirth = new DateTime(2023, 11, 23, 16, 13, 56, 461, DateTimeKind.Utc),
                             Email = "admin@gmail.com",
                             IndividualRole = 1,

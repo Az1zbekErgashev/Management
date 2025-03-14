@@ -68,7 +68,7 @@ EnvironmentHelper.WebRootPath = app.Services.GetRequiredService<IWebHostEnvironm
 
 app.UseAuthentication();
 app.UseHttpsRedirection();
-app.UseMiddleware<ProjectManagementExceptionMiddlewares>();
+//app.UseMiddleware<ProjectManagementExceptionMiddlewares>();
 app.UseAuthorization();
 
 app.MapControllers();

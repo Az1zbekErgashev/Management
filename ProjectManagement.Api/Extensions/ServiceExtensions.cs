@@ -17,7 +17,9 @@ using ProjectManagement.Service.Service.Country;
 using ProjectManagement.Domain.Entities.Logs;
 using ProjectManagement.Service.Interfaces.Log;
 using ProjectManagement.Service.Service.Log;
-using ProjectManagement.Domain.Entities.Partners;
+using ProjectManagement.Domain.Entities.Requests;
+using ProjectManagement.Service.Interfaces.Request;
+using ProjectManagement.Service.Service.Request;
 
 namespace ProjectManagement.Api.Extensions
 {
@@ -26,12 +28,11 @@ namespace ProjectManagement.Api.Extensions
         public static void AddDependencies(this IServiceCollection services)
         {
             services.AddScoped<IGenericRepository<User>, GenericRepository<User>>();
-            services.AddScoped<IGenericRepository<TeamMember>, GenericRepository<TeamMember>>();
-            services.AddScoped<IGenericRepository<Team>, GenericRepository<Team>>();
             services.AddScoped<IGenericRepository<Attachment>, GenericRepository<Attachment>>();
             services.AddScoped<IGenericRepository<Country>, GenericRepository<Country>>();
             services.AddScoped<IGenericRepository<Logs>, GenericRepository<Logs>>();
-            services.AddScoped<IGenericRepository<Partners>, GenericRepository<Partners>>();
+            services.AddScoped<IGenericRepository<Request>, GenericRepository<Request>>();
+            services.AddScoped<IGenericRepository<RequestStatus>, GenericRepository<RequestStatus>>();
         }
 
         public static void AddCustomServices(this IServiceCollection services)
@@ -41,6 +42,7 @@ namespace ProjectManagement.Api.Extensions
             services.AddScoped<IAttachmentService, AttachmentService>();
             services.AddScoped<ICountryService, CountryService>();
             services.AddScoped<ILogService, LogService>();
+            services.AddScoped<IRequestStatusService, RequestStatusService>();
         }
         public static void AddSwaggerService(this IServiceCollection services)
         {

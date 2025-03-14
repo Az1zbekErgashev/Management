@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using ProjectManagement.Infrastructure.Contexts;
@@ -11,9 +12,11 @@ using ProjectManagement.Infrastructure.Contexts;
 namespace ProjectManagement.Api.Migrations
 {
     [DbContext(typeof(ProjectManagementDB))]
-    partial class ProjectManagementDBModelSnapshot : ModelSnapshot
+    [Migration("20250314091628_UPDATE_REQUEST_TABLE")]
+    partial class UPDATE_REQUEST_TABLE
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -30,7 +33,7 @@ namespace ProjectManagement.Api.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime?>("CreatedAt")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("IsDeleted")
@@ -59,7 +62,7 @@ namespace ProjectManagement.Api.Migrations
                     b.Property<int>("CompaniesId")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime?>("CreatedAt")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int?>("ImageId")
@@ -116,7 +119,7 @@ namespace ProjectManagement.Api.Migrations
                     b.Property<int>("CountryId")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime?>("CreatedAt")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
@@ -147,7 +150,7 @@ namespace ProjectManagement.Api.Migrations
                             CompanyCode = "WISESTONET",
                             CompanyName = "WISESTONE T",
                             CountryId = 1,
-                            CreatedAt = new DateTime(2025, 3, 13, 4, 29, 39, 768, DateTimeKind.Utc),
+                            CreatedAt = new DateTime(2025, 3, 14, 9, 16, 28, 72, DateTimeKind.Utc).AddTicks(2590),
                             IsDeleted = 0
                         },
                         new
@@ -156,7 +159,7 @@ namespace ProjectManagement.Api.Migrations
                             CompanyCode = "WISESTONEU",
                             CompanyName = "WISESTONE U",
                             CountryId = 67,
-                            CreatedAt = new DateTime(2025, 3, 13, 4, 29, 39, 768, DateTimeKind.Utc),
+                            CreatedAt = new DateTime(2025, 3, 14, 9, 16, 28, 72, DateTimeKind.Utc).AddTicks(2592),
                             IsDeleted = 0
                         },
                         new
@@ -165,7 +168,7 @@ namespace ProjectManagement.Api.Migrations
                             CompanyCode = "WISESTONE",
                             CompanyName = "WISESTONE",
                             CountryId = 45,
-                            CreatedAt = new DateTime(2025, 3, 13, 4, 29, 39, 768, DateTimeKind.Utc),
+                            CreatedAt = new DateTime(2025, 3, 14, 9, 16, 28, 72, DateTimeKind.Utc).AddTicks(2594),
                             IsDeleted = 0
                         });
                 });
@@ -178,7 +181,7 @@ namespace ProjectManagement.Api.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime?>("CreatedAt")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("IsDeleted")
@@ -2201,7 +2204,7 @@ namespace ProjectManagement.Api.Migrations
                     b.Property<int>("Action")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime?>("CreatedAt")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Ip")
@@ -2239,7 +2242,7 @@ namespace ProjectManagement.Api.Migrations
                     b.Property<int>("CountryId")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime?>("CreatedAt")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
@@ -2289,7 +2292,7 @@ namespace ProjectManagement.Api.Migrations
                     b.Property<int?>("CertificateId")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime?>("CreatedAt")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("IsDeleted")
@@ -2339,7 +2342,7 @@ namespace ProjectManagement.Api.Migrations
                     b.Property<string>("ContactNumber")
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("CreatedAt")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Department")
@@ -2393,7 +2396,7 @@ namespace ProjectManagement.Api.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime?>("CreatedAt")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("IsDeleted")
@@ -2418,7 +2421,7 @@ namespace ProjectManagement.Api.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime?>("CreatedAt")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
@@ -2473,7 +2476,7 @@ namespace ProjectManagement.Api.Migrations
                     b.Property<int>("AttachmentId")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime?>("CreatedAt")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("ImageId")
@@ -2505,7 +2508,7 @@ namespace ProjectManagement.Api.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime?>("CreatedAt")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
@@ -2547,7 +2550,7 @@ namespace ProjectManagement.Api.Migrations
                     b.Property<int>("AttachmentId")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime?>("CreatedAt")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("ImageId")
@@ -2585,7 +2588,7 @@ namespace ProjectManagement.Api.Migrations
                     b.Property<int?>("CompaniesId")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime?>("CreatedAt")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("IsDeleted")
@@ -2615,7 +2618,7 @@ namespace ProjectManagement.Api.Migrations
                     b.Property<int>("TeamId")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime?>("CreatedAt")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("Id")
@@ -2647,7 +2650,7 @@ namespace ProjectManagement.Api.Migrations
                     b.Property<int?>("CountryId")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime?>("CreatedAt")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("DateOfBirth")
@@ -2702,7 +2705,7 @@ namespace ProjectManagement.Api.Migrations
                         {
                             Id = 1,
                             CountryId = 1,
-                            CreatedAt = new DateTime(2025, 3, 14, 11, 45, 23, 40, DateTimeKind.Utc).AddTicks(8487),
+                            CreatedAt = new DateTime(2025, 3, 14, 9, 16, 28, 72, DateTimeKind.Utc).AddTicks(2703),
                             DateOfBirth = new DateTime(2023, 11, 23, 16, 13, 56, 461, DateTimeKind.Utc),
                             Email = "admin@gmail.com",
                             IndividualRole = 1,
