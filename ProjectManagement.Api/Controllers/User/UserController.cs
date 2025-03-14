@@ -34,18 +34,6 @@ namespace ProjectManagement.Api.Controllers.User
         public async ValueTask<IActionResult> GetAllUserAsync([FromQuery] UserForFilterDTO model) => ResponseHandler.ReturnIActionResponse(await userService.GetAsync(model));
 
 
-        [HttpGet("team-leaders")]
-        [Authorize]
-        public async ValueTask<IActionResult> GetAllUserAsync(int? companyId) => ResponseHandler.ReturnIActionResponse(await userService.GetTeamLeadrsName(companyId));
-
-
-
-        [HttpGet("all-companys")]
-        [Authorize]
-        public async ValueTask<IActionResult> GetAllCompanies(int? teamLeaderId) => ResponseHandler.ReturnIActionResponse(await userService.GetCompanyName(teamLeaderId));
-
-
-
         [HttpDelete("delete")]
         [Authorize]
         public async ValueTask<IActionResult> DeleteOrRecover([Required] int userId) => ResponseHandler.ReturnIActionResponse(await userService.DeleteUser(userId));

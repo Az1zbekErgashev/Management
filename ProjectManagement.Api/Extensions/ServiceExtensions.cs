@@ -17,6 +17,7 @@ using ProjectManagement.Service.Service.Country;
 using ProjectManagement.Domain.Entities.Logs;
 using ProjectManagement.Service.Interfaces.Log;
 using ProjectManagement.Service.Service.Log;
+using ProjectManagement.Domain.Entities.Partners;
 
 namespace ProjectManagement.Api.Extensions
 {
@@ -30,6 +31,7 @@ namespace ProjectManagement.Api.Extensions
             services.AddScoped<IGenericRepository<Attachment>, GenericRepository<Attachment>>();
             services.AddScoped<IGenericRepository<Country>, GenericRepository<Country>>();
             services.AddScoped<IGenericRepository<Logs>, GenericRepository<Logs>>();
+            services.AddScoped<IGenericRepository<Partners>, GenericRepository<Partners>>();
         }
 
         public static void AddCustomServices(this IServiceCollection services)

@@ -6,6 +6,7 @@ using ProjectManagement.Domain.Entities.Country;
 using ProjectManagement.Domain.Entities.Logs;
 using ProjectManagement.Domain.Entities.Partners;
 using ProjectManagement.Domain.Entities.Projects;
+using ProjectManagement.Domain.Entities.Requests;
 using ProjectManagement.Domain.Entities.Task;
 using ProjectManagement.Domain.Entities.Teams;
 using ProjectManagement.Domain.Entities.User;
@@ -18,19 +19,12 @@ namespace ProjectManagement.Infrastructure.Contexts
         }
 
         public DbSet<User> Users { get; set; }
-        public DbSet<TaskReport> TaskReports { get; set; }
-        public DbSet<Team> Teams { get; set; }
-        public DbSet<TeamMember> TeamMembers { get; set; }
-        public DbSet<Domain.Entities.Task.Task> Tasks { get; set; }
-        public DbSet<Project> Projects { get; set; }
-        public DbSet<Partners> Partners { get; set; }
         public DbSet<Logs> Logs { get; set; }
-        public DbSet<Companies> Companies { get; set; }
         public DbSet<Certificates> Certificates { get; set; }
         public DbSet<Attachment> Attachments { get; set; }
-        public DbSet<TaskReportPhotos> TaskReportPhotos { get; set; }
-        public DbSet<TaskPhotos> TaskPhotos { get; set; }
         public DbSet<Country> Countrys { get; set; }
+        public DbSet<Request> Requests { get; set; }
+        public DbSet<RequestStatus> RequestStatuses { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<TeamMember>()
@@ -73,12 +67,6 @@ namespace ProjectManagement.Infrastructure.Contexts
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<User>()
-                .HasOne(l => l.Companies)
-                .WithMany()
-                .HasForeignKey(l => l.CompanyId)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            modelBuilder.Entity<User>()
                .HasOne(u => u.Country)
                .WithMany()
                .HasForeignKey(u => u.CountryId);
@@ -109,7 +97,12 @@ namespace ProjectManagement.Infrastructure.Contexts
                 .HasForeignKey(tm => tm.TeamId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-             modelBuilder.Entity<Companies>().HasData(
+            modelBuilder.Entity<Request>()
+                .HasOne(tm => tm.RequestStatus)
+                .WithMany()
+                .HasForeignKey(tm => tm.RequestStatusId);
+
+            modelBuilder.Entity<Companies>().HasData(
                 new Companies { Id = 1, CompanyCode = "WISESTONET", CompanyName = "WISESTONE T", CountryId = 1, CreatedAt = DateTime.UtcNow },
                 new Companies { Id = 2, CompanyCode = "WISESTONEU", CompanyName = "WISESTONE U", CountryId = 67 , CreatedAt = DateTime.UtcNow },
                 new Companies { Id = 3, CompanyCode = "WISESTONE", CompanyName = "WISESTONE", CountryId = 45 , CreatedAt = DateTime.UtcNow }
@@ -124,9 +117,7 @@ namespace ProjectManagement.Infrastructure.Contexts
                 Password = "web123$",
                 PhoneNumber = "998881422030",
                 Surname = "System",
-                CompanyId = 1,
                 CreatedAt = DateTime.UtcNow,
-                TeamMember = null,
                 IndividualRole = Domain.Enum.Role.SuperAdmin,
                 CountryId = 1,
                 DateOfBirth = new DateTime(2023, 11, 23, 16, 13, 56, 461, DateTimeKind.Utc)

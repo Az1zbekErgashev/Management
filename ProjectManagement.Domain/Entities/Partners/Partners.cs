@@ -11,5 +11,5 @@ public class Partners : Auditable
     public int? ImageId { get; set; }
     public string? Site { get; set; }
     public string? EmployeesCount { get; set; }
-    public string Description { get; set; }
+    public string? Description { get; set; }
 };

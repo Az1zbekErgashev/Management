@@ -14,8 +14,6 @@ namespace ProjectManagement.Service.Interfaces.User
         ValueTask<PagedResult<UserModel>> GetAsync(UserForFilterDTO @dto);
         ValueTask<UserModel> GetByIdAsync(int userId);
         public string TokenGenerator(IEnumerable<Claim> claims);
-        ValueTask<List<TeamLeadersNameModel>> GetTeamLeadrsName(int? companyId);
-        ValueTask<List<CompanyNameModel>> GetCompanyName(int? teamLeaderId);
         ValueTask<string> DeleteUser(int userId);
         ValueTask<List<UserEmailsModel>> GetUserEmails();
     }

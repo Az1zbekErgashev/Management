@@ -159,5 +159,38 @@ namespace ProjectManagement.Service.Service.Attachment
 
             return true;
         }
+
+
+        public async ValueTask<bool> ResizeImage(Domain.Entities.Attachment.Attachment? attachment, int dimension)
+        {
+            if (attachment != null)
+            {
+                if (!string.IsNullOrEmpty(attachment.Path))
+                {
+                    var path = attachment.Path;
+
+                    var imagePath = Path.Combine(_env.WebRootPath, path);
+
+                    if (File.Exists(imagePath))
+                    {
+                        path = path.Insert(path.IndexOf(@"\") + 1, @$"{dimension}x{dimension}-");
+
+                        if (!File.Exists(path))
+                        {
+                            var format = DetermineImageFormatFromExtension(Path.GetExtension(imagePath));
+
+                            string fileName = $"{dimension}x{dimension}-{Path.GetFileName(imagePath)}";
+
+                            using (var image = new MagickImage(imagePath))
+                            {
+                                ResizeAndSave(image, dimension, format, fileName, Path.Combine(_env.WebRootPath, "images"), true);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return true;
+        }
     }
 }
