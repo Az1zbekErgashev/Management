@@ -11,7 +11,7 @@ namespace ProjectManagement.Domain.Models.Project
         public PartnerModel? Partner { get; set; }
         public CertificateModel? Certificates { get; set; }
         public List<TaskModel>? Tasks { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public DateTime? CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
 
         public virtual ProjectModel MapFromEntity(Domain.Entities.Projects.Project entity)

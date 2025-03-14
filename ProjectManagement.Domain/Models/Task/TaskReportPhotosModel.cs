@@ -12,7 +12,7 @@ namespace ProjectManagement.Domain.Models.Task
     {
         public int Id { get; set; }
         public AttachmentModel? Image { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public DateTime? CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
 
         public virtual TaskReportPhotosModel MapFromEntity(TaskReportPhotos entity)

@@ -3,7 +3,6 @@
 namespace ProjectManagement.Domain.Entities.Requests;
 public class Request : Auditable
 {
-    public string? Category { get; set; } // Категория
     public string? InquiryType { get; set; } // Тип запроса
     public string? CompanyName { get; set; } // Название компании
     public string? Department { get; set; } // Ответственный отдел

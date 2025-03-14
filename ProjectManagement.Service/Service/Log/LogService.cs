@@ -38,13 +38,13 @@ namespace ProjectManagement.Service.Service.Log
             if (dto.StartDate is not null)
             {
                 var startDate = dto.StartDate.Value.Date; 
-                query = query.Where(x => x.CreatedAt.Date >= startDate);
+                query = query.Where(x => x.CreatedAt != null && x.CreatedAt.Value.Date >= startDate);
             }
 
             if (dto.EndDate is not null)
             {
                 var endDate = dto.EndDate.Value.Date; 
-                query = query.Where(x => x.CreatedAt.Date <= endDate);
+                query = query.Where(x => x.CreatedAt != null && x.CreatedAt.Value.Date <= endDate);
             }
 
             if (!string.IsNullOrEmpty(dto.Text))

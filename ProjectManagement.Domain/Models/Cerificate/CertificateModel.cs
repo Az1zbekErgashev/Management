@@ -11,7 +11,7 @@ namespace ProjectManagement.Domain.Models.Cerificate
         public UserModel? User { get; set; }
         public CompanyModel? Companies { get; set; }
         public AttachmentModel? Image { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public DateTime? CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
 
 

@@ -10,7 +10,7 @@ namespace ProjectManagement.Domain.Models.Team
         public string Name { get; set; }
         public List<TeamMemberModel>? TeamMembers { get; set; }
         public List<TaskModel>? Task { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public DateTime? CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
 
 

@@ -11,7 +11,7 @@ namespace ProjectManagement.Domain.Models.Partner
         public string CompanyCode { get; set; }
         public CountryModel? Location { get; set; }
         public AttachmentModel? Image { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public DateTime? CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public string? Site { get; set; }
         public string? Description { get; set; }

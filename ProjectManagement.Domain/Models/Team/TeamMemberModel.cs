@@ -7,7 +7,7 @@ namespace ProjectManagement.Domain.Models.Team
     {
         public int Id { get; set; }
         public UserModel? User { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public DateTime? CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
 
         public virtual TeamMemberModel MapFromEntity(Domain.Entities.Teams.TeamMember entity)

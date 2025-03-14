@@ -11,7 +11,7 @@ namespace ProjectManagement.Domain.Models.Task
         public DateTime? TotalHourse { get; set; }
         public ProjectStatus Status { get; set; }
         public ICollection<TaskPhotosModel>? TaskPhotos { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public DateTime? CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
 
         public virtual TaskModel MapFromEntity(Entities.Task.Task entity)

@@ -11,7 +11,7 @@ namespace ProjectManagement.Domain.Models.Task
         public UserModel? User { get; set; }
         public TaskModel? Task { get; set; }
         public List<TaskReportPhotosModel>? TaskReportPhotos { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public DateTime? CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
 
         public virtual TaskReportModel MapFromEntity(TaskReport entity)

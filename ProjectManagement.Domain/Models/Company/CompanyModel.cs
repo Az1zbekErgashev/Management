@@ -11,7 +11,7 @@ namespace ProjectManagement.Domain.Models.Company
         public CountryModel? Location { get; set; }
         public string CompanyCode { get; set; }
         public List<TeamModel>? Teams { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public DateTime? CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public string Site { get; set; }
         public string Description { get; set; }
@@ -23,7 +23,7 @@ namespace ProjectManagement.Domain.Models.Company
             CompanyName = entity.CompanyName;
             CompanyCode = entity.CompanyCode;
             Location = entity.Country is not null ? new CountryModel().MapFromEntity(entity.Country) : null;
-            CreatedAt = entity.CreatedAt;
+            CreatedAt = entity?.CreatedAt;
             UpdatedAt = entity.UpdatedAt;
             Teams = entity.Teams is not null && entity.Teams.Any() ? entity.Teams.Select(x => new TeamModel().MapFromEntity(x)).ToList() : null;
             Site = entity.Site;

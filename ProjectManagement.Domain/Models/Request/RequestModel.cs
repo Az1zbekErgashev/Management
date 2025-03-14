@@ -5,9 +5,8 @@ namespace ProjectManagement.Domain.Models.Request
     public class RequestModel
     {
         public int Id { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public DateTime? CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
-        public string? Category { get; set; } // Категория
         public string? InquiryType { get; set; } // Тип запроса
         public string? CompanyName { get; set; } // Название компании
         public string? Department { get; set; } // Ответственный отдел
@@ -29,7 +28,6 @@ namespace ProjectManagement.Domain.Models.Request
                 Id = entity.Id,
                 CreatedAt = entity.CreatedAt,
                 UpdatedAt = entity.UpdatedAt,
-                Category = entity.Category,
                 InquiryType = entity.InquiryType,
                 CompanyName = entity.CompanyName,
                 Department = entity.Department,
