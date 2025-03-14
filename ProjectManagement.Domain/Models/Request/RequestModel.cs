@@ -21,6 +21,8 @@ namespace ProjectManagement.Domain.Models.Request
         public string? FinalResult { get; set; } // Итоговый результат
         public string? Notes { get; set; } // Примечания (причина итогового результата)
         public RequestStatusModel? RequestStatus { get; set; }
+        public int IsDeleted { get; set; }
+
         public virtual RequestModel MapFromEntity(Domain.Entities.Requests.Request entity)
         {
             return new RequestModel
@@ -42,6 +44,7 @@ namespace ProjectManagement.Domain.Models.Request
                 FinalResult = entity.FinalResult,
                 Notes = entity.Notes,
                 RequestStatus = entity?.RequestStatus != null ? new RequestStatusModel().MapFromEntity(entity.RequestStatus) : null,
+                IsDeleted = entity.IsDeleted
             };
         }
     }

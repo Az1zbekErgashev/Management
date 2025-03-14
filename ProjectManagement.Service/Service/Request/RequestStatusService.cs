@@ -248,15 +248,15 @@ namespace ProjectManagement.Service.Service.Request
                     FinalResult = item.FinalResult,
                     InquiryField = item.InquiryField,
                     InquiryType = item.InquiryType,
-                    ProcessingStatus = item.ProcessingStatus,
+                    ProcessingStatus = item.ResponseStatus,
                     Notes = item.Notes,
                     ProjectDetails = item.ProjectDetails,
                     ResponsiblePerson = item.ResponsiblePerson,
                     CreatedAt = item.CreatedAt is not null ?  DateTime.ParseExact(item.CreatedAt, "dd.MM.yyyy", CultureInfo.InvariantCulture).ToUniversalTime() : null,
-                    RequestStatusId = 2
+                    RequestStatusId = 1
                 };
 
-              //  await requestRepository.CreateAsync(request);
+                await requestRepository.CreateAsync(request);
             }
 
             await requestRepository.SaveChangesAsync();
@@ -290,6 +290,62 @@ namespace ProjectManagement.Service.Service.Request
 
             await requestRepository.SaveChangesAsync();
 
+            return true;
+        }
+
+
+        public async ValueTask<bool> UpdateRequest(int id, RequestForCreateDTO dto)
+        {
+            var existRequest = await requestRepository.GetAll(x => x.Id == id && x.IsDeleted == 0).Include(x => x.RequestStatus).FirstOrDefaultAsync();
+
+            if(existRequest is null) throw new ProjectManagementException(404, "request_not_found");
+
+            existRequest.Client = dto.Client;
+            existRequest.ClientCompany = dto.ClientCompany;
+            existRequest.CompanyName = dto.CompanyName;
+            existRequest.ContactNumber = dto.ContactNumber;
+            existRequest.Department = dto.Department;
+            existRequest.Email = dto.Email;
+            existRequest.FinalResult = dto.FinalResult;
+            existRequest.InquiryField = dto.InquiryField;
+            existRequest.InquiryType = dto.InquiryType;
+            existRequest.ProcessingStatus = dto.ProcessingStatus;
+            existRequest.Notes = dto.Notes;
+            existRequest.ProjectDetails = dto.ProjectDetails;
+            existRequest.ResponsiblePerson = dto.ResponsiblePerson;
+            existRequest.UpdatedAt = DateTime.UtcNow;
+            existRequest.RequestStatusId = dto.RequestStatusId;
+            existRequest.CreatedAt = dto.CreateAtForRequest is not null ? dto.CreateAtForRequest : existRequest.CreatedAt;
+
+            requestRepository.UpdateAsync(existRequest);
+            await requestRepository.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async ValueTask<bool> DeleteRequest(int id)
+        {
+            var existRequest = await requestRepository.GetAll(x => x.Id == id && x.IsDeleted == 0).Include(x => x.RequestStatus).FirstOrDefaultAsync();
+
+            if (existRequest is null) throw new ProjectManagementException(404, "request_not_found");
+
+            existRequest.IsDeleted = 1;
+
+            requestRepository.UpdateAsync(existRequest);
+            await requestRepository.SaveChangesAsync();
+            return true;
+        }
+
+        public async ValueTask<bool> RecoverRequest(int id)
+        {
+            var existRequest = await requestRepository.GetAll(x => x.Id == id && x.IsDeleted == 1).Include(x => x.RequestStatus).FirstOrDefaultAsync();
+
+            if (existRequest is null) throw new ProjectManagementException(404, "request_not_found");
+
+            existRequest.IsDeleted = 0;
+
+            requestRepository.UpdateAsync(existRequest);
+            await requestRepository.SaveChangesAsync();
             return true;
         }
 

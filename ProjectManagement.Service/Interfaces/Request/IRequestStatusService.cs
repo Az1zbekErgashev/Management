@@ -13,5 +13,8 @@ namespace ProjectManagement.Service.Interfaces.Request
         ValueTask<PagedResult<RequestModel>> GetRequeststAsync(RequestForFilterDTO dto);
         ValueTask<string> CreateRequestAsync(List<RequestForCreateDTO> dto);
         ValueTask<bool> CreateRequest(RequestForCreateDTO dto);
+        ValueTask<bool> DeleteRequest(int id);
+        ValueTask<bool> RecoverRequest(int id);
+        ValueTask<bool> UpdateRequest(int id, RequestForCreateDTO dto);
     }
 }
