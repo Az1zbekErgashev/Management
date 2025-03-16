@@ -1,4 +1,5 @@
-﻿using ProjectManagement.Domain.Enum;
+﻿using ProjectManagement.Domain.Configuration;
+using ProjectManagement.Domain.Enum;
 
 namespace ProjectManagement.Domain.Models.Request
 {
@@ -22,6 +23,7 @@ namespace ProjectManagement.Domain.Models.Request
         public string? Notes { get; set; } // Примечания (причина итогового результата)
         public RequestStatusModel? RequestStatus { get; set; }
         public int IsDeleted { get; set; }
+        public string? Date { get; set; }
 
         public virtual RequestModel MapFromEntity(Domain.Entities.Requests.Request entity)
         {
@@ -44,8 +46,10 @@ namespace ProjectManagement.Domain.Models.Request
                 FinalResult = entity.FinalResult,
                 Notes = entity.Notes,
                 RequestStatus = entity?.RequestStatus != null ? new RequestStatusModel().MapFromEntity(entity.RequestStatus) : null,
-                IsDeleted = entity.IsDeleted
+                IsDeleted = entity.IsDeleted,
+                Date = entity.Date
             };
+
         }
     }
 }

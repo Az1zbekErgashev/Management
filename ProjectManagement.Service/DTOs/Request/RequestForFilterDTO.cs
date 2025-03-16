@@ -6,20 +6,20 @@ namespace ProjectManagement.Service.DTOs.Request
     {
         public string? SortBy { get; set; }
         public string? Order { get; set; }
-        public string? Category { get; set; }
-        public string? InquiryType { get; set; }
-        public string? CompanyName { get; set; }
-        public string? Department { get; set; }
-        public string? ResponsiblePerson { get; set; }
-        public string? InquiryField { get; set; } 
-        public string? ClientCompany { get; set; }
-        public string? ProjectDetails { get; set; } 
-        public string? Client { get; set; } 
-        public string? ContactNumber { get; set; } 
-        public string? Email { get; set; } 
-        public string? ProcessingStatus { get; set; } 
-        public string? FinalResult { get; set; } 
-        public string? Notes { get; set; }
+        public List<string>? InquiryType { get; set; }
+        public List<string>? Department { get; set; }
+        public List<string>? ResponsiblePerson { get; set; }
+        public List<string>? InquiryField { get; set; } 
+        public List<string>? ClientCompany { get; set; }
+        public List<string>? ProjectDetails { get; set; } 
+        public List<string>? Client { get; set; } 
+        public List<string>? ContactNumber { get; set; } 
+        public List<string>? Email { get; set; } 
+        public List<string>? ProcessingStatus { get; set; } 
+        public List<string>? FinalResult { get; set; } 
+        public List<string>? Notes { get; set; }
+        public List<string>? Date { get; set; }
+        public List<string>? CompanyName { get; set; }
         public int? RequestStatusId { get; set; }
         public DateTime? CreatedAt { get; set; }
     }

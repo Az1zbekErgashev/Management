@@ -2342,6 +2342,9 @@ namespace ProjectManagement.Api.Migrations
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("Date")
+                        .HasColumnType("text");
+
                     b.Property<string>("Department")
                         .HasColumnType("text");
 
@@ -2702,7 +2705,7 @@ namespace ProjectManagement.Api.Migrations
                         {
                             Id = 1,
                             CountryId = 1,
-                            CreatedAt = new DateTime(2025, 3, 14, 11, 45, 23, 40, DateTimeKind.Utc).AddTicks(8487),
+                            CreatedAt = new DateTime(2025, 3, 13, 22, 11, 40, 260, DateTimeKind.Utc).AddTicks(3543),
                             DateOfBirth = new DateTime(2023, 11, 23, 16, 13, 56, 461, DateTimeKind.Utc),
                             Email = "admin@gmail.com",
                             IndividualRole = 1,

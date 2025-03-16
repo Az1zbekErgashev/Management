@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProjectManagement.Service.DTOs.Request;
 using ProjectManagement.Service.Extencions;
@@ -64,5 +65,9 @@ namespace ProjectManagement.Api.Controllers.Request
         [HttpPut("update-request")]
         [Authorize]
         public async ValueTask<IActionResult> UpdateRequest([Required] int id, RequestForCreateDTO dto) => ResponseHandler.ReturnIActionResponse(await requestStatusService.UpdateRequest(id, dto));
+
+
+        [HttpGet("filter-values")]
+        public async ValueTask<IActionResult> GetFilterValue() => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetFilterValue());
     }
 }

@@ -70,7 +70,8 @@ namespace ProjectManagement.Service.Service.User
                 CreatedAt = DateTime.UtcNow,
                 IndividualRole = dto.Role,
                 ImageId = attachment?.Id,
-                CountryId = dto.CountryId
+                CountryId = dto.CountryId,
+                DateOfBirth  = dto.DateOfBirth
             };
 
             var createUser = await _userRepository.CreateAsync(newUser);
@@ -283,6 +284,9 @@ namespace ProjectManagement.Service.Service.User
             existUser.Surname = dto.Surname;
             existUser.Name = dto.Name;
             existUser.ImageId = attachment?.Id;
+            existUser.DateOfBirth = dto.DateOfBirth;
+            existUser.UpdatedAt = DateTime.UtcNow;
+            existUser.IndividualRole = dto.Role;
 
             if(dto.Password is not null)
             {
@@ -302,5 +306,21 @@ namespace ProjectManagement.Service.Service.User
 
             return await ValueTask.FromResult(TokenGenerator(claims));
         } 
+
+
+        public async ValueTask<UserModel> GetProfile()
+        {
+            var context = _httpContextAccessor.HttpContext;
+
+            if (!int.TryParse(context.User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
+            {
+                throw new InvalidCredentialException();
+            }
+
+            var user = await _userRepository.GetAll(x => x.Id == userId).Include(x => x.Image).Include(x => x.Country).FirstOrDefaultAsync();
+
+            if (user is null) throw new ProjectManagementException(404, "user_not_found");
+            return new UserModel().MapFromEntity(user);
+        }
     }
 }

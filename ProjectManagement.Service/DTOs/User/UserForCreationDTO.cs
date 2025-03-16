@@ -10,10 +10,9 @@ namespace ProjectManagement.Service.DTOs.UserForCreationDTO
         public required string Password { get; set; }
         public required string Surname { get; set; }
         public required string PhoneNumber { get; set; }
-        public int? TeamLeaderId { get; set; }
-        public required int CompanyId { get; set; }
         public required Role Role { get; set; }
         public IFormFile? Image { get; set; }
         public int CountryId { get; set; }
+        public DateTime? DateOfBirth { get; set; }
     }
 }

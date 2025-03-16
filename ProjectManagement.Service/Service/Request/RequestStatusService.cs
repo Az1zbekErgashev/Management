@@ -10,11 +10,11 @@ using ProjectManagement.Service.Interfaces.Request;
 using System.Text;
 using Npgsql;
 using Microsoft.Extensions.Configuration;
-using Microsoft.AspNetCore.Http;
 using System.Globalization;
-using Microsoft.Extensions.Options;
 using System.Text.Json;
-namespace ProjectManagement.Service.Service.Request
+using ProjectManagement.Service.Extencions;
+using System.ComponentModel;
+namespace ProjectManagement.Service.Service.Requests
 {
     public class RequestStatusService : IRequestStatusService
     {
@@ -91,120 +91,76 @@ namespace ProjectManagement.Service.Service.Request
 
                 var parameters = new DynamicParameters();
 
-                if (!string.IsNullOrEmpty(dto.Category))
+                void AppendFilters(StringBuilder sql, StringBuilder countSql, DynamicParameters parameters, string columnName, List<string>? values, bool strict = false)
                 {
-                    sql.Append(" AND category ILIKE @Category");
-                    countSql.Append(" AND category ILIKE @Category");
-                    parameters.Add("@Category", $"%{dto.Category}%");
+                    if (values != null && values.Any())
+                    {
+                        var paramNames = new List<string>();
+                        for (int i = 0; i < values.Count; i++)
+                        {
+                            string paramName = $"@{columnName}{i}";
+                            paramNames.Add(paramName);
+                            parameters.Add(paramName, strict ? values[i] : $"%{values[i]}%");
+                        }
+
+                        string condition = string.Join(" OR ", paramNames.Select(p => strict
+                            ? $"\"{columnName}\" = {p}"
+                            : $"\"{columnName}\" ILIKE {p}"));
+
+                        sql.Append($" AND ({condition})");
+                        countSql.Append($" AND ({condition})");
+                    }
                 }
 
-                if (!string.IsNullOrEmpty(dto.InquiryType))
-                {
-                    sql.Append(" AND InquiryType ILIKE @InquiryType");
-                    countSql.Append(" AND InquiryType ILIKE @InquiryType");
-                    parameters.Add("@InquiryType", $"%{dto.InquiryType}%");
-                }
-
-                if (!string.IsNullOrEmpty(dto.InquiryField))
-                {
-                    sql.Append(" AND InquiryField ILIKE @InquiryField");
-                    countSql.Append(" AND InquiryField ILIKE @InquiryField");
-                    parameters.Add("@InquiryField", $"%{dto.InquiryField}%");
-                }
-
-                if (!string.IsNullOrEmpty(dto.CompanyName))
-                {
-                    sql.Append(" AND CompanyName ILIKE @CompanyName");
-                    countSql.Append(" AND CompanyName ILIKE @CompanyName");
-                    parameters.Add("@CompanyName", $"%{dto.CompanyName}%");
-                }
-
-                if (!string.IsNullOrEmpty(dto.Department))
-                {
-                    sql.Append(" AND Department ILIKE @Department");
-                    countSql.Append(" AND Department ILIKE @Department");
-                    parameters.Add("@Department", $"%{dto.Department}%");
-                }
-
-                if (!string.IsNullOrEmpty(dto.ResponsiblePerson))
-                {
-                    sql.Append(" AND ResponsiblePerson ILIKE @ResponsiblePerson");
-                    countSql.Append(" AND ResponsiblePerson ILIKE @ResponsiblePerson");
-                    parameters.Add("@ResponsiblePerson", $"%{dto.ResponsiblePerson}%");
-                }
-
-                if (!string.IsNullOrEmpty(dto.ClientCompany))
-                {
-                    sql.Append(" AND ClientCompany ILIKE @ClientCompany");
-                    countSql.Append(" AND ClientCompany ILIKE @ClientCompany");
-                    parameters.Add("@ClientCompany", $"%{dto.ClientCompany}%");
-                }
-
-                if (!string.IsNullOrEmpty(dto.Email))
-                {
-                    sql.Append(" AND Email ILIKE @Email");
-                    countSql.Append(" AND Email ILIKE @Email");
-                    parameters.Add("@Email", $"%{dto.Email}%");
-                }
-
-                if (!string.IsNullOrEmpty(dto.ProcessingStatus))
-                {
-                    sql.Append(" AND ProcessingStatus ILIKE @ProcessingStatus");
-                    countSql.Append(" AND ProcessingStatus ILIKE @ProcessingStatus");
-                    parameters.Add("@ProcessingStatus", $"%{dto.ProcessingStatus}%");
-                }
-
-                if (!string.IsNullOrEmpty(dto.FinalResult))
-                {
-                    sql.Append(" AND FinalResult ILIKE @FinalResult");
-                    countSql.Append(" AND FinalResult ILIKE @FinalResult");
-                    parameters.Add("@FinalResult", $"%{dto.FinalResult}%");
-                }
-
-                if (!string.IsNullOrEmpty(dto.Notes))
-                {
-                    sql.Append(" AND Notes ILIKE @Notes");
-                    countSql.Append(" AND Notes ILIKE @Notes");
-                    parameters.Add("@Notes", $"%{dto.Notes}%");
-                }
+                AppendFilters(sql, countSql, parameters, "InquiryType", dto.InquiryType);
+                AppendFilters(sql, countSql, parameters, "InquiryField", dto.InquiryField);
+                AppendFilters(sql, countSql, parameters, "CompanyName", dto.CompanyName);
+                AppendFilters(sql, countSql, parameters, "Department", dto.Department);
+                AppendFilters(sql, countSql, parameters, "ResponsiblePerson", dto.ResponsiblePerson);
+                AppendFilters(sql, countSql, parameters, "ClientCompany", dto.ClientCompany, strict: true);
+                AppendFilters(sql, countSql, parameters, "Email", dto.Email);
+                AppendFilters(sql, countSql, parameters, "ProcessingStatus", dto.ProcessingStatus);
+                AppendFilters(sql, countSql, parameters, "FinalResult", dto.FinalResult);
+                AppendFilters(sql, countSql, parameters, "Notes", dto.Notes);
+                AppendFilters(sql, countSql, parameters, "Date", dto.Date);
+                AppendFilters(sql, countSql, parameters, "ContactNumber", dto.ContactNumber);
+                AppendFilters(sql, countSql, parameters, "ProjectDetails", dto.ProjectDetails);
 
                 if (dto?.RequestStatusId != null)
                 {
-                    sql.Append(" AND RequestStatusId = @RequestStatusId");
-                    countSql.Append(" AND RequestStatusId = @RequestStatusId");
+                    sql.Append(" AND \"RequestStatusId\" = @RequestStatusId");
+                    countSql.Append(" AND \"RequestStatusId\" = @RequestStatusId");
                     parameters.Add("@RequestStatusId", dto.RequestStatusId);
                 }
 
                 if (dto?.CreatedAt != null)
                 {
-                    sql.Append(" AND CreatedAt >= @CreatedAt");
-                    countSql.Append(" AND CreatedAt >= @CreatedAt");
+                    sql.Append(" AND \"CreatedAt\" >= @CreatedAt");
+                    countSql.Append(" AND \"CreatedAt\" >= @CreatedAt");
                     parameters.Add("@CreatedAt", dto.CreatedAt);
-                }
-
-                if (!string.IsNullOrEmpty(dto.SortBy) && !string.IsNullOrEmpty(dto.Order))
-                {
-                    sql.Append($" ORDER BY {dto.SortBy} {(dto.Order.ToLower() == "ascend" ? "ASC" : "DESC")}");
                 }
 
                 int totalCount = await db.ExecuteScalarAsync<int>(countSql.ToString(), parameters);
 
                 if (totalCount == 0)
                 {
-                    return PagedResult<RequestModel>.Create(
-                        new List<RequestModel>(), 0, dto.PageSize, 0, dto.PageIndex, 0);
+                    return PagedResult<RequestModel>.Create(new List<RequestModel>(), 0, dto.PageSize, 0, dto.PageIndex, 0);
+                }
+
+                if (!string.IsNullOrEmpty(dto.SortBy) && !string.IsNullOrEmpty(dto.Order))
+                {
+                    sql.Append($" ORDER BY \"{dto.SortBy}\" {(dto.Order.ToLower() == "ascend" ? "ASC" : "DESC")}");
                 }
 
                 int skip = (dto.PageIndex - 1) * dto.PageSize;
-                int take = dto.PageSize;
                 sql.Append(" LIMIT @PageSize OFFSET @Offset");
-                parameters.Add("@PageSize", take);
+                parameters.Add("@PageSize", dto.PageSize);
                 parameters.Add("@Offset", skip);
 
                 var list = await db.QueryAsync<RequestModel>(sql.ToString(), parameters);
-                int totalPages = (int)Math.Ceiling((double)totalCount / take);
+                int totalPages = (int)Math.Ceiling((double)totalCount / dto.PageSize);
 
-                return PagedResult<RequestModel>.Create(list.ToList(), totalCount, take, list.Count(), dto.PageIndex, totalPages);
+                return PagedResult<RequestModel>.Create(list.ToList(), totalCount, dto.PageSize, list.Count(), dto.PageIndex, totalPages);
             }
         }
 
@@ -224,7 +180,7 @@ namespace ProjectManagement.Service.Service.Request
 
             var options = new JsonSerializerOptions
             {
-                PropertyNameCaseInsensitive = true
+                PropertyNameCaseInsensitive = true,
             };
 
             List<RequestForCreateDTO>? requests = JsonSerializer.Deserialize<List<RequestForCreateDTO>>(jsonContent, options);
@@ -250,10 +206,11 @@ namespace ProjectManagement.Service.Service.Request
                     InquiryType = item.InquiryType,
                     ProcessingStatus = item.ResponseStatus,
                     Notes = item.Notes,
-                    ProjectDetails = item.ProjectDetails,
+                    ProjectDetails = item.ProjectDescription,
                     ResponsiblePerson = item.ResponsiblePerson,
-                    CreatedAt = item.CreatedAt is not null ?  DateTime.ParseExact(item.CreatedAt, "dd.MM.yyyy", CultureInfo.InvariantCulture).ToUniversalTime() : null,
-                    RequestStatusId = 1
+                    CreatedAt = DateTime.UtcNow,
+                    Date = item.CreatedAt,
+                    RequestStatusId = 4
                 };
 
                 await requestRepository.CreateAsync(request);
@@ -313,8 +270,10 @@ namespace ProjectManagement.Service.Service.Request
             existRequest.Notes = dto.Notes;
             existRequest.ProjectDetails = dto.ProjectDetails;
             existRequest.ResponsiblePerson = dto.ResponsiblePerson;
-            existRequest.UpdatedAt = DateTime.UtcNow;
+            existRequest.Date = dto.CreatedAt;
+
             existRequest.RequestStatusId = dto.RequestStatusId;
+            existRequest.UpdatedAt = DateTime.UtcNow;
             existRequest.CreatedAt = dto.CreateAtForRequest is not null ? dto.CreateAtForRequest : existRequest.CreatedAt;
 
             requestRepository.UpdateAsync(existRequest);
@@ -347,6 +306,49 @@ namespace ProjectManagement.Service.Service.Request
             requestRepository.UpdateAsync(existRequest);
             await requestRepository.SaveChangesAsync();
             return true;
+        }
+
+        public async ValueTask<List<RequestFilterModel>> GetFilterValue()
+        {
+            var existRequest = await requestRepository.GetAll(x => x.IsDeleted == 0).ToListAsync();
+            var emptyValue = "Unknown"; 
+
+            var groupedFilters = new List<RequestFilterModel>();
+
+            var fields = new Dictionary<string, Func<Domain.Entities.Requests.Request, string>>
+            {
+                { "Client", x => x.Client },
+                { "ClientCompany", x => x.ClientCompany },
+                { "CompanyName", x => x.CompanyName },
+                { "ContactNumber", x => x.ContactNumber },
+                { "Notes", x => x.Notes },
+                { "ProjectDetails", x => x.ProjectDetails },
+                { "Date", x => x.Date },
+                { "Department", x => x.Department },
+                { "Email", x => x.Email },
+                { "InquiryField", x => x.InquiryField },
+                { "InquiryType", x => x.InquiryType },
+                { "FinalResult", x => x.FinalResult },
+                { "ProcessingStatus", x => x.ProcessingStatus },
+                { "ResponsiblePerson", x => x.ResponsiblePerson },
+            };
+
+            foreach (var field in fields)
+            {
+                var uniqueValues = existRequest
+                    .Select(x => field.Value(x) ?? emptyValue)
+                    .Distinct()
+                    .Select(value => new RequestFilterModel
+                    {
+                        Text = value, 
+                        Value = field.Key
+                    })
+                    .ToList();
+
+                groupedFilters.AddRange(uniqueValues);
+            }
+
+            return groupedFilters;
         }
 
     }

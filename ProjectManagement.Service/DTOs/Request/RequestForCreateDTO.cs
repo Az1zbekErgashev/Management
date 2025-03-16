@@ -1,8 +1,10 @@
-﻿namespace ProjectManagement.Service.DTOs.Request
+﻿using ProjectManagement.Service.Extencions;
+using System.Text.Json.Serialization;
+
+namespace ProjectManagement.Service.DTOs.Request
 {
     public class RequestForCreateDTO
     {
-        public int? 구분 { get; set; }
         public string? InquiryType { get; set; } // Тип запроса
         public string? CompanyName { get; set; } // Название компании
         public string? Department { get; set; } // Ответственный отдел
@@ -20,5 +22,6 @@
         public int RequestStatusId { get; set; }
         public string? CreatedAt { get; set; }
         public DateTime? CreateAtForRequest { get; set; }
+        public string? ProjectDescription { get; set; }
     }
 }

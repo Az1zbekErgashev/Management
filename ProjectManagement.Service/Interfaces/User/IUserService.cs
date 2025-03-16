@@ -16,5 +16,6 @@ namespace ProjectManagement.Service.Interfaces.User
         public string TokenGenerator(IEnumerable<Claim> claims);
         ValueTask<string> DeleteUser(int userId);
         ValueTask<List<UserEmailsModel>> GetUserEmails();
+        ValueTask<UserModel> GetProfile();
     }
 }

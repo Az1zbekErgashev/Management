@@ -16,5 +16,6 @@ namespace ProjectManagement.Service.Interfaces.Request
         ValueTask<bool> DeleteRequest(int id);
         ValueTask<bool> RecoverRequest(int id);
         ValueTask<bool> UpdateRequest(int id, RequestForCreateDTO dto);
+        ValueTask<List<RequestFilterModel>> GetFilterValue();
     }
 }

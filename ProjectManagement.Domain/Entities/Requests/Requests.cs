@@ -18,4 +18,5 @@ public class Request : Auditable
     public string? Notes { get; set; } // Примечания (причина итогового результата)
     public RequestStatus RequestStatus { get; set; }
     public int RequestStatusId { get; set; }
+    public string? Date { get; set; }
 }

@@ -18,5 +18,6 @@ namespace ProjectManagement.Service.DTOs.User
         public IFormFile? Image { get; set; }
         public bool UpdateImage { get; set; }
         public int CountryId { get; set; }
+        public DateTime? DateOfBirth { get; set; }
     }
 }

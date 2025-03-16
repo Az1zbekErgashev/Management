@@ -65,7 +65,7 @@ app.Services.GetRequiredService<IWebHostEnvironment>();
 app.UseCors(options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 
 EnvironmentHelper.WebRootPath = app.Services.GetRequiredService<IWebHostEnvironment>()?.WebRootPath;
-
+app.UseStaticFiles();
 app.UseAuthentication();
 app.UseHttpsRedirection();
 //app.UseMiddleware<ProjectManagementExceptionMiddlewares>();

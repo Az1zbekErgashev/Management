@@ -19,7 +19,7 @@ using ProjectManagement.Service.Interfaces.Log;
 using ProjectManagement.Service.Service.Log;
 using ProjectManagement.Domain.Entities.Requests;
 using ProjectManagement.Service.Interfaces.Request;
-using ProjectManagement.Service.Service.Request;
+using ProjectManagement.Service.Service.Requests;
 
 namespace ProjectManagement.Api.Extensions
 {

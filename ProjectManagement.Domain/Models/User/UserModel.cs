@@ -17,6 +17,8 @@ namespace ProjectManagement.Domain.Models.User
         public int IsDeleted { get; set; }
         public CountryModel? Country { get; set; }
         public AttachmentModel? Image { get; set; }
+        public DateTime? DateOfBirth { get; set; }
+        public Role? RoleId { get; set; }
 
         public virtual UserModel MapFromEntity(Domain.Entities.User.User entity)
         {
@@ -28,9 +30,11 @@ namespace ProjectManagement.Domain.Models.User
             CreatedAt = entity.CreatedAt;
             UpdatedAt = entity.UpdatedAt;
             Role = GetUserRole(entity?.IndividualRole);
+            RoleId = entity?.IndividualRole;
             IsDeleted = entity.IsDeleted;
             Country = entity.Country is not null ? new CountryModel().MapFromEntity(entity.Country) : null;
             Image = entity.Image is not null ? new AttachmentModel().MapFromEntity(entity.Image) : null;
+            DateOfBirth = entity.DateOfBirth;
             return this;
         }
 
@@ -41,7 +45,7 @@ namespace ProjectManagement.Domain.Models.User
                 case Enum.Role.Employees:
                     return "employees";
                 case Enum.Role.SuperAdmin:
-                    return "super_admin";
+                    return "admin";
                 default:
                     return "employees";
             }
