@@ -4,6 +4,7 @@ using ProjectManagement.Domain.Entities.Certificates;
 using ProjectManagement.Domain.Entities.Companies;
 using ProjectManagement.Domain.Entities.Country;
 using ProjectManagement.Domain.Entities.Logs;
+using ProjectManagement.Domain.Entities.MultilingualText;
 using ProjectManagement.Domain.Entities.Partners;
 using ProjectManagement.Domain.Entities.Projects;
 using ProjectManagement.Domain.Entities.Requests;
@@ -25,6 +26,7 @@ namespace ProjectManagement.Infrastructure.Contexts
         public DbSet<Country> Countrys { get; set; }
         public DbSet<Request> Requests { get; set; }
         public DbSet<RequestStatus> RequestStatuses { get; set; }
+        public DbSet<MultilingualText> MultilingualText { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<TeamMember>()

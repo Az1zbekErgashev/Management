@@ -20,6 +20,11 @@ using ProjectManagement.Service.Service.Log;
 using ProjectManagement.Domain.Entities.Requests;
 using ProjectManagement.Service.Interfaces.Request;
 using ProjectManagement.Service.Service.Requests;
+using ProjectManagement.Domain.Entities.MultilingualText;
+using ProjectManagement.Service.Interfaces.MultilingualText;
+using ProjectManagement.Service.Service.MultilingualText;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace ProjectManagement.Api.Extensions
 {
@@ -33,6 +38,7 @@ namespace ProjectManagement.Api.Extensions
             services.AddScoped<IGenericRepository<Logs>, GenericRepository<Logs>>();
             services.AddScoped<IGenericRepository<Request>, GenericRepository<Request>>();
             services.AddScoped<IGenericRepository<RequestStatus>, GenericRepository<RequestStatus>>();
+            services.AddScoped<IGenericRepository<MultilingualText>, GenericRepository<MultilingualText>>();
         }
 
         public static void AddCustomServices(this IServiceCollection services)
@@ -43,6 +49,7 @@ namespace ProjectManagement.Api.Extensions
             services.AddScoped<ICountryService, CountryService>();
             services.AddScoped<ILogService, LogService>();
             services.AddScoped<IRequestStatusService, RequestStatusService>();
+            services.AddScoped<IMultilingualTextInterface, MultilingualTextService>();
         }
         public static void AddSwaggerService(this IServiceCollection services)
         {
@@ -81,8 +88,20 @@ namespace ProjectManagement.Api.Extensions
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             })
-            .AddCookie()
-            .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("BasicAuthentication", null);
+                 .AddCookie()
+                 .AddJwtBearer(options =>
+                 {
+                     options.TokenValidationParameters = new TokenValidationParameters
+                     {
+                         ValidateIssuer = true,
+                         ValidateAudience = false,
+                         ValidateLifetime = true,
+                         ValidateIssuerSigningKey = true,
+                         ValidIssuer = configuration["JWT:ValidIssuer"],
+                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Key"]))
+                     };
+                 })
+                 .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("BasicAuthentication", null);
         }
     }
 }

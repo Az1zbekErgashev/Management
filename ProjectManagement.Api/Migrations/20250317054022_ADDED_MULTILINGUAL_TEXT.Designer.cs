@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using ProjectManagement.Infrastructure.Contexts;
@@ -11,9 +12,11 @@ using ProjectManagement.Infrastructure.Contexts;
 namespace ProjectManagement.Api.Migrations
 {
     [DbContext(typeof(ProjectManagementDB))]
-    partial class ProjectManagementDBModelSnapshot : ModelSnapshot
+    [Migration("20250317054022_ADDED_MULTILINGUAL_TEXT")]
+    partial class ADDED_MULTILINGUAL_TEXT
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2224,40 +2227,6 @@ namespace ProjectManagement.Api.Migrations
                     b.ToTable("Logs");
                 });
 
-            modelBuilder.Entity("ProjectManagement.Domain.Entities.MultilingualText.MultilingualText", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime?>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("IsDeleted")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Key")
-                        .HasColumnType("text");
-
-                    b.Property<int>("SupportLanguage")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("TextEn")
-                        .HasColumnType("text");
-
-                    b.Property<string>("TextKo")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("MultilingualText");
-                });
-
             modelBuilder.Entity("ProjectManagement.Domain.Entities.Partners.Partners", b =>
                 {
                     b.Property<int>("Id")
@@ -2739,7 +2708,7 @@ namespace ProjectManagement.Api.Migrations
                         {
                             Id = 1,
                             CountryId = 1,
-                            CreatedAt = new DateTime(2025, 3, 17, 5, 43, 27, 947, DateTimeKind.Utc).AddTicks(6067),
+                            CreatedAt = new DateTime(2025, 3, 17, 5, 40, 21, 310, DateTimeKind.Utc).AddTicks(6028),
                             DateOfBirth = new DateTime(2023, 11, 23, 16, 13, 56, 461, DateTimeKind.Utc),
                             Email = "admin@gmail.com",
                             IndividualRole = 1,
