@@ -100,8 +100,8 @@ namespace ProjectManagement.Api.Extensions
                          ValidateAudience = false,
                          ValidateLifetime = true,
                          ValidateIssuerSigningKey = true,
-                         ValidIssuer = configuration["JWT:ValidIssuer"],
-                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Key"]))
+                         ValidIssuer = "project-management",
+                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("3249f3f0-8b1e-4ebb-a8ee-1e40b0e90034dasfdq-asd23da"))
                      };
                  })
                  .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("BasicAuthentication", null);
