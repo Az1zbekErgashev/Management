@@ -12,6 +12,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using static ProjectManagement.Service.Service.Attachment.AttachmentService;
 using Serilog;
+using Microsoft.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
@@ -50,6 +51,13 @@ builder.Services.AddDbContext<ProjectManagementDB>(options =>
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 builder.Services.AddAuthorization();
 
+if (string.IsNullOrEmpty(configuration["JWT:Key"]))
+{
+    var loggr = LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger("Startup");
+    loggr.LogError("JWT Key is missing in the configuration.");
+    loggr.LogError(configuration["JWT"]);
+    throw new InvalidOperationException("JWT Key is missing.");
+}
 builder.Services.AddSignalR();
 
 var logger = new LoggerConfiguration()
