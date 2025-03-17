@@ -6,3 +6,4 @@
 **/wwwroot
 **/appsettings.json
 **/*.asc
+logs/*
