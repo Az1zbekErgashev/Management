@@ -25,6 +25,7 @@ using ProjectManagement.Service.Interfaces.MultilingualText;
 using ProjectManagement.Service.Service.MultilingualText;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using ProjectManagement.Service.Exception;
 
 namespace ProjectManagement.Api.Extensions
 {
@@ -82,6 +83,42 @@ namespace ProjectManagement.Api.Extensions
         }      
         public static void ConfigureJwt(this IServiceCollection services, IConfiguration configuration)
         {
+
+            Console.WriteLine(configuration["JWT:Key"]);
+            Console.WriteLine(configuration["JWT"]);
+            Console.WriteLine(configuration["JWT"]);
+            Console.WriteLine(configuration["JWT"]);
+            Console.WriteLine(configuration["JWT"]);
+            Console.WriteLine(configuration["JWT"]);
+            Console.WriteLine(configuration["JWT"]);
+            Console.WriteLine(configuration["JWT"]);
+            Console.WriteLine(configuration["JWT"]);
+            Console.WriteLine(configuration["JWT"]);
+            Console.WriteLine(configuration["JWT"]);
+            Console.WriteLine(configuration["JWT"]);
+            Console.WriteLine(configuration["JWT"]);
+            Console.WriteLine(configuration["JWT"]);
+            Console.WriteLine(configuration["JWT"]);
+            Console.WriteLine(configuration["JWT"]);
+            Console.WriteLine(configuration["JWT"]);
+            Console.WriteLine(configuration["JWT"]);
+            Console.WriteLine(configuration["JWT"]);
+            Console.WriteLine(configuration["JWT"]);
+            Console.WriteLine(configuration["JWT"]);
+            Console.WriteLine(configuration["JWT"]);
+            Console.WriteLine(configuration["JWT"]);
+            Console.WriteLine(configuration["JWT"]);
+            Console.WriteLine(configuration["JWT"]);
+            Console.WriteLine(configuration["JWT"]);
+            Console.WriteLine(configuration["JWT"]);
+            Console.WriteLine(configuration["JWT"]);
+            Console.WriteLine(configuration["JWT"]);
+            Console.WriteLine(configuration["JWT"]);
+            Console.WriteLine(configuration["JWT"]);
+            Console.WriteLine(configuration["JWT"]);
+
+     
+
             services.AddAuthentication(options =>
             {
                 options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
