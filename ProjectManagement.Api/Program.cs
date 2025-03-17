@@ -33,7 +33,13 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddAuthorization();
 builder.Services.ConfigureJwt(builder.Configuration);
 builder.Services.AddSwaggerService();
+
 var jwtKey = builder.Configuration.GetValue<string>("JWT:Key");
+
+if (string.IsNullOrEmpty(jwtKey))
+{
+    throw new ArgumentNullException(nameof(jwtKey), "JWT ¬Ü¬Ý¬ð¬é ¬à¬ä¬ã¬å¬ä¬ã¬ä¬Ó¬å¬Ö¬ä ¬Ó ¬Ü¬à¬ß¬æ¬Ú¬Ô¬å¬â¬Ñ¬è¬Ú¬Ú.");
+}
 
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer(options =>
