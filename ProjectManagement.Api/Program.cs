@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using ProjectManagement.Api.Extensions;
-using ProjectManagement.Api.Middlewres;
 using ProjectManagement.Infrastructure.Contexts;
 using ProjectManagement.Service.Extencions;
 using ProjectManagement.Service.Interfaces.IRepositories;
@@ -34,11 +33,11 @@ builder.Services.AddAuthorization();
 builder.Services.ConfigureJwt(builder.Configuration);
 builder.Services.AddSwaggerService();
 
-var jwtKey = builder.Configuration.GetValue<string>("JWT:Key");
+var jwtKey = Environment.GetEnvironmentVariable("JWT_KEY") ?? builder.Configuration["JWT:Key"];
 
 if (string.IsNullOrEmpty(jwtKey))
 {
-    throw new ArgumentNullException(nameof(jwtKey), "JWT ¬Ü¬Ý¬ð¬é ¬à¬ä¬ã¬å¬ä¬ã¬ä¬Ó¬å¬Ö¬ä ¬Ó ¬Ü¬à¬ß¬æ¬Ú¬Ô¬å¬â¬Ñ¬è¬Ú¬Ú.");
+    throw new ArgumentNullException(nameof(jwtKey), "jwt null");
 }
 
 builder.Services.AddAuthentication("Bearer")
