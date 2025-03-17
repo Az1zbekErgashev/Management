@@ -1,6 +1,26 @@
 ﻿version: '3.4'
 services:
 
+  traefik:
+    image: traefik:v2.10
+    restart: always
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:8080"
+      - "--entrypoints.websecure.address=:8080"
+      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+      - "--certificatesresolvers.myresolver.acme.email=your-email@example.com"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "8080:8080"
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "letsencrypt:/letsencrypt"
+    networks:
+      - all_network
+
   postgres:
     image: postgres:latest
     restart: always
@@ -17,7 +37,7 @@ services:
 
   backend:
     depends_on:
-      - postgres  # Ждем, пока запустится PostgreSQL
+      - postgres  
     image: backend
     build:
       context: .
@@ -33,9 +53,21 @@ services:
       - /home/wisestone/projects/app/wwwroot:/app/wwwroot
       - /home/wisestone/projects/app/logs:/app/Logs
     restart: always
+    labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.backend.rule=(Host(`crm-api.wisestone-u.com`) && ( PathPrefix(`/swagger`) || PathPrefix(`/images`)  || PathPrefix(`/media_folders`) ||  PathPrefix(`/api`) ) )"
+        - "traefik.http.middlewares.cors.headers.accesscontrolallowmethods=GET,OPTIONS,PUT,POST,DELETE"
+        - "traefik.http.middlewares.cors.headers.accesscontrolallowheaders=*"
+        - "traefik.http.middlewares.cors.headers.accesscontrolalloworiginlist=*"
+        - "traefik.http.middlewares.cors.headers.accesscontrolmaxage=100"
+        - "traefik.http.middlewares.cors.headers.addvaryheader=true"
+        - "traefik.http.routers.backend.middlewares=cors"
+        - "traefik.http.routers.backend.entrypoints=websecure"
+        - "traefik.http.routers.backend.tls=true"
 
 volumes:
   postgres-data:
+  letsencrypt:
 
 networks:
   all_network:
