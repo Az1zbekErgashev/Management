@@ -84,40 +84,6 @@ namespace ProjectManagement.Api.Extensions
         public static void ConfigureJwt(this IServiceCollection services, IConfiguration configuration)
         {
 
-            Console.WriteLine(configuration["JWT:Key"]);
-            Console.WriteLine(configuration["JWT"]);
-            Console.WriteLine(configuration["JWT"]);
-            Console.WriteLine(configuration["JWT"]);
-            Console.WriteLine(configuration["JWT"]);
-            Console.WriteLine(configuration["JWT"]);
-            Console.WriteLine(configuration["JWT"]);
-            Console.WriteLine(configuration["JWT"]);
-            Console.WriteLine(configuration["JWT"]);
-            Console.WriteLine(configuration["JWT"]);
-            Console.WriteLine(configuration["JWT"]);
-            Console.WriteLine(configuration["JWT"]);
-            Console.WriteLine(configuration["JWT"]);
-            Console.WriteLine(configuration["JWT"]);
-            Console.WriteLine(configuration["JWT"]);
-            Console.WriteLine(configuration["JWT"]);
-            Console.WriteLine(configuration["JWT"]);
-            Console.WriteLine(configuration["JWT"]);
-            Console.WriteLine(configuration["JWT"]);
-            Console.WriteLine(configuration["JWT"]);
-            Console.WriteLine(configuration["JWT"]);
-            Console.WriteLine(configuration["JWT"]);
-            Console.WriteLine(configuration["JWT"]);
-            Console.WriteLine(configuration["JWT"]);
-            Console.WriteLine(configuration["JWT"]);
-            Console.WriteLine(configuration["JWT"]);
-            Console.WriteLine(configuration["JWT"]);
-            Console.WriteLine(configuration["JWT"]);
-            Console.WriteLine(configuration["JWT"]);
-            Console.WriteLine(configuration["JWT"]);
-            Console.WriteLine(configuration["JWT"]);
-            Console.WriteLine(configuration["JWT"]);
-
-     
 
             services.AddAuthentication(options =>
             {
