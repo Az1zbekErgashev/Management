@@ -26,4 +26,4 @@ WORKDIR /app
 COPY --from=publish /app/publish .
 
 # Автоматический запуск миграций перед стартом API
-CMD ["sh", "-c", "dotnet ef database update --project ../ProjectManagement.Infrastructure/ProjectManagement.Infrastructure.csproj && dotnet ProjectManagement.Api.dll"]
+CMD ["sh", "-c", "dotnet ef database update --project ProjectManagement.Api.csproj && dotnet ProjectManagement.Api.dll"]
