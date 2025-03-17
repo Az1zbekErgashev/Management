@@ -1,10 +1,7 @@
-﻿FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
-WORKDIR /app
-
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+﻿FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Копируем файлы проектов
+# Копируем проекты
 COPY ["ProjectManagement.Api/ProjectManagement.Api.csproj", "ProjectManagement.Api/"]
 COPY ["ProjectManagement.Infrastructure/ProjectManagement.Infrastructure.csproj", "ProjectManagement.Infrastructure/"]
 COPY ["ProjectManagement.Domain/ProjectManagement.Domain.csproj", "ProjectManagement.Domain/"]
@@ -15,15 +12,17 @@ RUN dotnet restore "ProjectManagement.Api/ProjectManagement.Api.csproj"
 COPY . .
 WORKDIR "/src/ProjectManagement.Api"
 
-# Компиляция
-RUN dotnet build "ProjectManagement.Api.csproj" -c Release -o /app/build
+# Строим приложение
+RUN dotnet build -c Release -o /app/build
+RUN dotnet publish -c Release -o /app/publish
 
-FROM build AS publish
-RUN dotnet publish "ProjectManagement.Api.csproj" -c Release -o /app/publish /p:UseAppHost=false
+# Применяем миграции (если база данных доступна)
+RUN dotnet ef database update --project ProjectManagement.Api.csproj || echo "Database update skipped"
 
-FROM base AS final
+# Переход на runtime
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
-COPY --from=publish /app/publish .
+COPY --from=build /app/publish .
 
-# Автоматический запуск миграций перед стартом API
-CMD ["sh", "-c", "dotnet ef database update --project ProjectManagement.Api.csproj && dotnet ProjectManagement.Api.dll"]
+# Запуск API
+CMD ["dotnet", "ProjectManagement.Api.dll"]
