@@ -33,12 +33,7 @@ builder.Services.AddAuthorization();
 builder.Services.ConfigureJwt(builder.Configuration);
 builder.Services.AddSwaggerService();
 
-var jwtKey = Environment.GetEnvironmentVariable("JWT_KEY") ?? builder.Configuration["JWT:Key"];
-
-if (string.IsNullOrEmpty(jwtKey))
-{
-    throw new ArgumentNullException(nameof(jwtKey), "jwt null");
-}
+var jwtKey = builder.Configuration["JWT:Key"];
 
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer(options =>
@@ -56,7 +51,7 @@ builder.Services.AddAuthentication("Bearer")
     });
 
 builder.Services.AddAuthorization();
-
+builder.Services.ConfigureJwt(builder.Configuration);
 builder.Services.AddCustomServices();
 
 var app = builder.Build();
