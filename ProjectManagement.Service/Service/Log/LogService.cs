@@ -25,25 +25,25 @@ namespace ProjectManagement.Service.Service.Log
 
             query = query.OrderByDescending(x => x.Id);
 
-            if(dto.Action is not null)
+            if (dto.Action is not null)
             {
                 query = query.Where(x => x.Action == dto.Action);
             }
 
-            if(dto.UserId is not null)
+            if (dto.UserId is not null)
             {
                 query = query.Where(x => x.UserId == dto.UserId);
             }
 
             if (dto.StartDate is not null)
             {
-                var startDate = dto.StartDate.Value.Date; 
+                var startDate = dto.StartDate.Value.Date;
                 query = query.Where(x => x.CreatedAt != null && x.CreatedAt.Value.Date >= startDate);
             }
 
             if (dto.EndDate is not null)
             {
-                var endDate = dto.EndDate.Value.Date; 
+                var endDate = dto.EndDate.Value.Date;
                 query = query.Where(x => x.CreatedAt != null && x.CreatedAt.Value.Date <= endDate);
             }
 

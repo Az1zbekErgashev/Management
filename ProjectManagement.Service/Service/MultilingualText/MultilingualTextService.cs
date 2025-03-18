@@ -1,15 +1,18 @@
 ﻿using Dapper;
 using Microsoft.AspNetCore.Http;
+using ProjectManagement.Service.StringExtensions;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
-using ProjectManagement.Domain.Entities.Teams;
 using ProjectManagement.Domain.Enum;
+using ProjectManagement.Domain.Models.MultilingualText;
 using ProjectManagement.Service.DTOs.MultilingualText;
+using ProjectManagement.Service.Exception;
 using ProjectManagement.Service.Interfaces.IRepositories;
 using ProjectManagement.Service.Interfaces.MultilingualText;
+using System.Linq.Expressions;
 using System.Text.Json;
+using ProjectManagement.Domain.Models.PagedResult;
 
 
 namespace ProjectManagement.Service.Service.MultilingualText
@@ -126,6 +129,7 @@ namespace ProjectManagement.Service.Service.MultilingualText
         {
             var existText = await multilingualRepository.GetAsync(x => x.Key.ToLower() == dto.Key.ToLower());
 
+            if (existText is not null) throw new ProjectManagementException(400, "key_already_exist");
 
             var newTextKo = new Domain.Entities.MultilingualText.MultilingualText
             {
@@ -155,16 +159,19 @@ namespace ProjectManagement.Service.Service.MultilingualText
 
 
 
-        public async ValueTask<bool> DeleteOrRecoverAsync(string key)
+        public async ValueTask<string> DeleteOrRecoverAsync(string key)
         {
-            var existText = await multilingualRepository.GetAll(x => x.Key.ToLower() == key.ToLower()).ToListAsync();
+            var existText = await multilingualRepository.GetAll(x => x.Key.ToLower() == key.ToLower()).AsNoTracking().ToListAsync();
+
+            bool isDelete = false;
 
             foreach (var item in existText)
             {
-                if(item.IsDeleted == 0)
+                if (item.IsDeleted == 0)
                 {
                     item.IsDeleted = 1;
                     multilingualRepository.UpdateAsync(item);
+                    isDelete = true;
                 }
                 else
                 {
@@ -175,7 +182,115 @@ namespace ProjectManagement.Service.Service.MultilingualText
 
             await multilingualRepository.SaveChangesAsync();
 
+            if (isDelete) return "deleted";
+            else return "recovered";
+        }
+
+
+        public async ValueTask<bool> UpdateAsync(MultilingualTextForCreateDTO dto)
+        {
+            var existText = await multilingualRepository.GetAll(x => x.Key.ToLower() == dto.Key.ToLower()).ToListAsync();
+
+            if (existText.Count == 0) throw new ProjectManagementException(400, "translation_not_found");
+
+            foreach (var item in existText)
+            {
+                if (item.SupportLanguage == SupportLanguage.Ko)
+                {
+                    item.Text = dto.TextKo;
+                    multilingualRepository.UpdateAsync(item);
+                }
+                else if (item.SupportLanguage == SupportLanguage.En)
+                {
+                    item.Text = dto.TextEn;
+                    multilingualRepository.UpdateAsync(item);
+                }
+            }
+
+            await multilingualRepository.SaveChangesAsync();
             return true;
+        }
+
+
+
+        public async ValueTask<PagedResult<UIContentExtendedModel>> GetTranslations(UIContentGetAllAndSearchDTO dto)
+        {
+            if (dto.PageIndex == 0)
+            {
+                dto.PageIndex = 1;
+            }
+
+            if (dto.PageSize == 0)
+            {
+                dto.PageSize = 20;
+            }
+
+            dto.Key = string.IsNullOrEmpty(dto.Key) ? "" : dto.Key;
+            Expression<Func<Domain.Entities.MultilingualText.MultilingualText, bool>> frontendTextExpression = dto.IsDeleted.HasValue ?
+                (f => !string.IsNullOrEmpty(f.Key) && !string.IsNullOrWhiteSpace(f.Key) && f.IsDeleted == (dto.IsDeleted.Value ? 1 : 0))
+                : f => !string.IsNullOrEmpty(f.Key) && !string.IsNullOrWhiteSpace(f.Key);
+
+            var query = multilingualRepository.GetAll(frontendTextExpression)
+                .Join(multilingualRepository.GetAll(),
+                    x => x.Key,
+                    y => y.Key,
+                    (x, y) => new
+                    {
+                        x.Key,
+                        y.Text,
+                        y.SupportLanguage,
+                        x.IsDeleted
+                    })
+                .OrderBy(x => x.Key)
+                .AsNoTracking()
+                .AsEnumerable()
+                .GroupBy(x => new { x.Key, x.IsDeleted })
+                .Where(x => (!string.IsNullOrEmpty(x.Key.Key) && !string.IsNullOrWhiteSpace(x.Key.Key) && x.Key.Key.Contains(dto.Key))
+                || x.Any(y => (y.Text?.ToLower() ?? "").Contains(dto.Key?.ToLower())));
+
+            int totalCount = query.Count();
+
+            var enumerableQuery = query.ToPagedList(dto);
+
+            var uiContents = enumerableQuery
+                .Select(group =>
+                {
+                    var translation = new UIContentExtendedModel
+                    {
+                        Key = group.Key.Key,
+                        IsDeleted = group.Key.IsDeleted
+                    };
+
+                    foreach (var item in group)
+                    {
+                        switch (item.SupportLanguage)
+                        {
+                            case SupportLanguage.En:
+                                translation.TextEn = item.Text;
+                                break;
+                            case SupportLanguage.Ko:
+                                translation.TextKo = item.Text;
+                                break;
+
+                        }
+                    }
+                    return translation;
+                })
+                .ToList();
+
+
+            int itemsPerPage = dto.PageSize;
+            int totalPages = (totalCount / itemsPerPage) + (totalCount % itemsPerPage == 0 ? 0 : 1);
+
+            var pagedResult = PagedResult<UIContentExtendedModel>.Create(uiContents,
+                totalCount,
+                itemsPerPage,
+                uiContents.Count,
+                dto.PageIndex,
+                totalPages
+                );
+
+            return pagedResult;
         }
     }
 }

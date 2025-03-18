@@ -1,31 +1,29 @@
-﻿using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.OpenApi.Models;
-using ProjectManagement.Domain.Entities.Teams;
-using ProjectManagement.Domain.Entities.User;
-using ProjectManagement.Service.Interfaces.IRepositories;
-using ProjectManagement.Service.Interfaces.User;
-using ProjectManagement.Service.Service.Repositories;
-using ProjectManagement.Service.Service.User;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using ProjectManagement.Service.Interfaces.Attachment;
-using ProjectManagement.Service.Service.Attachment;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using ProjectManagement.Domain.Entities.Attachment;
 using ProjectManagement.Domain.Entities.Country;
-using ProjectManagement.Service.Interfaces.Country;
-using ProjectManagement.Service.Service.Country;
 using ProjectManagement.Domain.Entities.Logs;
-using ProjectManagement.Service.Interfaces.Log;
-using ProjectManagement.Service.Service.Log;
-using ProjectManagement.Domain.Entities.Requests;
-using ProjectManagement.Service.Interfaces.Request;
-using ProjectManagement.Service.Service.Requests;
 using ProjectManagement.Domain.Entities.MultilingualText;
+using ProjectManagement.Domain.Entities.Requests;
+using ProjectManagement.Domain.Entities.User;
+using ProjectManagement.Service.Interfaces.Attachment;
+using ProjectManagement.Service.Interfaces.Country;
+using ProjectManagement.Service.Interfaces.IRepositories;
+using ProjectManagement.Service.Interfaces.Log;
 using ProjectManagement.Service.Interfaces.MultilingualText;
+using ProjectManagement.Service.Interfaces.Request;
+using ProjectManagement.Service.Interfaces.User;
+using ProjectManagement.Service.Service.Attachment;
+using ProjectManagement.Service.Service.Country;
+using ProjectManagement.Service.Service.Log;
 using ProjectManagement.Service.Service.MultilingualText;
-using Microsoft.IdentityModel.Tokens;
+using ProjectManagement.Service.Service.Repositories;
+using ProjectManagement.Service.Service.Requests;
+using ProjectManagement.Service.Service.User;
 using System.Text;
-using ProjectManagement.Service.Exception;
 
 namespace ProjectManagement.Api.Extensions
 {
@@ -80,7 +78,7 @@ namespace ProjectManagement.Api.Extensions
                     }
                 });
             });
-        }      
+        }
         public static void ConfigureJwt(this IServiceCollection services, IConfiguration configuration)
         {
 

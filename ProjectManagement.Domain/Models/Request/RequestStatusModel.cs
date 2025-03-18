@@ -2,7 +2,7 @@
 
 namespace ProjectManagement.Domain.Models.Request
 {
-    public class RequestStatusModel 
+    public class RequestStatusModel
     {
         public string Title { get; set; }
         public DateTime? CreatedAt { get; set; }

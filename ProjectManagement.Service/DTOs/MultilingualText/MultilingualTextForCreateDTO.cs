@@ -5,9 +5,9 @@ namespace ProjectManagement.Service.DTOs.MultilingualText
 {
     public class MultilingualTextForCreateDTO
     {
-        public string? Key { get; set; }
-        public string? TextKo { get; set; }
-        public string? TextEn { get; set; }
-        public SupportLanguage SupportLanguage { get; set; }
+        public required string Key { get; set; }
+        public required string TextKo { get; set; }
+        public required string TextEn { get; set; }
+        public required SupportLanguage SupportLanguage { get; set; }
     }
 }

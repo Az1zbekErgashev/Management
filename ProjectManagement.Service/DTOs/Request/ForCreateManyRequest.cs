@@ -2,7 +2,7 @@
 {
     public class ForCreateManyRequest
     {
-       public ICollection<RequestForCreateDTO> Dto { get; set; } 
-       public int  RequestStatusId { get; set; }
+        public ICollection<RequestForCreateDTO> Dto { get; set; }
+        public int RequestStatusId { get; set; }
     }
 }

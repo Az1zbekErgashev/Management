@@ -8,7 +8,7 @@ namespace ProjectManagement.Service.DTOs.User
     {
         public required string Email { get; set; }
         public required string Name { get; set; }
-        public  string? Password { get; set; }
+        public string? Password { get; set; }
         public required string Surname { get; set; }
         public required string PhoneNumber { get; set; }
 

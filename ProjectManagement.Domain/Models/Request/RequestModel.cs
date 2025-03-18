@@ -1,7 +1,4 @@
-﻿using ProjectManagement.Domain.Configuration;
-using ProjectManagement.Domain.Enum;
-
-namespace ProjectManagement.Domain.Models.Request
+﻿namespace ProjectManagement.Domain.Models.Request
 {
     public class RequestModel
     {

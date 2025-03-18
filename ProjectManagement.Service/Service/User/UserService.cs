@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using ProjectManagement.Domain.Entities.Logs;
-using ProjectManagement.Domain.Entities.Teams;
 using ProjectManagement.Domain.Models.PagedResult;
 using ProjectManagement.Domain.Models.User;
 using ProjectManagement.Service.DTOs.User;
@@ -55,7 +54,7 @@ namespace ProjectManagement.Service.Service.User
 
             Domain.Entities.Attachment.Attachment attachment = null;
 
-            if(dto.Image is not null)
+            if (dto.Image is not null)
             {
                 attachment = await attachmentService.UploadAsync(dto.Image.ToAttachmentOrDefault());
             }
@@ -71,7 +70,7 @@ namespace ProjectManagement.Service.Service.User
                 IndividualRole = dto.Role,
                 ImageId = attachment?.Id,
                 CountryId = dto.CountryId,
-                DateOfBirth  = dto.DateOfBirth
+                DateOfBirth = dto.DateOfBirth
             };
 
             var createUser = await _userRepository.CreateAsync(newUser);
@@ -95,10 +94,10 @@ namespace ProjectManagement.Service.Service.User
             if (user is null) throw new ProjectManagementException(404, "user_not_found");
 
             bool isDelete = false;
-            if(user.IsDeleted == 0)
+            if (user.IsDeleted == 0)
             {
-              user.IsDeleted = 1;
-              isDelete = true;
+                user.IsDeleted = 1;
+                isDelete = true;
             }
             else
             {
@@ -125,7 +124,7 @@ namespace ProjectManagement.Service.Service.User
 
             if (!string.IsNullOrEmpty(dto.Text))
             {
-                string searchText = $"%{dto.Text}%"; 
+                string searchText = $"%{dto.Text}%";
 
                 query = query.Where(x =>
                     EF.Functions.Like(x.Name, searchText) ||
@@ -135,15 +134,15 @@ namespace ProjectManagement.Service.Service.User
 
             if (dto.Role != null)
             {
-                query = query.Where(x =>  x.IndividualRole == dto.Role);
+                query = query.Where(x => x.IndividualRole == dto.Role);
             }
 
-            if(dto.UserId is not null)
+            if (dto.UserId is not null)
             {
                 query = query.Where(x => x.Id == dto.UserId);
             }
 
-            if(dto.IsDeleted != null)
+            if (dto.IsDeleted != null)
             {
                 query = query.Where(x => x.IsDeleted == dto.IsDeleted);
             }
@@ -213,9 +212,9 @@ namespace ProjectManagement.Service.Service.User
 
             if (user is null) throw new ProjectManagementException(404, "user_not_found");
 
-            if(user.Image != null)
+            if (user.Image != null)
             {
-               await attachmentService.ResizeImage(user, 600);
+                await attachmentService.ResizeImage(user, 600);
             }
 
             return new UserModel().MapFromEntity(user);
@@ -288,7 +287,7 @@ namespace ProjectManagement.Service.Service.User
             existUser.UpdatedAt = DateTime.UtcNow;
             existUser.IndividualRole = dto.Role;
 
-            if(dto.Password is not null)
+            if (dto.Password is not null)
             {
                 existUser.Password = dto.Password.Encrypt();
             }
@@ -301,11 +300,11 @@ namespace ProjectManagement.Service.Service.User
             var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(ClaimTypes.NameIdentifier, userId.ToString()), 
+                new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
             };
 
             return await ValueTask.FromResult(TokenGenerator(claims));
-        } 
+        }
 
 
         public async ValueTask<UserModel> GetProfile()
