@@ -83,11 +83,12 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
 
-var env = app.Environment.EnvironmentName;
-
 app.UseCors(options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 
-EnvironmentHelper.WebRootPath = app.Services.GetRequiredService<IWebHostEnvironment>()?.WebRootPath;
+var env = app.Services.GetRequiredService<IWebHostEnvironment>();
+EnvironmentHelper.WebRootPath = env.WebRootPath;
+
+Console.WriteLine($"WebRootPath ¬å¬ã¬ä¬Ñ¬ß¬à¬Ó¬Ý¬Ö¬ß ¬Ó: {EnvironmentHelper.WebRootPath}");
 
 app.UseStaticFiles();
 

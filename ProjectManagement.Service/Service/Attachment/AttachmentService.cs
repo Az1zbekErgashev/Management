@@ -89,8 +89,19 @@ namespace ProjectManagement.Service.Service.Attachment
             if (existAttachment is null)
                 throw new ProjectManagementException(404, "attachment_not_found.");
 
+
+            Console.WriteLine(EnvironmentHelper.WebRootPath);
+            Console.WriteLine(EnvironmentHelper.WebRootPath);
+            Console.WriteLine(EnvironmentHelper.WebRootPath);
+            Console.WriteLine(EnvironmentHelper.WebRootPath);
+            Console.WriteLine(EnvironmentHelper.WebRootPath);
+            Console.WriteLine(EnvironmentHelper.WebRootPath);
+            Console.WriteLine(EnvironmentHelper.WebRootPath);
+            Console.WriteLine(EnvironmentHelper.WebRootPath);
+            Console.WriteLine(EnvironmentHelper.WebRootPath);
+
             string fileName = existAttachment.Path;
-            string filePath = Path.Combine(EnvironmentHelper.WebRootPath, fileName);
+            string filePath = Path.Combine(_env.WebRootPath, "images", fileName);
 
             // copy image to the destination as stream
             FileStream fileStream = File.OpenWrite(filePath);
@@ -112,7 +123,18 @@ namespace ProjectManagement.Service.Service.Attachment
                 throw new ProjectManagementException(400, "you_must_upload_the_file");
             }
             string fileName = Guid.NewGuid().ToString("N") + dto.Path;
-            string filePath = Path.Combine(EnvironmentHelper.AttachmentPath, fileName);
+
+            Console.WriteLine(EnvironmentHelper.AttachmentPath);
+            Console.WriteLine(EnvironmentHelper.WebRootPath);
+            Console.WriteLine(EnvironmentHelper.WebRootPath);
+            Console.WriteLine(EnvironmentHelper.WebRootPath);
+            Console.WriteLine(EnvironmentHelper.WebRootPath);
+            Console.WriteLine(EnvironmentHelper.WebRootPath);
+            Console.WriteLine(EnvironmentHelper.WebRootPath);
+            Console.WriteLine(EnvironmentHelper.WebRootPath);
+            Console.WriteLine(EnvironmentHelper.WebRootPath);
+
+            string filePath = Path.Combine(_env.WebRootPath, "images", fileName);
 
             if (!Directory.Exists(EnvironmentHelper.AttachmentPath))
                 Directory.CreateDirectory(EnvironmentHelper.AttachmentPath);
