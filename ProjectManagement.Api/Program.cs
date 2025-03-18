@@ -9,14 +9,22 @@ using ProjectManagement.Service.Service.Repositories;
 using Serilog;
 using static ProjectManagement.Service.Service.Attachment.AttachmentService;
 
-var builder = WebApplication.CreateBuilder(args);
+var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
 
-var environment = builder.Environment.EnvironmentName;
+var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+{
+    EnvironmentName = environment
+});
+
+builder.Configuration
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{environment}.json", optional: true, reloadOnChange: true)
+    .AddEnvironmentVariables();
+
 
 builder.Services.AddControllers();
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-
-builder.Configuration.AddEnvironmentVariables();
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
@@ -44,12 +52,6 @@ builder.Services.AddSwaggerGen(options =>
 
 var connectionString = builder.Configuration.GetConnectionString("PostgresConnection");
 
-if (string.IsNullOrEmpty(connectionString))
-{
-    Console.WriteLine("Connection string is NULL or EMPTY!");
-}
-
-Console.WriteLine($"Using connection string: {connectionString}");
 builder.Services.AddDbContext<ProjectManagementDB>(options =>
 {
     options.UseNpgsql(connectionString, b => b.MigrationsAssembly("ProjectManagement.Api"));

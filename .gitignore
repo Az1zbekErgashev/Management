@@ -7,3 +7,6 @@
 **/appsettings.json
 **/*.asc
 logs/*
+**/Properties
+**/appsettings.Development.json
+**/appsettings.Productionjson
