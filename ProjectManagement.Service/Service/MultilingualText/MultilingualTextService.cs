@@ -131,7 +131,7 @@ namespace ProjectManagement.Service.Service.MultilingualText
             {
                 Key = dto.Key,
                 Text = dto.TextKo,
-                SupportLanguage = 0,
+                SupportLanguage = SupportLanguage.Ko,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
@@ -150,6 +150,31 @@ namespace ProjectManagement.Service.Service.MultilingualText
 
 
             await multilingualRepository.SaveChangesAsync();
+            return true;
+        }
+
+
+
+        public async ValueTask<bool> DeleteOrRecoverAsync(string key)
+        {
+            var existText = await multilingualRepository.GetAll(x => x.Key.ToLower() == key.ToLower()).ToListAsync();
+
+            foreach (var item in existText)
+            {
+                if(item.IsDeleted == 0)
+                {
+                    item.IsDeleted = 1;
+                    multilingualRepository.UpdateAsync(item);
+                }
+                else
+                {
+                    item.IsDeleted = 0;
+                    multilingualRepository.UpdateAsync(item);
+                }
+            }
+
+            await multilingualRepository.SaveChangesAsync();
+
             return true;
         }
     }
