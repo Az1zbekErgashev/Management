@@ -42,7 +42,7 @@ namespace ProjectManagement.Service.Service.MultilingualText
 
                 foreach (var item in data)
                 {
-                    var existText = await multilingualRepository.GetAsync(x => x.Key.ToLower() == item.Key.ToLower() && x.SupportLanguage == language);
+                    var existText = await multilingualRepository.GetAsync(x => (x.Key != null && x.SupportLanguage != null) && x.Key.ToLower() == item.Key.ToLower() && x.SupportLanguage == language);
 
                     if (existText is null)
                     {
@@ -112,7 +112,7 @@ namespace ProjectManagement.Service.Service.MultilingualText
             using var connection = new NpgsqlConnection(connectionString);
             await connection.OpenAsync();
 
-            string query = "SELECT \"Key\", \"TextKo\", \"TextEn\" FROM \"MultilingualText\" WHERE \"SupportLanguage\" = @Language";
+            string query = "SELECT \"Key\", \"Text\" FROM \"MultilingualText\" WHERE \"SupportLanguage\" = @Language";
 
             var result = (await connection.QueryAsync<Domain.Entities.MultilingualText.MultilingualText>(query, new { Language = language })).ToList();
 

@@ -165,9 +165,9 @@ namespace ProjectManagement.Service.Service.Requests
         }
 
 
-        public async ValueTask<string> CreateRequestAsync(List<RequestForCreateDTO> dto)
+        public async ValueTask<string> CreateRequestAsync(int RequestStatusId)
         {
-            var jsonFilePath = Path.Combine("wwwroot", "images", "request.json");
+            var jsonFilePath = Path.Combine("wwwroot", "images", $"request.json");
 
             if (!File.Exists(jsonFilePath))
             {
@@ -209,8 +209,9 @@ namespace ProjectManagement.Service.Service.Requests
                     ProjectDetails = item.ProjectDescription,
                     ResponsiblePerson = item.ResponsiblePerson,
                     CreatedAt = DateTime.UtcNow,
-                    Date = item.CreatedAt,
-                    RequestStatusId = 4
+                    Date = item.Date,
+                    RequestStatusId = item.RequestStatusId,
+                    Sequence = item.Sequence,
                 };
 
                 await requestRepository.CreateAsync(request);
@@ -270,11 +271,11 @@ namespace ProjectManagement.Service.Service.Requests
             existRequest.Notes = dto.Notes;
             existRequest.ProjectDetails = dto.ProjectDetails;
             existRequest.ResponsiblePerson = dto.ResponsiblePerson;
-            existRequest.Date = dto.CreatedAt;
+            existRequest.Date = dto.Date;
 
             existRequest.RequestStatusId = dto.RequestStatusId;
             existRequest.UpdatedAt = DateTime.UtcNow;
-            existRequest.CreatedAt = dto.CreateAtForRequest is not null ? dto.CreateAtForRequest : existRequest.CreatedAt;
+            existRequest.CreatedAt = existRequest.CreatedAt ?? DateTime.UtcNow;
 
             requestRepository.UpdateAsync(existRequest);
             await requestRepository.SaveChangesAsync();
@@ -350,6 +351,5 @@ namespace ProjectManagement.Service.Service.Requests
 
             return groupedFilters;
         }
-
     }
 }

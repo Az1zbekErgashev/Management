@@ -19,4 +19,5 @@ public class Request : Auditable
     public RequestStatus RequestStatus { get; set; }
     public int RequestStatusId { get; set; }
     public string? Date { get; set; }
+    public string? Sequence { get; set; }
 }

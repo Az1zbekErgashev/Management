@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using ProjectManagement.Infrastructure.Contexts;
@@ -11,9 +12,11 @@ using ProjectManagement.Infrastructure.Contexts;
 namespace ProjectManagement.Api.Migrations
 {
     [DbContext(typeof(ProjectManagementDB))]
-    partial class ProjectManagementDBModelSnapshot : ModelSnapshot
+    [Migration("20250318091223_UPDATE_MULTILINGUAL_TABLE")]
+    partial class UPDATE_MULTILINGUAL_TABLE
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2409,9 +2412,6 @@ namespace ProjectManagement.Api.Migrations
                     b.Property<string>("ResponsiblePerson")
                         .HasColumnType("text");
 
-                    b.Property<string>("Sequence")
-                        .HasColumnType("text");
-
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp without time zone");
 
@@ -2739,7 +2739,7 @@ namespace ProjectManagement.Api.Migrations
                         {
                             Id = 1,
                             CountryId = 1,
-                            CreatedAt = new DateTime(2025, 3, 18, 9, 52, 46, 83, DateTimeKind.Utc).AddTicks(427),
+                            CreatedAt = new DateTime(2025, 3, 18, 9, 12, 22, 874, DateTimeKind.Utc).AddTicks(3433),
                             DateOfBirth = new DateTime(2023, 11, 23, 16, 13, 56, 461, DateTimeKind.Utc),
                             Email = "admin@gmail.com",
                             IndividualRole = 1,

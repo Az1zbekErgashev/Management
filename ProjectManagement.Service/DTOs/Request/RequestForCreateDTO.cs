@@ -5,6 +5,7 @@ namespace ProjectManagement.Service.DTOs.Request
 {
     public class RequestForCreateDTO
     {
+        public string? Sequence { get; set; }
         public string? InquiryType { get; set; } // Тип запроса
         public string? CompanyName { get; set; } // Название компании
         public string? Department { get; set; } // Ответственный отдел
@@ -20,8 +21,7 @@ namespace ProjectManagement.Service.DTOs.Request
         public string? FinalResult { get; set; } // Итоговый результат
         public string? Notes { get; set; } // Примечания (причина итогового результата)
         public int RequestStatusId { get; set; }
-        public string? CreatedAt { get; set; }
-        public DateTime? CreateAtForRequest { get; set; }
         public string? ProjectDescription { get; set; }
+        public string? Date { get; set; }
     }
 }

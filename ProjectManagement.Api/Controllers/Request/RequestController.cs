@@ -1,9 +1,15 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using ProjectManagement.Service.DTOs.Request;
 using ProjectManagement.Service.Extencions;
+using ProjectManagement.Service.Interfaces.IRepositories;
 using ProjectManagement.Service.Interfaces.Request;
 using System.ComponentModel.DataAnnotations;
+using System.Text;
+using System.Text.Encodings.Web;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace ProjectManagement.Api.Controllers.Request
 {
@@ -12,10 +18,12 @@ namespace ProjectManagement.Api.Controllers.Request
     public class RequestController : ControllerBase
     {
         private readonly IRequestStatusService requestStatusService;
+        private readonly IGenericRepository<Domain.Entities.Requests.Request> genericRepository;
 
-        public RequestController(IRequestStatusService requestStatusService)
+        public RequestController(IRequestStatusService requestStatusService, IGenericRepository<Domain.Entities.Requests.Request> genericRepository)
         {
             this.requestStatusService = requestStatusService;
+            this.genericRepository = genericRepository;
         }
 
         [HttpGet("category")]
@@ -46,7 +54,7 @@ namespace ProjectManagement.Api.Controllers.Request
         
 
         [HttpPost("create-request-many")]
-        public async ValueTask<IActionResult> CreateManyRequest(List<RequestForCreateDTO> dto) => ResponseHandler.ReturnIActionResponse(await requestStatusService.CreateRequestAsync(dto));
+        public async ValueTask<IActionResult> CreateManyRequest([FromForm] ForCreateManyRequest dto) => ResponseHandler.ReturnIActionResponse(await requestStatusService.CreateRequestAsync(dto.RequestStatusId));
 
         [HttpPost("create-request")]
         [Authorize]
@@ -68,5 +76,26 @@ namespace ProjectManagement.Api.Controllers.Request
 
         [HttpGet("filter-values")]
         public async ValueTask<IActionResult> GetFilterValue() => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetFilterValue());
+
+
+
+        [HttpGet("get-json")]
+        public async Task<IActionResult> GetJson()
+        {
+            var allRequests = await genericRepository.GetAll().ToListAsync();
+
+            var json = JsonSerializer.Serialize(allRequests, new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+            });
+
+            var fileName = "requests.json";
+            var filePath = Path.Combine(Path.GetTempPath(), fileName);
+            await System.IO.File.WriteAllTextAsync(filePath, json, Encoding.UTF8);
+
+            var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
+            return File(fileBytes, "application/json", fileName);
+        }
     }
 }
