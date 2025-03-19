@@ -4,10 +4,10 @@
     {
         Login,
         CreateAccount,
-        ChangeTaskStatus,
-        Report,
-        UpdateTranslation,
-        UpdateUser,
-        UpdateCompanyInformation
+        ChangeLocalizaData,
+        UpdateUserInformation,
+        UploadExcel,
+        DownloadExcel,
+        CreateRequest
     }
 }

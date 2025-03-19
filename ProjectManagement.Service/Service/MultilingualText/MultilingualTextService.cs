@@ -13,6 +13,7 @@ using ProjectManagement.Service.Interfaces.MultilingualText;
 using System.Linq.Expressions;
 using System.Text.Json;
 using ProjectManagement.Domain.Models.PagedResult;
+using ProjectManagement.Domain.Entities.Logs;
 
 
 namespace ProjectManagement.Service.Service.MultilingualText
@@ -21,10 +22,18 @@ namespace ProjectManagement.Service.Service.MultilingualText
     {
         private readonly IGenericRepository<Domain.Entities.MultilingualText.MultilingualText> multilingualRepository;
         private readonly IConfiguration configuration;
-        public MultilingualTextService(IGenericRepository<Domain.Entities.MultilingualText.MultilingualText> multilingualRepository, IConfiguration configuration)
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IGenericRepository<Logs> _logRepository;
+        public MultilingualTextService(
+            IGenericRepository<Domain.Entities.MultilingualText.MultilingualText> multilingualRepository,
+            IConfiguration configuration,
+            IHttpContextAccessor httpContextAccessor,
+            IGenericRepository<Logs> logRepository)
         {
             this.multilingualRepository = multilingualRepository;
             this.configuration = configuration;
+            _httpContextAccessor = httpContextAccessor;
+            _logRepository = logRepository;
         }
 
         public async ValueTask<bool> CreateFromJson(IFormFile formFile, SupportLanguage language)
@@ -98,6 +107,8 @@ namespace ProjectManagement.Service.Service.MultilingualText
 
                 await multilingualRepository.SaveChangesAsync();
 
+                await StringExtensions.StringExtensions.SaveLogAsync(_logRepository, _httpContextAccessor, Domain.Enum.LogAction.ChangeLocalizaData);
+
                 return true;
             }
             catch
@@ -154,6 +165,9 @@ namespace ProjectManagement.Service.Service.MultilingualText
 
 
             await multilingualRepository.SaveChangesAsync();
+
+            await StringExtensions.StringExtensions.SaveLogAsync(_logRepository, _httpContextAccessor, Domain.Enum.LogAction.ChangeLocalizaData);
+
             return true;
         }
 
@@ -182,6 +196,8 @@ namespace ProjectManagement.Service.Service.MultilingualText
 
             await multilingualRepository.SaveChangesAsync();
 
+            await StringExtensions.StringExtensions.SaveLogAsync(_logRepository, _httpContextAccessor, Domain.Enum.LogAction.ChangeLocalizaData);
+
             if (isDelete) return "deleted";
             else return "recovered";
         }
@@ -208,6 +224,9 @@ namespace ProjectManagement.Service.Service.MultilingualText
             }
 
             await multilingualRepository.SaveChangesAsync();
+
+            await StringExtensions.StringExtensions.SaveLogAsync(_logRepository, _httpContextAccessor, Domain.Enum.LogAction.ChangeLocalizaData);
+
             return true;
         }
 

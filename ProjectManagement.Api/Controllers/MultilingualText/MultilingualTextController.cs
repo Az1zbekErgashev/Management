@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using ProjectManagement.Domain.Enum;
 using ProjectManagement.Service.DTOs.MultilingualText;
 using ProjectManagement.Service.Extencions;
@@ -19,6 +20,7 @@ namespace ProjectManagement.Api.Controllers.MultilingualText
         }
 
         [HttpPost("create-from-json")]
+        [Authorize]
         public async ValueTask<IActionResult> PostDocumentAsync([FromForm] MultilingualTextForCreateJson dto) => ResponseHandler.ReturnIActionResponse(await multilingualTextService.CreateFromJson(dto.File, dto.Language));
 
 
@@ -27,16 +29,20 @@ namespace ProjectManagement.Api.Controllers.MultilingualText
 
 
         [HttpGet("all/translations")]
+        [Authorize]
         public async ValueTask<IActionResult> GetAllAsync([FromQuery] UIContentGetAllAndSearchDTO dto) => ResponseHandler.ReturnIActionResponse(await multilingualTextService.GetTranslations(dto));
 
 
         [HttpDelete("delete")]
+        [Authorize]
         public async ValueTask<IActionResult> DeleteAsync([Required] string key) => ResponseHandler.ReturnIActionResponse(await multilingualTextService.DeleteOrRecoverAsync(key));
 
         [HttpPost("create")]
+        [Authorize]
         public async ValueTask<IActionResult> CreateAsync(MultilingualTextForCreateDTO dto) => ResponseHandler.ReturnIActionResponse(await multilingualTextService.CreateAsync(dto));
 
         [HttpPut("update")]
+        [Authorize]
         public async ValueTask<IActionResult> UpdateAsync(MultilingualTextForCreateDTO dto) => ResponseHandler.ReturnIActionResponse(await multilingualTextService.UpdateAsync(dto));
 
 

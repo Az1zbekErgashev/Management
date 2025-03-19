@@ -107,7 +107,7 @@ namespace ProjectManagement.Service.Service.User
             _userRepository.UpdateAsync(user);
             await _userRepository.SaveChangesAsync();
 
-            await StringExtensions.StringExtensions.SaveLogAsync(_logRepository, _httpContextAccessor, Domain.Enum.LogAction.UpdateUser);
+            await StringExtensions.StringExtensions.SaveLogAsync(_logRepository, _httpContextAccessor, Domain.Enum.LogAction.UpdateUserInformation);
 
             if (isDelete) return "user_deleted";
             else return "user_recovered";
@@ -291,7 +291,7 @@ namespace ProjectManagement.Service.Service.User
             {
                 existUser.Password = dto.Password.Encrypt();
             }
-            await StringExtensions.StringExtensions.SaveLogAsync(_logRepository, _httpContextAccessor, Domain.Enum.LogAction.UpdateUser);
+            await StringExtensions.StringExtensions.SaveLogAsync(_logRepository, _httpContextAccessor, Domain.Enum.LogAction.UpdateUserInformation);
             return true;
         }
 
