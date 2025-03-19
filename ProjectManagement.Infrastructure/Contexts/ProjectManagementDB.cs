@@ -89,7 +89,7 @@ namespace ProjectManagement.Infrastructure.Contexts
 
             modelBuilder.Entity<TeamMember>()
                 .HasOne(tm => tm.Team)
-                .WithMany(t => t.TeamMembers) 
+                .WithMany(t => t.TeamMembers)
                 .HasForeignKey(tm => tm.TeamId)
                 .OnDelete(DeleteBehavior.Cascade);
 
@@ -106,8 +106,8 @@ namespace ProjectManagement.Infrastructure.Contexts
 
             modelBuilder.Entity<Companies>().HasData(
                 new Companies { Id = 1, CompanyCode = "WISESTONET", CompanyName = "WISESTONE T", CountryId = 1, CreatedAt = new DateTime(2025, 3, 13, 4, 29, 39, 768, DateTimeKind.Utc) },
-                new Companies { Id = 2, CompanyCode = "WISESTONEU", CompanyName = "WISESTONE U", CountryId = 67 , CreatedAt = new DateTime(2025, 3, 13, 4, 29, 39, 768, DateTimeKind.Utc) },
-                new Companies { Id = 3, CompanyCode = "WISESTONE", CompanyName = "WISESTONE", CountryId = 45 , CreatedAt = new DateTime(2025, 3, 13, 4, 29, 39, 768, DateTimeKind.Utc) }
+                new Companies { Id = 2, CompanyCode = "WISESTONEU", CompanyName = "WISESTONE U", CountryId = 67, CreatedAt = new DateTime(2025, 3, 13, 4, 29, 39, 768, DateTimeKind.Utc) },
+                new Companies { Id = 3, CompanyCode = "WISESTONE", CompanyName = "WISESTONE", CountryId = 45, CreatedAt = new DateTime(2025, 3, 13, 4, 29, 39, 768, DateTimeKind.Utc) }
             );
 
 

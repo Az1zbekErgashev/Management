@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjectManagement.Api.Extensions;
 using ProjectManagement.Infrastructure.Contexts;
+using ProjectManagement.Service.Exception;
 using ProjectManagement.Service.Extencions;
 using ProjectManagement.Service.Interfaces.IRepositories;
 using ProjectManagement.Service.Service.Repositories;
@@ -88,14 +89,12 @@ app.UseCors(options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader(
 var env = app.Services.GetRequiredService<IWebHostEnvironment>();
 EnvironmentHelper.WebRootPath = env.WebRootPath;
 
-Console.WriteLine($"WebRootPath ¬å¬ã¬ä¬Ñ¬ß¬à¬Ó¬Ý¬Ö¬ß ¬Ó: {EnvironmentHelper.WebRootPath}");
-
 app.UseStaticFiles();
 
 app.UseAuthentication();
 app.UseHttpsRedirection();
 app.UseAuthorization();
-
+app.UseMiddleware<ExceptionMiddleware>();
 app.MapControllers();
 
 app.Run();

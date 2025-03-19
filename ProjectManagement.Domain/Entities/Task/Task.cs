@@ -1,5 +1,5 @@
-﻿using ProjectManagement.Domain.Enum;
-using ProjectManagement.Domain.Commons;
+﻿using ProjectManagement.Domain.Commons;
+using ProjectManagement.Domain.Enum;
 
 namespace ProjectManagement.Domain.Entities.Task;
 public class Task : Auditable

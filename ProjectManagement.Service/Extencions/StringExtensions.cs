@@ -1,11 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using ProjectManagement.Domain.Configuration;
 using ProjectManagement.Domain.Entities.Logs;
-using ProjectManagement.Domain.Entities.User;
 using ProjectManagement.Service.DTOs.Attachment;
 using ProjectManagement.Service.Interfaces.IRepositories;
-using System.Net;
-using System.Security.Authentication;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -28,6 +25,20 @@ namespace ProjectManagement.Service.StringExtensions
         }
 
         public static IQueryable<T> ToPagedList<T>(this IQueryable<T> source, PaginationParams @params)
+        {
+            return @params.PageIndex > 0 && @params.PageSize >= 0
+                ? source.Skip((@params.PageIndex - 1) * @params.PageSize).Take(@params.PageSize)
+                : source;
+        }
+
+        public static List<T> ToPagedList<T>(this List<T> source, PaginationParams @params)
+        {
+            return @params.PageIndex > 0 && @params.PageSize >= 0
+                ? source.Skip((@params.PageIndex - 1) * @params.PageSize).Take(@params.PageSize).ToList()
+                : source.ToList();
+        }
+
+        public static IEnumerable<T> ToPagedList<T>(this IEnumerable<T> source, PaginationParams @params)
         {
             return @params.PageIndex > 0 && @params.PageSize >= 0
                 ? source.Skip((@params.PageIndex - 1) * @params.PageSize).Take(@params.PageSize)

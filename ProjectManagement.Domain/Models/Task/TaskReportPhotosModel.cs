@@ -1,10 +1,5 @@
 ﻿using ProjectManagement.Domain.Entities.Task;
 using ProjectManagement.Domain.Models.Attachment;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ProjectManagement.Domain.Models.Task
 {

@@ -9,7 +9,6 @@ using System.ComponentModel.DataAnnotations;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace ProjectManagement.Api.Controllers.Request
 {
@@ -50,8 +49,8 @@ namespace ProjectManagement.Api.Controllers.Request
 
         [HttpDelete("delete")]
         [Authorize]
-        public async ValueTask<IActionResult> DeleteAsync([Required] int id) => ResponseHandler.ReturnIActionResponse(await requestStatusService.DeleteAsync(id)); 
-        
+        public async ValueTask<IActionResult> DeleteAsync([Required] int id) => ResponseHandler.ReturnIActionResponse(await requestStatusService.DeleteAsync(id));
+
 
         [HttpPost("create-request-many")]
         public async ValueTask<IActionResult> CreateManyRequest([FromForm] ForCreateManyRequest dto) => ResponseHandler.ReturnIActionResponse(await requestStatusService.CreateRequestAsync(dto.RequestStatusId));
@@ -64,7 +63,7 @@ namespace ProjectManagement.Api.Controllers.Request
         [HttpDelete("delete-request")]
         [Authorize]
         public async ValueTask<IActionResult> DeleteRequest([Required] int id) => ResponseHandler.ReturnIActionResponse(await requestStatusService.DeleteRequest(id));
-        
+
         [HttpPut("recover-request")]
         [Authorize]
         public async ValueTask<IActionResult> RecoverRequest([Required] int id) => ResponseHandler.ReturnIActionResponse(await requestStatusService.RecoverRequest(id));

@@ -10,4 +10,3 @@ namespace ProjectManagement.Service.DTOs.Partner
         public DateTime? EndDate { get; set; }
     }
 }
- 

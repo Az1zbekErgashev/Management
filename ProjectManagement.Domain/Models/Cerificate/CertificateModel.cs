@@ -1,6 +1,5 @@
 ﻿using ProjectManagement.Domain.Models.Attachment;
 using ProjectManagement.Domain.Models.Company;
-using ProjectManagement.Domain.Models.Project;
 using ProjectManagement.Domain.Models.User;
 
 namespace ProjectManagement.Domain.Models.Cerificate

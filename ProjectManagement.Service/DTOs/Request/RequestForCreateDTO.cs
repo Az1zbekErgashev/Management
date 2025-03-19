@@ -1,7 +1,4 @@
-﻿using ProjectManagement.Service.Extencions;
-using System.Text.Json.Serialization;
-
-namespace ProjectManagement.Service.DTOs.Request
+﻿namespace ProjectManagement.Service.DTOs.Request
 {
     public class RequestForCreateDTO
     {

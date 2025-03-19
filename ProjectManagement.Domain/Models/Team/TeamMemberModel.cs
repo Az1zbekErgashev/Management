@@ -1,5 +1,4 @@
-﻿using ProjectManagement.Domain.Enum;
-using ProjectManagement.Domain.Models.User;
+﻿using ProjectManagement.Domain.Models.User;
 
 namespace ProjectManagement.Domain.Models.Team
 {
