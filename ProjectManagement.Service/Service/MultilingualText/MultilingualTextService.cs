@@ -1,10 +1,8 @@
 ﻿using Dapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
-using ProjectManagement.Domain.Entities.Teams;
 using ProjectManagement.Domain.Enum;
 using ProjectManagement.Service.DTOs.MultilingualText;
 using ProjectManagement.Service.Interfaces.IRepositories;
@@ -112,7 +110,7 @@ namespace ProjectManagement.Service.Service.MultilingualText
             using var connection = new NpgsqlConnection(connectionString);
             await connection.OpenAsync();
 
-            string query = "SELECT \"Key\", \"Text\" FROM \"MultilingualText\" WHERE \"SupportLanguage\" = @Language";
+            string query = "SELECT \"Key\", \"Text\" FROM \"MultilingualText\" WHERE \"SupportLanguage\" = @Language AND \"IsDeleted\" = 0;";
 
             var result = (await connection.QueryAsync<Domain.Entities.MultilingualText.MultilingualText>(query, new { Language = language })).ToList();
 
