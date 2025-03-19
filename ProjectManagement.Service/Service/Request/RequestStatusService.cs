@@ -1,5 +1,7 @@
 ﻿using Dapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Npgsql;
 using ProjectManagement.Domain.Entities.Requests;
 using ProjectManagement.Domain.Models.PagedResult;
 using ProjectManagement.Domain.Models.Request;
@@ -8,12 +10,7 @@ using ProjectManagement.Service.Exception;
 using ProjectManagement.Service.Interfaces.IRepositories;
 using ProjectManagement.Service.Interfaces.Request;
 using System.Text;
-using Npgsql;
-using Microsoft.Extensions.Configuration;
-using System.Globalization;
 using System.Text.Json;
-using ProjectManagement.Service.Extencions;
-using System.ComponentModel;
 namespace ProjectManagement.Service.Service.Requests
 {
     public class RequestStatusService : IRequestStatusService
@@ -256,7 +253,7 @@ namespace ProjectManagement.Service.Service.Requests
         {
             var existRequest = await requestRepository.GetAll(x => x.Id == id && x.IsDeleted == 0).Include(x => x.RequestStatus).FirstOrDefaultAsync();
 
-            if(existRequest is null) throw new ProjectManagementException(404, "request_not_found");
+            if (existRequest is null) throw new ProjectManagementException(404, "request_not_found");
 
             existRequest.Client = dto.Client;
             existRequest.ClientCompany = dto.ClientCompany;
@@ -312,7 +309,7 @@ namespace ProjectManagement.Service.Service.Requests
         public async ValueTask<List<RequestFilterModel>> GetFilterValue()
         {
             var existRequest = await requestRepository.GetAll(x => x.IsDeleted == 0).ToListAsync();
-            var emptyValue = "Unknown"; 
+            var emptyValue = "Unknown";
 
             var groupedFilters = new List<RequestFilterModel>();
 
@@ -341,7 +338,7 @@ namespace ProjectManagement.Service.Service.Requests
                     .Distinct()
                     .Select(value => new RequestFilterModel
                     {
-                        Text = value, 
+                        Text = value,
                         Value = field.Key
                     })
                     .ToList();

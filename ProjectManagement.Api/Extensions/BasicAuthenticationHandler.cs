@@ -2,8 +2,8 @@
 using Microsoft.Extensions.Options;
 using System.Net.Http.Headers;
 using System.Security.Claims;
-using System.Text.Encodings.Web;
 using System.Text;
+using System.Text.Encodings.Web;
 
 public class BasicAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
 {
@@ -26,7 +26,7 @@ public class BasicAuthenticationHandler : AuthenticationHandler<AuthenticationSc
             var username = credentials[0];
             var password = credentials[1];
 
-            if (username != "trt-user" || password != "E#I6FkL.31x1") 
+            if (username != "trt-user" || password != "E#I6FkL.31x1")
             {
                 return Task.FromResult(AuthenticateResult.Fail("Invalid Username or Password"));
             }

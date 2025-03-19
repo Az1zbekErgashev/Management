@@ -1,6 +1,6 @@
 ﻿
-using ProjectManagement.Domain.Entities.Teams;
 using ProjectManagement.Domain.Commons;
+using ProjectManagement.Domain.Entities.Teams;
 
 namespace ProjectManagement.Domain.Entities.Projects;
 public class Project : Auditable

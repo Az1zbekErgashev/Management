@@ -1,5 +1,4 @@
-﻿using ProjectManagement.Domain.Models.Company;
-using ProjectManagement.Domain.Models.Task;
+﻿using ProjectManagement.Domain.Models.Task;
 
 namespace ProjectManagement.Domain.Models.Team
 {

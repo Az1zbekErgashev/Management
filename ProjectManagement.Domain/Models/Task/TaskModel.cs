@@ -1,6 +1,4 @@
 ﻿using ProjectManagement.Domain.Enum;
-using ProjectManagement.Domain.Models.Project;
-using ProjectManagement.Domain.Models.Team;
 
 namespace ProjectManagement.Domain.Models.Task
 {
