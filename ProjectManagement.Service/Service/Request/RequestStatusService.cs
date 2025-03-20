@@ -40,7 +40,7 @@ namespace ProjectManagement.Service.Service.Requests
         {
             var requestStatus = new RequestStatus
             {
-                Title = dto.Titile,
+                Title = dto.Title,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -71,7 +71,7 @@ namespace ProjectManagement.Service.Service.Requests
             if (existStatus is null) throw new ProjectManagementException(404, "request_status_not_found");
 
 
-            existStatus.Title = dto.Titile;
+            existStatus.Title = dto.Title;
 
             requestStatusRepository.UpdateAsync(existStatus);
             await requestStatusRepository.SaveChangesAsync();
