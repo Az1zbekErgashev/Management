@@ -13,11 +13,12 @@ namespace ProjectManagement.Service.Extencions
     public class NullableDateTimeConverter : JsonConverter<DateTime?>
     {
         private readonly string[] formats = new[]
-            {
-        "yyyy", "yyyy-MM", "yyyy-MM-dd",
-        "yyyy/MM/dd", "yyyy.MM.dd", "yyyyMMdd",
-        "dd-MM-yyyy", "dd/MM/yyyy", "dd.MM.yyyy"
-    };
+        {
+            "yyyy", "yyyy-MM", "yyyy-MM-dd",
+            "yyyy/MM/dd", "yyyy.MM.dd", "yyyyMMdd",
+            "dd-MM-yyyy", "dd/MM/yyyy", "dd.MM.yyyy" // Добавлен формат "dd.MM.yyyy"
+        };
+
 
         public override DateTime? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
@@ -38,7 +39,7 @@ namespace ProjectManagement.Service.Extencions
                     dateString = dateString.Split('~')[0].Trim();
                 }
 
-                // Если введен только год (например, "2018"), добавляем "01-01"
+                // Если введен только год (например, "2018"), добавляем "-01-01"
                 if (Regex.IsMatch(dateString, @"^\d{4}$"))
                 {
                     dateString += "-01-01";  // Преобразуем "2018" → "2018-01-01"
@@ -50,10 +51,8 @@ namespace ProjectManagement.Service.Extencions
                     dateString += "-01";  // Преобразуем "2018-05" → "2018-05-01"
                 }
 
-                if (DateTime.TryParseExact(dateString, new[]
-                {
-            "yyyy-MM-dd", "yyyy/MM/dd", "yyyy.MM.dd", "yyyyMMdd"
-        }, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime date))
+                // Попытка парсинга по точному формату
+                if (DateTime.TryParseExact(dateString, formats, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime date))
                 {
                     return date;
                 }
