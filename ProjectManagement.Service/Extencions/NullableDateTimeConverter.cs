@@ -16,9 +16,8 @@ namespace ProjectManagement.Service.Extencions
         {
             "yyyy", "yyyy-MM", "yyyy-MM-dd",
             "yyyy/MM/dd", "yyyy.MM.dd", "yyyyMMdd",
-            "dd-MM-yyyy", "dd/MM/yyyy", "dd.MM.yyyy" // Добавлен формат "dd.MM.yyyy"
+            "dd-MM-yyyy", "dd/MM/yyyy", "dd.MM.yyyy" 
         };
-
 
         public override DateTime? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
@@ -51,8 +50,13 @@ namespace ProjectManagement.Service.Extencions
                     dateString += "-01";  // Преобразуем "2018-05" → "2018-05-01"
                 }
 
-                // Попытка парсинга по точному формату
-                if (DateTime.TryParseExact(dateString, formats, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime date))
+                if (DateTime.TryParseExact(dateString, formats, new CultureInfo("ru-RU"), DateTimeStyles.None, out DateTime date))
+                {
+                    return date;
+                }
+
+                // Дополнительная попытка парсинга конкретно для dd.MM.yyyy
+                if (DateTime.TryParseExact(dateString, "dd.MM.yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out date))
                 {
                     return date;
                 }
@@ -68,6 +72,7 @@ namespace ProjectManagement.Service.Extencions
                 return null;
             }
 
+            Console.WriteLine($"Failed to parse date: {reader.GetString()}");
             throw new JsonException($"Invalid date format: {reader.GetString()}");
         }
 

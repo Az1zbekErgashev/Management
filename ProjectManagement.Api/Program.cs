@@ -8,6 +8,7 @@ using ProjectManagement.Service.Extencions;
 using ProjectManagement.Service.Interfaces.IRepositories;
 using ProjectManagement.Service.Service.Repositories;
 using Serilog;
+using System.Globalization;
 using System.Text.Json.Serialization;
 using static ProjectManagement.Service.Service.Attachment.AttachmentService;
 
@@ -84,6 +85,9 @@ builder.Services.ConfigureJwt(builder.Configuration);
 builder.Services.AddSwaggerService();
 builder.Services.AddCustomServices();
 builder.Services.AddHttpContextAccessor();
+
+CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("ru-RU");
+CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("ru-RU");
 
 var app = builder.Build();
 
