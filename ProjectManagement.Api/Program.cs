@@ -8,6 +8,7 @@ using ProjectManagement.Service.Extencions;
 using ProjectManagement.Service.Interfaces.IRepositories;
 using ProjectManagement.Service.Service.Repositories;
 using Serilog;
+using System.Text.Json.Serialization;
 using static ProjectManagement.Service.Service.Attachment.AttachmentService;
 
 var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
@@ -24,7 +25,12 @@ builder.Configuration
     .AddEnvironmentVariables();
 
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(x =>
+{
+    x.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+
+    x.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+}); ;
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>

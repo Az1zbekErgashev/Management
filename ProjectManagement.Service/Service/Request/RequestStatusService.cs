@@ -40,7 +40,7 @@ namespace ProjectManagement.Service.Service.Requests
         {
             var requestStatus = new RequestStatus
             {
-                Title = dto.Titile,
+                Title = dto.Title,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -71,7 +71,7 @@ namespace ProjectManagement.Service.Service.Requests
             if (existStatus is null) throw new ProjectManagementException(404, "request_status_not_found");
 
 
-            existStatus.Title = dto.Titile;
+            existStatus.Title = dto.Title;
 
             requestStatusRepository.UpdateAsync(existStatus);
             await requestStatusRepository.SaveChangesAsync();
@@ -83,7 +83,20 @@ namespace ProjectManagement.Service.Service.Requests
             var connectionString = configuration.GetConnectionString("PostgresConnection");
             using (var db = new NpgsqlConnection(connectionString))
             {
-                var sql = new StringBuilder("SELECT * FROM \"Requests\" WHERE 1=1");
+                var sql = new StringBuilder(@"
+                    SELECT 
+                        r.*, 
+                        rs.""Id"" AS RequestStatus_Id, 
+                        rs.""Title"",
+                        rs.""Id""
+                    FROM ""Requests"" r
+                    LEFT JOIN ""RequestStatuses"" rs ON r.""RequestStatusId"" = rs.""Id""
+                    WHERE 1=1
+                    ");
+
+                sql.Append(" AND r.\"IsDeleted\" = 0");
+                sql.Append(" ORDER BY r.\"CreatedAt\" DESC");
+
                 var countSql = new StringBuilder("SELECT COUNT(*) FROM \"Requests\" WHERE 1=1");
 
                 var parameters = new DynamicParameters();
@@ -150,11 +163,22 @@ namespace ProjectManagement.Service.Service.Requests
                 }
 
                 int skip = (dto.PageIndex - 1) * dto.PageSize;
-                sql.Append(" LIMIT @PageSize OFFSET @Offset");
+                sql.Append(" LIMIT @PageSize OFFSET @Offset;");
                 parameters.Add("@PageSize", dto.PageSize);
                 parameters.Add("@Offset", skip);
 
-                var list = await db.QueryAsync<RequestModel>(sql.ToString(), parameters);
+                var list = await db.QueryAsync<RequestModel, RequestStatusModel, RequestModel>(
+                     sql.ToString(),
+                     (request, status) =>
+                     {
+                         request.RequestStatus = status;
+                         return request;
+                     },
+                     parameters,
+                     splitOn: "RequestStatus_Id"
+                    );
+
+
                 int totalPages = (int)Math.Ceiling((double)totalCount / dto.PageSize);
 
                 return PagedResult<RequestModel>.Create(list.ToList(), totalCount, dto.PageSize, list.Count(), dto.PageIndex, totalPages);
@@ -206,9 +230,8 @@ namespace ProjectManagement.Service.Service.Requests
                     ProjectDetails = item.ProjectDescription,
                     ResponsiblePerson = item.ResponsiblePerson,
                     CreatedAt = DateTime.UtcNow,
-                    Date = item.Date,
                     RequestStatusId = item.RequestStatusId,
-                    Sequence = item.Sequence,
+                    Date = item.Date,
                 };
 
                 await requestRepository.CreateAsync(request);
@@ -238,7 +261,11 @@ namespace ProjectManagement.Service.Service.Requests
                 ProjectDetails = dto.ProjectDetails,
                 ResponsiblePerson = dto.ResponsiblePerson,
                 CreatedAt = DateTime.UtcNow,
-                RequestStatusId = dto.RequestStatusId
+                RequestStatusId = dto.RequestStatusId,
+                Date = dto.Date,
+                Deadline = dto.Deadline,
+                Status = dto.Status,
+                Priority = dto.Priority,
             };
 
             await requestRepository.CreateAsync(request);
@@ -269,6 +296,9 @@ namespace ProjectManagement.Service.Service.Requests
             existRequest.ProjectDetails = dto.ProjectDetails;
             existRequest.ResponsiblePerson = dto.ResponsiblePerson;
             existRequest.Date = dto.Date;
+            existRequest.Status = dto.Status;
+            existRequest.Priority = dto.Priority;
+            existRequest.Deadline = dto.Deadline;
 
             existRequest.RequestStatusId = dto.RequestStatusId;
             existRequest.UpdatedAt = DateTime.UtcNow;
@@ -321,7 +351,7 @@ namespace ProjectManagement.Service.Service.Requests
                 { "ContactNumber", x => x.ContactNumber },
                 { "Notes", x => x.Notes },
                 { "ProjectDetails", x => x.ProjectDetails },
-                { "Date", x => x.Date },
+                { "Date", x => x.Date?.ToString() },
                 { "Department", x => x.Department },
                 { "Email", x => x.Email },
                 { "InquiryField", x => x.InquiryField },

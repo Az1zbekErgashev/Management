@@ -3,8 +3,9 @@
     public enum ProjectStatus
     {
         ToDO,
+        Create,
         InProgress,
-        Certificated,
-        Tested
+        Completed,
+        Canceled
     }
 }

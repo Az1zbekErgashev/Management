@@ -48,7 +48,7 @@ namespace ProjectManagement.Api.Controllers.Request
 
 
         [HttpPost("create")]
-        public async ValueTask<IActionResult> CreateAsync(RequestStatusForCreateDTO dto) => ResponseHandler.ReturnIActionResponse(await requestStatusService.CreateAsync(dto));
+        public async ValueTask<IActionResult> CreateAsync([FromBody] RequestStatusForCreateDTO dto) => ResponseHandler.ReturnIActionResponse(await requestStatusService.CreateAsync(dto));
 
 
 
@@ -65,6 +65,21 @@ namespace ProjectManagement.Api.Controllers.Request
 
         [HttpPost("create-request-many")]
         public async ValueTask<IActionResult> CreateManyRequest([FromForm] ForCreateManyRequest dto) => ResponseHandler.ReturnIActionResponse(await requestStatusService.CreateRequestAsync(dto.RequestStatusId));
+
+        [HttpDelete("delete-all-data")]
+        public async ValueTask<IActionResult> DeleteManyRequest()
+        {
+            var alldata = await genericRepository.GetAll().ToListAsync();
+
+            foreach (var item in alldata)
+            {
+                await genericRepository.DeleteAsync(item.Id);
+            }
+
+            await genericRepository.SaveChangesAsync();
+
+            return ResponseHandler.ReturnIActionResponse("true");
+        }
 
         [HttpPost("create-request")]
         [Authorize]
@@ -110,37 +125,20 @@ namespace ProjectManagement.Api.Controllers.Request
 
         [HttpGet("export-excel")]
         [Authorize]
-        public async Task<IActionResult> ExportToExcel(int? requestCategoryId)
+        public async Task<IActionResult> ExportToExcel(int? requestCategoryId, int languageId = 0)
         {
             var query = genericRepository.GetAll().OrderBy(x => x.Id).AsQueryable();
 
-            if (requestCategoryId is not null) query.Where(x => x.RequestStatusId == requestCategoryId);
+            if (requestCategoryId is not null) query = query.Where(x => x.RequestStatusId == requestCategoryId);
 
             var requests = await query.ToListAsync();
 
             using var workbook = new XLWorkbook();
             var worksheet = workbook.Worksheets.Add("Requests");
 
-            // Заголовки на корейском
-            var headers = new string[]
-            {
-                "번호", 
-                "접수일", 
-                "문의유형",
-                "기업명", 
-                "담당부서", 
-                "담당자명", 
-                "문의분야", 
-                "고객사 회사",
-                "프로젝트 내용", 
-                "고객사", 
-                "연락처", 
-                "이메일", 
-                "대응 상황", 
-                "최종 결과", 
-                "비고 (최종결과 사유)" 
-            };
-
+            var headers = languageId == 1
+               ? new string[] { "No.", "Date", "Inquiry Type", "Company Name", "Department", "Responsible Person", "Inquiry Field", "Client Company", "Project Details", "Client", "Contact Number", "Email", "Processing Status", "Final Result", "Notes" }
+               : new string[] { "번호", "접수일", "문의유형", "기업명", "담당부서", "담당자명", "문의분야", "고객사 회사", "프로젝트 내용", "고객사", "연락처", "이메일", "대응 상황", "최종 결과", "비고 (최종결과 사유)" };
             for (int i = 0; i < headers.Length; i++)
             {
                 worksheet.Cell(1, i + 1).Value = headers[i];
