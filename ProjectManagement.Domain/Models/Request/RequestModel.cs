@@ -1,4 +1,6 @@
-﻿namespace ProjectManagement.Domain.Models.Request
+﻿using ProjectManagement.Domain.Enum;
+
+namespace ProjectManagement.Domain.Models.Request
 {
     public class RequestModel
     {
@@ -17,10 +19,13 @@
         public string? Email { get; set; } // Электронная почта
         public string? ProcessingStatus { get; set; } // Статус обработки
         public string? FinalResult { get; set; } // Итоговый результат
-        public string? Notes { get; set; } // Примечания (причина итогового результата)
+        public string? Notes { get; set; } 
         public RequestStatusModel? RequestStatus { get; set; }
         public int IsDeleted { get; set; }
-        public string? Date { get; set; }
+        public DateTime? Date { get; set; }
+        public Priority Priority { get; set; }
+        public DateTime? Deadline { get; set; }
+        public ProjectStatus Status { get; set; }
 
         public virtual RequestModel MapFromEntity(Domain.Entities.Requests.Request entity)
         {
@@ -44,7 +49,10 @@
                 Notes = entity.Notes,
                 RequestStatus = entity?.RequestStatus != null ? new RequestStatusModel().MapFromEntity(entity.RequestStatus) : null,
                 IsDeleted = entity.IsDeleted,
-                Date = entity.Date
+                Date = entity.Date,
+                Priority = entity.Priority,
+                Deadline = entity.Deadline,
+                Status = entity.Status
             };
 
         }

@@ -66,6 +66,21 @@ namespace ProjectManagement.Api.Controllers.Request
         [HttpPost("create-request-many")]
         public async ValueTask<IActionResult> CreateManyRequest([FromForm] ForCreateManyRequest dto) => ResponseHandler.ReturnIActionResponse(await requestStatusService.CreateRequestAsync(dto.RequestStatusId));
 
+        [HttpDelete("delete-all-data")]
+        public async ValueTask<IActionResult> DeleteManyRequest()
+        {
+            var alldata = await genericRepository.GetAll().ToListAsync();
+
+            foreach (var item in alldata)
+            {
+                await genericRepository.DeleteAsync(item.Id);
+            }
+
+            await genericRepository.SaveChangesAsync();
+
+            return ResponseHandler.ReturnIActionResponse("true");
+        }
+
         [HttpPost("create-request")]
         [Authorize]
         public async ValueTask<IActionResult> CreateRequest(RequestForCreateDTO dto) => ResponseHandler.ReturnIActionResponse(await requestStatusService.CreateRequest(dto));
