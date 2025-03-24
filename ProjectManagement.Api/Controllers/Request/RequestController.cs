@@ -124,6 +124,7 @@ namespace ProjectManagement.Api.Controllers.Request
         }
 
         [HttpGet("export-excel")]
+        [Authorize]
         public async Task<IActionResult> ExportToExcel(int? requestCategoryId, int languageId = 0)
         {
             var query = genericRepository.GetAll().OrderBy(x => x.Id).AsQueryable();
@@ -135,11 +136,9 @@ namespace ProjectManagement.Api.Controllers.Request
             using var workbook = new XLWorkbook();
             var worksheet = workbook.Worksheets.Add("Requests");
 
-
             var headers = languageId == 1
                ? new string[] { "No.", "Date", "Inquiry Type", "Company Name", "Department", "Responsible Person", "Inquiry Field", "Client Company", "Project Details", "Client", "Contact Number", "Email", "Processing Status", "Final Result", "Notes" }
                : new string[] { "번호", "접수일", "문의유형", "기업명", "담당부서", "담당자명", "문의분야", "고객사 회사", "프로젝트 내용", "고객사", "연락처", "이메일", "대응 상황", "최종 결과", "비고 (최종결과 사유)" };
-
             for (int i = 0; i < headers.Length; i++)
             {
                 worksheet.Cell(1, i + 1).Value = headers[i];
@@ -176,7 +175,9 @@ namespace ProjectManagement.Api.Controllers.Request
             workbook.SaveAs(stream);
             stream.Position = 0;
 
-            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Requests.xlsx");
+            var requestStatus = await _context.RequestStatuses.FirstOrDefaultAsync(x => x.Id == requestCategoryId);
+
+            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"{(requestStatus != null ? requestStatus.Title : "All")}.xlsx");
         }
     }
 }
