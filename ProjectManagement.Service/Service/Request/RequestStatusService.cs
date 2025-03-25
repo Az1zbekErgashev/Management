@@ -239,7 +239,7 @@ namespace ProjectManagement.Service.Service.Requests
                     InquiryType = item.InquiryType,
                     ProcessingStatus = item.ResponseStatus,
                     Notes = item.Notes,
-                    ProjectDetails = item.ProjectDescription,
+                    ProjectDetails = item.ProjectDetails,
                     ResponsiblePerson = item.ResponsiblePerson,
                     CreatedAt = DateTime.UtcNow,
                     RequestStatusId = item.RequestStatusId,
