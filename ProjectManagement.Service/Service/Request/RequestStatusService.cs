@@ -14,6 +14,7 @@ using ProjectManagement.Service.Interfaces.IRepositories;
 using ProjectManagement.Service.Interfaces.Log;
 using ProjectManagement.Service.Interfaces.Request;
 using System.Data.Common;
+using System.Linq;
 using System.Text;
 using System.Text.Json;
 namespace ProjectManagement.Service.Service.Requests
@@ -115,21 +116,40 @@ namespace ProjectManagement.Service.Service.Requests
 
                 void AppendFilters(string columnName, List<string>? values, bool strict = false)
                 {
+
                     if (values != null && values.Any())
                     {
-                        var paramNames = new List<string>();
-                        for (int i = 0; i < values.Count; i++)
+                        bool hasUnknown = values.Contains("Unknown");
+                        values.RemoveAll(v => v == "Unknown");
+
+                        var conditionsList = new List<string>();
+
+                        if (values.Any()) 
                         {
-                            string paramName = $"@{columnName}{i}";
-                            paramNames.Add(paramName);
-                            parameters.Add(paramName, strict ? values[i] : $"%{values[i]}%");
+                            var paramNames = new List<string>();
+                            for (int i = 0; i < values.Count; i++)
+                            {
+                                string paramName = $"@{columnName}{i}";
+                                paramNames.Add(paramName);
+                                parameters.Add(paramName, strict ? values[i] : $"%{values[i]}%");
+                            }
+
+                            string condition = string.Join(" OR ", paramNames.Select(p => strict
+                                ? $"r.\"{columnName}\" = {p}"
+                                : $"r.\"{columnName}\" ILIKE {p}"));
+
+                            conditionsList.Add($"({condition})");
                         }
 
-                        string condition = string.Join(" OR ", paramNames.Select(p => strict
-                            ? $"r.\"{columnName}\" = {p}"
-                            : $"r.\"{columnName}\" ILIKE {p}"));
+                        if (hasUnknown) 
+                        {
+                            conditionsList.Add($"r.\"{columnName}\" IS NULL");
+                        }
 
-                        conditions.Add($"({condition})");
+                        if (conditionsList.Any())
+                        {
+                            conditions.Add($"({string.Join(" OR ", conditionsList)})");
+                        }
                     }
                 }
 
@@ -261,19 +281,37 @@ namespace ProjectManagement.Service.Service.Requests
                 {
                     if (values != null && values.Any())
                     {
-                        var paramNames = new List<string>();
-                        for (int i = 0; i < values.Count; i++)
+                        bool hasUnknown = values.Contains("Unknown");
+                        values.RemoveAll(v => v == "Unknown");
+
+                        var conditionsList = new List<string>();
+
+                        if (values.Any())
                         {
-                            string paramName = $"@{columnName}{i}";
-                            paramNames.Add(paramName);
-                            parameters.Add(paramName, strict ? values[i] : $"%{values[i]}%");
+                            var paramNames = new List<string>();
+                            for (int i = 0; i < values.Count; i++)
+                            {
+                                string paramName = $"@{columnName}{i}";
+                                paramNames.Add(paramName);
+                                parameters.Add(paramName, strict ? values[i] : $"%{values[i]}%");
+                            }
+
+                            string condition = string.Join(" OR ", paramNames.Select(p => strict
+                                ? $"r.\"{columnName}\" = {p}"
+                                : $"r.\"{columnName}\" ILIKE {p}"));
+
+                            conditionsList.Add($"({condition})");
                         }
 
-                        string condition = string.Join(" OR ", paramNames.Select(p => strict
-                            ? $"r.\"{columnName}\" = {p}"
-                            : $"r.\"{columnName}\" ILIKE {p}"));
+                        if (hasUnknown)
+                        {
+                            conditionsList.Add($"r.\"{columnName}\" IS NULL");
+                        }
 
-                        conditions.Add($"({condition})");
+                        if (conditionsList.Any())
+                        {
+                            conditions.Add($"({string.Join(" OR ", conditionsList)})");
+                        }
                     }
                 }
 
@@ -405,19 +443,37 @@ namespace ProjectManagement.Service.Service.Requests
                 {
                     if (values != null && values.Any())
                     {
-                        var paramNames = new List<string>();
-                        for (int i = 0; i < values.Count; i++)
+                        bool hasUnknown = values.Contains("Unknown");
+                        values.RemoveAll(v => v == "Unknown");
+
+                        var conditionsList = new List<string>();
+
+                        if (values.Any())
                         {
-                            string paramName = $"@{columnName}{i}";
-                            paramNames.Add(paramName);
-                            parameters.Add(paramName, strict ? values[i] : $"%{values[i]}%");
+                            var paramNames = new List<string>();
+                            for (int i = 0; i < values.Count; i++)
+                            {
+                                string paramName = $"@{columnName}{i}";
+                                paramNames.Add(paramName);
+                                parameters.Add(paramName, strict ? values[i] : $"%{values[i]}%");
+                            }
+
+                            string condition = string.Join(" OR ", paramNames.Select(p => strict
+                                ? $"r.\"{columnName}\" = {p}"
+                                : $"r.\"{columnName}\" ILIKE {p}"));
+
+                            conditionsList.Add($"({condition})");
                         }
 
-                        string condition = string.Join(" OR ", paramNames.Select(p => strict
-                            ? $"r.\"{columnName}\" = {p}"
-                            : $"r.\"{columnName}\" ILIKE {p}"));
+                        if (hasUnknown)
+                        {
+                            conditionsList.Add($"r.\"{columnName}\" IS NULL");
+                        }
 
-                        conditions.Add($"({condition})");
+                        if (conditionsList.Any())
+                        {
+                            conditions.Add($"({string.Join(" OR ", conditionsList)})");
+                        }
                     }
                 }
 
