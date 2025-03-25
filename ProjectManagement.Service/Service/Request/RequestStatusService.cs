@@ -87,7 +87,7 @@ namespace ProjectManagement.Service.Service.Requests
             SELECT 
                 r.*, 
                 rs.""Id"" AS RequestStatus_Id, 
-                rs.""Title""
+                rs.""Title"", rs.""Id""
             FROM ""Requests"" r
             LEFT JOIN ""RequestStatuses"" rs ON r.""RequestStatusId"" = rs.""Id""
         ");
