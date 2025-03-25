@@ -537,9 +537,6 @@ namespace ProjectManagement.Service.Service.Requests
                 Console.WriteLine("JSON-файл пуст или содержит некорректные данные.");
                 return "AS";
             }
-
-            for (int i = 0; i < 1000; i++)
-            {
                 foreach (var item in requests)
                 {
                     var request = new Domain.Entities.Requests.Request
@@ -564,10 +561,7 @@ namespace ProjectManagement.Service.Service.Requests
 
                     await requestRepository.CreateAsync(request);
                 }
-                    await requestRepository.SaveChangesAsync();
-            }
-
-
+             await requestRepository.SaveChangesAsync();
             return "success";
         }
 
