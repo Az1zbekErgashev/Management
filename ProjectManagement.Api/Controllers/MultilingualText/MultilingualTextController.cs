@@ -45,6 +45,5 @@ namespace ProjectManagement.Api.Controllers.MultilingualText
         [Authorize]
         public async ValueTask<IActionResult> UpdateAsync(MultilingualTextForCreateDTO dto) => ResponseHandler.ReturnIActionResponse(await multilingualTextService.UpdateAsync(dto));
 
-
     }
 }

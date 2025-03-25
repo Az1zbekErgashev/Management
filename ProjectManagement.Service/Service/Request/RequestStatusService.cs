@@ -84,24 +84,25 @@ namespace ProjectManagement.Service.Service.Requests
             using (var db = new NpgsqlConnection(connectionString))
             {
                 var sql = new StringBuilder(@"
-                    SELECT 
-                        r.*, 
-                        rs.""Id"" AS RequestStatus_Id, 
-                        rs.""Title"",
-                        rs.""Id""
-                    FROM ""Requests"" r
-                    LEFT JOIN ""RequestStatuses"" rs ON r.""RequestStatusId"" = rs.""Id""
-                    WHERE 1=1
-                    ");
+            SELECT 
+                r.*, 
+                rs.""Id"" AS RequestStatus_Id, 
+                rs.""Title""
+            FROM ""Requests"" r
+            LEFT JOIN ""RequestStatuses"" rs ON r.""RequestStatusId"" = rs.""Id""
+        ");
 
-                sql.Append(" AND r.\"IsDeleted\" = 0");
-                sql.Append(" ORDER BY r.\"CreatedAt\" DESC");
-
-                var countSql = new StringBuilder("SELECT COUNT(*) FROM \"Requests\" WHERE 1=1");
+                var countSql = new StringBuilder(@"SELECT COUNT(*) FROM ""Requests"" r
+            LEFT JOIN ""RequestStatuses"" rs ON r.""RequestStatusId"" = rs.""Id""
+        ");
 
                 var parameters = new DynamicParameters();
+                var conditions = new List<string>();
 
-                void AppendFilters(StringBuilder sql, StringBuilder countSql, DynamicParameters parameters, string columnName, List<string>? values, bool strict = false)
+                // Default condition to exclude deleted records
+                conditions.Add("r.\"IsDeleted\" = 0");
+
+                void AppendFilters(string columnName, List<string>? values, bool strict = false)
                 {
                     if (values != null && values.Any())
                     {
@@ -114,42 +115,58 @@ namespace ProjectManagement.Service.Service.Requests
                         }
 
                         string condition = string.Join(" OR ", paramNames.Select(p => strict
-                            ? $"\"{columnName}\" = {p}"
-                            : $"\"{columnName}\" ILIKE {p}"));
+                            ? $"r.\"{columnName}\" = {p}"
+                            : $"r.\"{columnName}\" ILIKE {p}"));
 
-                        sql.Append($" AND ({condition})");
-                        countSql.Append($" AND ({condition})");
+                        conditions.Add($"({condition})");
                     }
                 }
 
-                AppendFilters(sql, countSql, parameters, "InquiryType", dto.InquiryType);
-                AppendFilters(sql, countSql, parameters, "InquiryField", dto.InquiryField);
-                AppendFilters(sql, countSql, parameters, "CompanyName", dto.CompanyName);
-                AppendFilters(sql, countSql, parameters, "Department", dto.Department);
-                AppendFilters(sql, countSql, parameters, "ResponsiblePerson", dto.ResponsiblePerson);
-                AppendFilters(sql, countSql, parameters, "ClientCompany", dto.ClientCompany, strict: true);
-                AppendFilters(sql, countSql, parameters, "Email", dto.Email);
-                AppendFilters(sql, countSql, parameters, "ProcessingStatus", dto.ProcessingStatus);
-                AppendFilters(sql, countSql, parameters, "FinalResult", dto.FinalResult);
-                AppendFilters(sql, countSql, parameters, "Notes", dto.Notes);
-                AppendFilters(sql, countSql, parameters, "Date", dto.Date);
-                AppendFilters(sql, countSql, parameters, "ContactNumber", dto.ContactNumber);
-                AppendFilters(sql, countSql, parameters, "ProjectDetails", dto.ProjectDetails);
+                // Apply filters
+                AppendFilters("InquiryType", dto.InquiryType);
+                AppendFilters("InquiryField", dto.InquiryField);
+                AppendFilters("CompanyName", dto.CompanyName);
+                AppendFilters("Department", dto.Department);
+                AppendFilters("ResponsiblePerson", dto.ResponsiblePerson);
+                AppendFilters("ClientCompany", dto.ClientCompany, strict: true);
+                AppendFilters("Email", dto.Email);
+                AppendFilters("ProcessingStatus", dto.ProcessingStatus);
+                AppendFilters("FinalResult", dto.FinalResult);
+                AppendFilters("Notes", dto.Notes);
+                AppendFilters("Date", dto.Date);
+                AppendFilters("ContactNumber", dto.ContactNumber);
+                AppendFilters("ProjectDetails", dto.ProjectDetails);
 
                 if (dto?.RequestStatusId != null)
                 {
-                    sql.Append(" AND \"RequestStatusId\" = @RequestStatusId");
-                    countSql.Append(" AND \"RequestStatusId\" = @RequestStatusId");
+                    conditions.Add("r.\"RequestStatusId\" = @RequestStatusId");
                     parameters.Add("@RequestStatusId", dto.RequestStatusId);
                 }
 
                 if (dto?.CreatedAt != null)
                 {
-                    sql.Append(" AND \"CreatedAt\" >= @CreatedAt");
-                    countSql.Append(" AND \"CreatedAt\" >= @CreatedAt");
+                    conditions.Add("r.\"CreatedAt\" >= @CreatedAt");
                     parameters.Add("@CreatedAt", dto.CreatedAt);
                 }
 
+                // Append WHERE clause if there are conditions
+                if (conditions.Any())
+                {
+                    sql.Append(" WHERE " + string.Join(" AND ", conditions));
+                    countSql.Append(" WHERE " + string.Join(" AND ", conditions));
+                }
+
+                // Sorting
+                if (!string.IsNullOrEmpty(dto.SortBy) && !string.IsNullOrEmpty(dto.Order))
+                {
+                    sql.Append($" ORDER BY r.\"{dto.SortBy}\" {(dto.Order.ToLower() == "ascend" ? "ASC" : "DESC")}");
+                }
+                else
+                {
+                    sql.Append(" ORDER BY r.\"CreatedAt\" DESC");
+                }
+
+                // Pagination
                 int totalCount = await db.ExecuteScalarAsync<int>(countSql.ToString(), parameters);
 
                 if (totalCount == 0)
@@ -157,27 +174,22 @@ namespace ProjectManagement.Service.Service.Requests
                     return PagedResult<RequestModel>.Create(new List<RequestModel>(), 0, dto.PageSize, 0, dto.PageIndex, 0);
                 }
 
-                if (!string.IsNullOrEmpty(dto.SortBy) && !string.IsNullOrEmpty(dto.Order))
-                {
-                    sql.Append($" ORDER BY \"{dto.SortBy}\" {(dto.Order.ToLower() == "ascend" ? "ASC" : "DESC")}");
-                }
-
                 int skip = (dto.PageIndex - 1) * dto.PageSize;
-                sql.Append(" LIMIT @PageSize OFFSET @Offset;");
+                sql.Append(" LIMIT @PageSize OFFSET @Offset");
                 parameters.Add("@PageSize", dto.PageSize);
                 parameters.Add("@Offset", skip);
 
+                // Fetch data
                 var list = await db.QueryAsync<RequestModel, RequestStatusModel, RequestModel>(
-                     sql.ToString(),
-                     (request, status) =>
-                     {
-                         request.RequestStatus = status;
-                         return request;
-                     },
-                     parameters,
-                     splitOn: "RequestStatus_Id"
-                    );
-
+                    sql.ToString(),
+                    (request, status) =>
+                    {
+                        request.RequestStatus = status;
+                        return request;
+                    },
+                    parameters,
+                    splitOn: "RequestStatus_Id"
+                );
 
                 int totalPages = (int)Math.Ceiling((double)totalCount / dto.PageSize);
 
