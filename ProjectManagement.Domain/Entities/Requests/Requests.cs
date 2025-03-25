@@ -21,9 +21,8 @@ public class Request : Auditable
     public RequestStatus RequestStatus { get; set; }
     public int RequestStatusId { get; set; }
 
-
-    [Column(TypeName = "timestamp without time zone")]
-    public DateTime? Date { get; set; }
+    [Column(TypeName = "text")]
+    public string? Date { get; set; }
     public ProjectStatus Status { get; set; } = 0;
     public DateTime? Deadline { get; set; }
     public Priority Priority { get; set; } = Priority.Normal;

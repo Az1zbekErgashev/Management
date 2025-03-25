@@ -23,9 +23,7 @@ namespace ProjectManagement.Service.DTOs.Request
         public string? Notes { get; set; } 
         public int RequestStatusId { get; set; }
         public string? ProjectDescription { get; set; }
-
-        [JsonConverter(typeof(NullableDateTimeConverter))]
-        public DateTime? Date { get; set; }
+        public string? Date { get; set; }
         public ProjectStatus Status { get; set; } = 0;
         public DateTime? Deadline { get; set; }
         public Priority Priority { get; set; } = Priority.Normal;

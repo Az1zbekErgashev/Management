@@ -22,7 +22,7 @@ namespace ProjectManagement.Domain.Models.Request
         public string? Notes { get; set; } 
         public RequestStatusModel? RequestStatus { get; set; }
         public int IsDeleted { get; set; }
-        public DateTime? Date { get; set; }
+        public string? Date { get; set; }
         public Priority Priority { get; set; }
         public DateTime? Deadline { get; set; }
         public ProjectStatus Status { get; set; }

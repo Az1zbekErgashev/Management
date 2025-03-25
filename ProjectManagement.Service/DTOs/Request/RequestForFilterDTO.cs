@@ -1,4 +1,5 @@
 ﻿using ProjectManagement.Domain.Configuration;
+using ProjectManagement.Domain.Enum;
 
 namespace ProjectManagement.Service.DTOs.Request
 {
@@ -22,5 +23,9 @@ namespace ProjectManagement.Service.DTOs.Request
         public List<string>? CompanyName { get; set; }
         public int? RequestStatusId { get; set; }
         public DateTime? CreatedAt { get; set; }
+        public List<Priority>? Priority { get; set; }
+        public List<ProjectStatus>? Status { get; set; }
+        public int? Deadline { get; set; }
     }
+   
 }

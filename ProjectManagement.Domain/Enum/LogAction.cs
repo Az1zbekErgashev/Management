@@ -8,6 +8,10 @@
         UpdateUserInformation,
         UploadExcel,
         DownloadExcel,
-        CreateRequest
+        CreateRequest,
+        UpdateRequest,
+        ChangeRequestStatus, 
+        DeleteRequest,
+        RestoreRequest
     }
 }

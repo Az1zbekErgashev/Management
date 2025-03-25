@@ -1,13 +1,16 @@
 ﻿using Dapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
+using ProjectManagement.Domain.Entities.Logs;
 using ProjectManagement.Domain.Entities.Requests;
 using ProjectManagement.Domain.Models.PagedResult;
 using ProjectManagement.Domain.Models.Request;
 using ProjectManagement.Service.DTOs.Request;
 using ProjectManagement.Service.Exception;
 using ProjectManagement.Service.Interfaces.IRepositories;
+using ProjectManagement.Service.Interfaces.Log;
 using ProjectManagement.Service.Interfaces.Request;
 using System.Text;
 using System.Text.Json;
@@ -18,14 +21,21 @@ namespace ProjectManagement.Service.Service.Requests
         private readonly IGenericRepository<RequestStatus> requestStatusRepository;
         private readonly IGenericRepository<Domain.Entities.Requests.Request> requestRepository;
         private readonly IConfiguration configuration;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IGenericRepository<Logs> _logRepository;
         public RequestStatusService(
             IGenericRepository<RequestStatus> requestStatusRepository,
             IGenericRepository<Domain.Entities.Requests.Request> requestRepository,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            IHttpContextAccessor httpContextAccessor
+,
+            IGenericRepository<Logs> logRepository)
         {
             this.requestStatusRepository = requestStatusRepository;
             this.requestRepository = requestRepository;
             this.configuration = configuration;
+            _httpContextAccessor = httpContextAccessor;
+            _logRepository = logRepository;
         }
 
         public async ValueTask<List<RequestStatusModel>> GetAsync()
@@ -84,22 +94,21 @@ namespace ProjectManagement.Service.Service.Requests
             using (var db = new NpgsqlConnection(connectionString))
             {
                 var sql = new StringBuilder(@"
-            SELECT 
-                r.*, 
-                rs.""Id"" AS RequestStatus_Id, 
-                rs.""Title"", rs.""Id""
-            FROM ""Requests"" r
-            LEFT JOIN ""RequestStatuses"" rs ON r.""RequestStatusId"" = rs.""Id""
-        ");
+                SELECT 
+                    r.*, 
+                    rs.""Id"" AS RequestStatus_Id, 
+                    rs.""Title"", rs.""Id""
+                FROM ""Requests"" r
+                LEFT JOIN ""RequestStatuses"" rs ON r.""RequestStatusId"" = rs.""Id""
+                ");
 
-                var countSql = new StringBuilder(@"SELECT COUNT(*) FROM ""Requests"" r
-            LEFT JOIN ""RequestStatuses"" rs ON r.""RequestStatusId"" = rs.""Id""
-        ");
+                        var countSql = new StringBuilder(@"SELECT COUNT(*) FROM ""Requests"" r
+                    LEFT JOIN ""RequestStatuses"" rs ON r.""RequestStatusId"" = rs.""Id""
+                ");
 
                 var parameters = new DynamicParameters();
                 var conditions = new List<string>();
 
-                // Default condition to exclude deleted records
                 conditions.Add("r.\"IsDeleted\" = 0");
 
                 void AppendFilters(string columnName, List<string>? values, bool strict = false)
@@ -123,19 +132,20 @@ namespace ProjectManagement.Service.Service.Requests
                 }
 
                 // Apply filters
-                AppendFilters("InquiryType", dto.InquiryType);
-                AppendFilters("InquiryField", dto.InquiryField);
-                AppendFilters("CompanyName", dto.CompanyName);
-                AppendFilters("Department", dto.Department);
-                AppendFilters("ResponsiblePerson", dto.ResponsiblePerson);
+                AppendFilters("InquiryType", dto.InquiryType, strict: true);
+                AppendFilters("InquiryField", dto.InquiryField, strict: true);
+                AppendFilters("CompanyName", dto.CompanyName, strict: true);
+                AppendFilters("Department", dto.Department, strict: true);
+                AppendFilters("ResponsiblePerson", dto.ResponsiblePerson, strict: true);
                 AppendFilters("ClientCompany", dto.ClientCompany, strict: true);
-                AppendFilters("Email", dto.Email);
-                AppendFilters("ProcessingStatus", dto.ProcessingStatus);
-                AppendFilters("FinalResult", dto.FinalResult);
-                AppendFilters("Notes", dto.Notes);
-                AppendFilters("Date", dto.Date);
-                AppendFilters("ContactNumber", dto.ContactNumber);
-                AppendFilters("ProjectDetails", dto.ProjectDetails);
+                AppendFilters("Email", dto.Email, strict: true);
+                AppendFilters("ProcessingStatus", dto.ProcessingStatus, strict: true);
+                AppendFilters("FinalResult", dto.FinalResult, strict: true);
+                AppendFilters("Notes", dto.Notes, strict: true);
+                AppendFilters("Date", dto.Date, strict: true);
+                AppendFilters("Client", dto.Client, strict: true);
+                AppendFilters("ContactNumber", dto.ContactNumber, strict: true);
+                AppendFilters("ProjectDetails", dto.ProjectDetails, strict: true);
 
                 if (dto?.RequestStatusId != null)
                 {
@@ -143,10 +153,312 @@ namespace ProjectManagement.Service.Service.Requests
                     parameters.Add("@RequestStatusId", dto.RequestStatusId);
                 }
 
-                if (dto?.CreatedAt != null)
+                if (dto.Status != null && dto.Status.Any())
                 {
-                    conditions.Add("r.\"CreatedAt\" >= @CreatedAt");
-                    parameters.Add("@CreatedAt", dto.CreatedAt);
+                    var statusParams = new List<string>();
+                    for (int i = 0; i < dto.Status.Count; i++)
+                    {
+                        string paramName = $"@Status{i}";
+                        statusParams.Add(paramName);
+                        parameters.Add(paramName, (int)dto.Status[i]); 
+                    }
+                    conditions.Add($"r.\"Status\" IN ({string.Join(", ", statusParams)})");
+                }
+
+                if (dto.Deadline.HasValue)
+                {
+                    conditions.Add($"DATE_PART('day', r.\"Deadline\" - r.\"CreatedAt\") = @DeadlineDays");
+                    parameters.Add("@DeadlineDays", dto.Deadline.Value);
+                }
+
+                if (dto.Priority != null && dto.Priority.Any())
+                {
+                    var statusParams = new List<string>();
+                    for (int i = 0; i < dto.Priority.Count; i++)
+                    {
+                        string paramName = $"@Priority{i}";
+                        statusParams.Add(paramName);
+                        parameters.Add(paramName, (int)dto.Priority[i]);
+                    }
+                    conditions.Add($"r.\"Priority\" IN ({string.Join(", ", statusParams)})");
+                }
+
+                // Append WHERE clause if there are conditions
+                if (conditions.Any())
+                {
+                    sql.Append(" WHERE " + string.Join(" AND ", conditions));
+                    countSql.Append(" WHERE " + string.Join(" AND ", conditions));
+                }
+
+                // Sorting
+                if (!string.IsNullOrEmpty(dto.SortBy) && !string.IsNullOrEmpty(dto.Order))
+                {
+                    sql.Append($" ORDER BY r.\"{dto.SortBy}\" {(dto.Order.ToLower() == "ascend" ? "ASC" : "DESC")}");
+                }
+                else
+                {
+                    sql.Append(" ORDER BY r.\"CreatedAt\" DESC");
+                }
+
+                // Pagination
+                int totalCount = await db.ExecuteScalarAsync<int>(countSql.ToString(), parameters);
+
+                if (totalCount == 0)
+                {
+                    return PagedResult<RequestModel>.Create(new List<RequestModel>(), 0, dto.PageSize, 0, dto.PageIndex, 0);
+                }
+
+                int skip = (dto.PageIndex - 1) * dto.PageSize;
+                sql.Append(" LIMIT @PageSize OFFSET @Offset");
+                parameters.Add("@PageSize", dto.PageSize);
+                parameters.Add("@Offset", skip);
+
+                // Fetch data
+                var list = await db.QueryAsync<RequestModel, RequestStatusModel, RequestModel>(
+                    sql.ToString(),
+                    (request, status) =>
+                    {
+                        request.RequestStatus = status;
+                        return request;
+                    },
+                    parameters,
+                    splitOn: "RequestStatus_Id"
+                );
+
+                int totalPages = (int)Math.Ceiling((double)totalCount / dto.PageSize);
+
+                return PagedResult<RequestModel>.Create(list.ToList(), totalCount, dto.PageSize, list.Count(), dto.PageIndex, totalPages);
+            }
+        }
+
+
+        public async ValueTask<PagedResult<RequestModel>> GetDeletedRequeststAsync(RequestForFilterDTO dto)
+        {
+            var connectionString = configuration.GetConnectionString("PostgresConnection");
+            using (var db = new NpgsqlConnection(connectionString))
+            {
+                var sql = new StringBuilder(@"
+                SELECT 
+                    r.*, 
+                    rs.""Id"" AS RequestStatus_Id, 
+                    rs.""Title"", rs.""Id""
+                FROM ""Requests"" r
+                LEFT JOIN ""RequestStatuses"" rs ON r.""RequestStatusId"" = rs.""Id""
+                ");
+
+                var countSql = new StringBuilder(@"SELECT COUNT(*) FROM ""Requests"" r
+                    LEFT JOIN ""RequestStatuses"" rs ON r.""RequestStatusId"" = rs.""Id""
+                ");
+
+                var parameters = new DynamicParameters();
+                var conditions = new List<string>();
+
+                conditions.Add("r.\"IsDeleted\" = 1");
+
+                void AppendFilters(string columnName, List<string>? values, bool strict = false)
+                {
+                    if (values != null && values.Any())
+                    {
+                        var paramNames = new List<string>();
+                        for (int i = 0; i < values.Count; i++)
+                        {
+                            string paramName = $"@{columnName}{i}";
+                            paramNames.Add(paramName);
+                            parameters.Add(paramName, strict ? values[i] : $"%{values[i]}%");
+                        }
+
+                        string condition = string.Join(" OR ", paramNames.Select(p => strict
+                            ? $"r.\"{columnName}\" = {p}"
+                            : $"r.\"{columnName}\" ILIKE {p}"));
+
+                        conditions.Add($"({condition})");
+                    }
+                }
+
+                // Apply filters
+                AppendFilters("InquiryType", dto.InquiryType, strict: true);
+                AppendFilters("InquiryField", dto.InquiryField, strict: true);
+                AppendFilters("CompanyName", dto.CompanyName, strict: true);
+                AppendFilters("Department", dto.Department, strict: true);
+                AppendFilters("ResponsiblePerson", dto.ResponsiblePerson, strict: true);
+                AppendFilters("ClientCompany", dto.ClientCompany, strict: true);
+                AppendFilters("Email", dto.Email, strict: true);
+                AppendFilters("ProcessingStatus", dto.ProcessingStatus, strict: true);
+                AppendFilters("FinalResult", dto.FinalResult, strict: true);
+                AppendFilters("Notes", dto.Notes, strict: true);
+                AppendFilters("Date", dto.Date, strict: true);
+                AppendFilters("Client", dto.Client, strict: true);
+                AppendFilters("ContactNumber", dto.ContactNumber, strict: true);
+                AppendFilters("ProjectDetails", dto.ProjectDetails, strict: true);
+
+                if (dto?.RequestStatusId != null)
+                {
+                    conditions.Add("r.\"RequestStatusId\" = @RequestStatusId");
+                    parameters.Add("@RequestStatusId", dto.RequestStatusId);
+                }
+
+                if (dto.Status != null && dto.Status.Any())
+                {
+                    var statusParams = new List<string>();
+                    for (int i = 0; i < dto.Status.Count; i++)
+                    {
+                        string paramName = $"@Status{i}";
+                        statusParams.Add(paramName);
+                        parameters.Add(paramName, (int)dto.Status[i]);
+                    }
+                    conditions.Add($"r.\"Status\" IN ({string.Join(", ", statusParams)})");
+                }
+
+                if (dto.Deadline.HasValue)
+                {
+                    conditions.Add($"DATE_PART('day', r.\"Deadline\" - r.\"CreatedAt\") = @DeadlineDays");
+                    parameters.Add("@DeadlineDays", dto.Deadline.Value);
+                }
+
+                if (dto.Priority != null && dto.Priority.Any())
+                {
+                    var statusParams = new List<string>();
+                    for (int i = 0; i < dto.Priority.Count; i++)
+                    {
+                        string paramName = $"@Priority{i}";
+                        statusParams.Add(paramName);
+                        parameters.Add(paramName, (int)dto.Priority[i]);
+                    }
+                    conditions.Add($"r.\"Priority\" IN ({string.Join(", ", statusParams)})");
+                }
+
+                // Append WHERE clause if there are conditions
+                if (conditions.Any())
+                {
+                    sql.Append(" WHERE " + string.Join(" AND ", conditions));
+                    countSql.Append(" WHERE " + string.Join(" AND ", conditions));
+                }
+
+                // Sorting
+                if (!string.IsNullOrEmpty(dto.SortBy) && !string.IsNullOrEmpty(dto.Order))
+                {
+                    sql.Append($" ORDER BY r.\"{dto.SortBy}\" {(dto.Order.ToLower() == "ascend" ? "ASC" : "DESC")}");
+                }
+                else
+                {
+                    sql.Append(" ORDER BY r.\"CreatedAt\" DESC");
+                }
+
+                // Pagination
+                int totalCount = await db.ExecuteScalarAsync<int>(countSql.ToString(), parameters);
+
+                if (totalCount == 0)
+                {
+                    return PagedResult<RequestModel>.Create(new List<RequestModel>(), 0, dto.PageSize, 0, dto.PageIndex, 0);
+                }
+
+                int skip = (dto.PageIndex - 1) * dto.PageSize;
+                sql.Append(" LIMIT @PageSize OFFSET @Offset");
+                parameters.Add("@PageSize", dto.PageSize);
+                parameters.Add("@Offset", skip);
+
+                // Fetch data
+                var list = await db.QueryAsync<RequestModel, RequestStatusModel, RequestModel>(
+                    sql.ToString(),
+                    (request, status) =>
+                    {
+                        request.RequestStatus = status;
+                        return request;
+                    },
+                    parameters,
+                    splitOn: "RequestStatus_Id"
+                );
+
+                int totalPages = (int)Math.Ceiling((double)totalCount / dto.PageSize);
+
+                return PagedResult<RequestModel>.Create(list.ToList(), totalCount, dto.PageSize, list.Count(), dto.PageIndex, totalPages);
+            }
+        }
+
+
+        public async ValueTask<PagedResult<RequestModel>> GetPendingRequeststAsync(RequestForFilterDTO dto)
+        {
+            var connectionString = configuration.GetConnectionString("PostgresConnection");
+            using (var db = new NpgsqlConnection(connectionString))
+            {
+                var sql = new StringBuilder(@"
+                SELECT 
+                    r.*, 
+                    rs.""Id"" AS RequestStatus_Id, 
+                    rs.""Title"", rs.""Id""
+                FROM ""Requests"" r
+                LEFT JOIN ""RequestStatuses"" rs ON r.""RequestStatusId"" = rs.""Id""
+                ");
+
+                var countSql = new StringBuilder(@"SELECT COUNT(*) FROM ""Requests"" r
+                    LEFT JOIN ""RequestStatuses"" rs ON r.""RequestStatusId"" = rs.""Id""
+                ");
+
+                var parameters = new DynamicParameters();
+                var conditions = new List<string>();
+
+                conditions.Add("r.\"IsDeleted\" = 0");
+
+                void AppendFilters(string columnName, List<string>? values, bool strict = false)
+                {
+                    if (values != null && values.Any())
+                    {
+                        var paramNames = new List<string>();
+                        for (int i = 0; i < values.Count; i++)
+                        {
+                            string paramName = $"@{columnName}{i}";
+                            paramNames.Add(paramName);
+                            parameters.Add(paramName, strict ? values[i] : $"%{values[i]}%");
+                        }
+
+                        string condition = string.Join(" OR ", paramNames.Select(p => strict
+                            ? $"r.\"{columnName}\" = {p}"
+                            : $"r.\"{columnName}\" ILIKE {p}"));
+
+                        conditions.Add($"({condition})");
+                    }
+                }
+
+                // Apply filters
+                AppendFilters("InquiryType", dto.InquiryType, strict: true);
+                AppendFilters("InquiryField", dto.InquiryField, strict: true);
+                AppendFilters("CompanyName", dto.CompanyName, strict: true);
+                AppendFilters("Department", dto.Department, strict: true);
+                AppendFilters("ResponsiblePerson", dto.ResponsiblePerson, strict: true);
+                AppendFilters("ClientCompany", dto.ClientCompany, strict: true);
+                AppendFilters("Email", dto.Email, strict: true);
+                AppendFilters("ProcessingStatus", dto.ProcessingStatus, strict: true);
+                AppendFilters("FinalResult", dto.FinalResult, strict: true);
+                AppendFilters("Notes", dto.Notes, strict: true);
+                AppendFilters("Date", dto.Date, strict: true);
+                AppendFilters("Client", dto.Client, strict: true);
+                AppendFilters("ContactNumber", dto.ContactNumber, strict: true);
+                AppendFilters("ProjectDetails", dto.ProjectDetails, strict: true);
+
+                if (dto?.RequestStatusId != null)
+                {
+                    conditions.Add("r.\"RequestStatusId\" = @RequestStatusId");
+                    parameters.Add("@RequestStatusId", dto.RequestStatusId);
+                }
+
+                conditions.Add($"r.\"Status\" = 0");
+
+                if (dto.Deadline.HasValue)
+                {
+                    conditions.Add($"DATE_PART('day', r.\"Deadline\" - r.\"CreatedAt\") = @DeadlineDays");
+                    parameters.Add("@DeadlineDays", dto.Deadline.Value);
+                }
+
+                if (dto.Priority != null && dto.Priority.Any())
+                {
+                    var statusParams = new List<string>();
+                    for (int i = 0; i < dto.Priority.Count; i++)
+                    {
+                        string paramName = $"@Priority{i}";
+                        statusParams.Add(paramName);
+                        parameters.Add(paramName, (int)dto.Priority[i]);
+                    }
+                    conditions.Add($"r.\"Priority\" IN ({string.Join(", ", statusParams)})");
                 }
 
                 // Append WHERE clause if there are conditions
@@ -224,32 +536,35 @@ namespace ProjectManagement.Service.Service.Requests
                 return "AS";
             }
 
-            foreach (var item in requests)
+            for (int i = 0; i < 1000; i++)
             {
-                var request = new Domain.Entities.Requests.Request
+                foreach (var item in requests)
                 {
-                    Client = item.Client,
-                    ClientCompany = item.ClientCompany,
-                    CompanyName = item.CompanyName,
-                    ContactNumber = item.ContactNumber,
-                    Department = item.Department,
-                    Email = item.Email,
-                    FinalResult = item.FinalResult,
-                    InquiryField = item.InquiryField,
-                    InquiryType = item.InquiryType,
-                    ProcessingStatus = item.ResponseStatus,
-                    Notes = item.Notes,
-                    ProjectDetails = item.ProjectDetails,
-                    ResponsiblePerson = item.ResponsiblePerson,
-                    CreatedAt = DateTime.UtcNow,
-                    RequestStatusId = item.RequestStatusId,
-                    Date = item.Date,
-                };
+                    var request = new Domain.Entities.Requests.Request
+                    {
+                        Client = item.Client,
+                        ClientCompany = item.ClientCompany,
+                        CompanyName = item.CompanyName,
+                        ContactNumber = item.ContactNumber,
+                        Department = item.Department,
+                        Email = item.Email,
+                        FinalResult = item.FinalResult,
+                        InquiryField = item.InquiryField,
+                        InquiryType = item.InquiryType,
+                        ProcessingStatus = item.ResponseStatus,
+                        Notes = item.Notes,
+                        ProjectDetails = item.ProjectDetails,
+                        ResponsiblePerson = item.ResponsiblePerson,
+                        CreatedAt = DateTime.UtcNow,
+                        RequestStatusId = item.RequestStatusId,
+                        Date = item.Date,
+                    };
 
-                await requestRepository.CreateAsync(request);
+                    await requestRepository.CreateAsync(request);
+                }
+                    await requestRepository.SaveChangesAsync();
             }
 
-            await requestRepository.SaveChangesAsync();
 
             return "success";
         }
@@ -283,6 +598,8 @@ namespace ProjectManagement.Service.Service.Requests
             await requestRepository.CreateAsync(request);
 
             await requestRepository.SaveChangesAsync();
+
+            await StringExtensions.StringExtensions.SaveLogAsync(_logRepository, _httpContextAccessor, Domain.Enum.LogAction.CreateRequest);
 
             return true;
         }
@@ -319,6 +636,8 @@ namespace ProjectManagement.Service.Service.Requests
             requestRepository.UpdateAsync(existRequest);
             await requestRepository.SaveChangesAsync();
 
+            await StringExtensions.StringExtensions.SaveLogAsync(_logRepository, _httpContextAccessor, Domain.Enum.LogAction.UpdateRequest);
+
             return true;
         }
 
@@ -332,6 +651,9 @@ namespace ProjectManagement.Service.Service.Requests
 
             requestRepository.UpdateAsync(existRequest);
             await requestRepository.SaveChangesAsync();
+
+            await StringExtensions.StringExtensions.SaveLogAsync(_logRepository, _httpContextAccessor, Domain.Enum.LogAction.DeleteRequest);
+
             return true;
         }
 
@@ -345,6 +667,9 @@ namespace ProjectManagement.Service.Service.Requests
 
             requestRepository.UpdateAsync(existRequest);
             await requestRepository.SaveChangesAsync();
+
+            await StringExtensions.StringExtensions.SaveLogAsync(_logRepository, _httpContextAccessor, Domain.Enum.LogAction.RestoreRequest);
+
             return true;
         }
 
@@ -363,7 +688,7 @@ namespace ProjectManagement.Service.Service.Requests
                 { "ContactNumber", x => x.ContactNumber },
                 { "Notes", x => x.Notes },
                 { "ProjectDetails", x => x.ProjectDetails },
-                { "Date", x => x.Date?.ToString() },
+                { "Date", x => x.Date },
                 { "Department", x => x.Department },
                 { "Email", x => x.Email },
                 { "InquiryField", x => x.InquiryField },
@@ -371,6 +696,9 @@ namespace ProjectManagement.Service.Service.Requests
                 { "FinalResult", x => x.FinalResult },
                 { "ProcessingStatus", x => x.ProcessingStatus },
                 { "ResponsiblePerson", x => x.ResponsiblePerson },
+                { "Priority", x => x.Priority.ToString() },
+                { "Deadline", x => x?.Deadline?.ToString() },
+                { "Status", x => x.Status.ToString() },
             };
 
             foreach (var field in fields)
@@ -390,5 +718,24 @@ namespace ProjectManagement.Service.Service.Requests
 
             return groupedFilters;
         }
+
+
+        public async ValueTask<bool> ChangeRequestStatus(int requestId, bool status)
+        {
+            var existRequest = await requestRepository.GetAsync(x => x.Id == requestId);
+
+            existRequest.Status = status ? Domain.Enum.ProjectStatus.Create : existRequest.Status;
+            existRequest.IsDeleted = status ? 0 : 1;
+
+            requestRepository.UpdateAsync(existRequest);
+            await requestRepository.SaveChangesAsync();
+
+            await StringExtensions.StringExtensions.SaveLogAsync(_logRepository, _httpContextAccessor, Domain.Enum.LogAction.ChangeRequestStatus);
+
+            return true;
+        }
+
+
+
     }
 }

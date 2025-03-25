@@ -46,6 +46,16 @@ namespace ProjectManagement.Api.Controllers.Request
         public async ValueTask<IActionResult> GetRequestsAsync([FromQuery] RequestForFilterDTO dto) => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetRequeststAsync(dto));
 
 
+        [HttpGet("deleted-requets")]
+        [Authorize]
+        public async ValueTask<IActionResult> GetDeletedRequeststAsync([FromQuery] RequestForFilterDTO dto) => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetDeletedRequeststAsync(dto));
+
+
+        [HttpGet("pending-requets")]
+        [Authorize]
+        public async ValueTask<IActionResult> GetPendingRequeststAsync([FromQuery] RequestForFilterDTO dto) => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetPendingRequeststAsync(dto));
+
+
 
         [HttpPost("create")]
         public async ValueTask<IActionResult> CreateAsync([FromBody] RequestStatusForCreateDTO dto) => ResponseHandler.ReturnIActionResponse(await requestStatusService.CreateAsync(dto));
@@ -61,6 +71,11 @@ namespace ProjectManagement.Api.Controllers.Request
         [HttpDelete("delete")]
         [Authorize]
         public async ValueTask<IActionResult> DeleteAsync([Required] int id) => ResponseHandler.ReturnIActionResponse(await requestStatusService.DeleteAsync(id));
+
+
+        [HttpPut("change-pending-request")]
+        [Authorize]
+        public async ValueTask<IActionResult> ChangePendingAsync([Required] int id, bool status) => ResponseHandler.ReturnIActionResponse(await requestStatusService.ChangeRequestStatus(id, status));
 
 
         [HttpPost("create-request-many")]
