@@ -18,6 +18,7 @@ using System.Text.Json;
 using F23.StringSimilarity;
 using ClosedXML.Excel;
 using System.Globalization;
+using ProjectManagement.Domain.Enum;
 
 namespace ProjectManagement.Api.Controllers.Request
 {
@@ -115,7 +116,7 @@ namespace ProjectManagement.Api.Controllers.Request
 
 
         [HttpGet("filter-values")]
-        public async ValueTask<IActionResult> GetFilterValue() => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetFilterValue());
+        public async ValueTask<IActionResult> GetFilterValue([FromQuery] RequestStatusForFilterDTO dto) => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetFilterValue(dto));
 
 
 

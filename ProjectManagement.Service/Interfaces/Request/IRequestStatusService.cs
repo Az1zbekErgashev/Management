@@ -1,4 +1,5 @@
-﻿using ProjectManagement.Domain.Models.PagedResult;
+﻿using ProjectManagement.Domain.Enum;
+using ProjectManagement.Domain.Models.PagedResult;
 using ProjectManagement.Domain.Models.Request;
 using ProjectManagement.Service.DTOs.Request;
 
@@ -19,6 +20,6 @@ namespace ProjectManagement.Service.Interfaces.Request
         ValueTask<bool> RecoverRequest(int id);
         ValueTask<bool> ChangeRequestStatus(int id, bool status);
         ValueTask<bool> UpdateRequest(int id, RequestForCreateDTO dto);
-        ValueTask<List<RequestFilterModel>> GetFilterValue();
+        ValueTask<List<RequestFilterModel>> GetFilterValue(RequestStatusForFilterDTO dto);
     }
 }

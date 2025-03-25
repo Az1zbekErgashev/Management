@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Npgsql;
 using ProjectManagement.Domain.Entities.Logs;
 using ProjectManagement.Domain.Entities.Requests;
+using ProjectManagement.Domain.Enum;
 using ProjectManagement.Domain.Models.PagedResult;
 using ProjectManagement.Domain.Models.Request;
 using ProjectManagement.Service.DTOs.Request;
@@ -12,6 +13,7 @@ using ProjectManagement.Service.Exception;
 using ProjectManagement.Service.Interfaces.IRepositories;
 using ProjectManagement.Service.Interfaces.Log;
 using ProjectManagement.Service.Interfaces.Request;
+using System.Data.Common;
 using System.Text;
 using System.Text.Json;
 namespace ProjectManagement.Service.Service.Requests
@@ -673,15 +675,25 @@ namespace ProjectManagement.Service.Service.Requests
             return true;
         }
 
-        public async ValueTask<List<RequestFilterModel>> GetFilterValue()
+        public async ValueTask<List<RequestFilterModel>> GetFilterValue(RequestStatusForFilterDTO dto)
         {
-            var existRequest = await requestRepository.GetAll(x => x.IsDeleted == 0).ToListAsync();
-            var emptyValue = "Unknown";
-
-            var groupedFilters = new List<RequestFilterModel>();
-
-            var fields = new Dictionary<string, Func<Domain.Entities.Requests.Request, string>>
+            var connectionString = configuration.GetConnectionString("PostgresConnection");
+            using (var db = new NpgsqlConnection(connectionString))
             {
+                var query = "SELECT * FROM \"Requests\" WHERE \"IsDeleted\" = @IsDeleted";
+                if (dto.Status is not null)
+                {
+                    query += " AND \"Status\" = @Status";
+                }
+
+                var parameters = new { IsDeleted = dto.IsDeleted, Status = dto.Status };
+                var existRequest = (await db.QueryAsync<Request>(query, parameters)).ToList();
+
+                var emptyValue = "Unknown";
+                var groupedFilters = new List<RequestFilterModel>();
+
+                var fields = new Dictionary<string, Func<Request, string>>
+    {
                 { "Client", x => x.Client },
                 { "ClientCompany", x => x.ClientCompany },
                 { "CompanyName", x => x.CompanyName },
@@ -701,22 +713,23 @@ namespace ProjectManagement.Service.Service.Requests
                 { "Status", x => x.Status.ToString() },
             };
 
-            foreach (var field in fields)
-            {
-                var uniqueValues = existRequest
-                    .Select(x => field.Value(x) ?? emptyValue)
-                    .Distinct()
-                    .Select(value => new RequestFilterModel
-                    {
-                        Text = value,
-                        Value = field.Key
-                    })
-                    .ToList();
+                foreach (var field in fields)
+                {
+                    var uniqueValues = existRequest
+                        .Select(x => field.Value(x) ?? emptyValue)
+                        .Distinct()
+                        .Select(value => new RequestFilterModel
+                        {
+                            Text = value,
+                            Value = field.Key
+                        })
+                        .ToList();
 
-                groupedFilters.AddRange(uniqueValues);
+                    groupedFilters.AddRange(uniqueValues);
+                }
+
+                return groupedFilters;
             }
-
-            return groupedFilters;
         }
 
 
