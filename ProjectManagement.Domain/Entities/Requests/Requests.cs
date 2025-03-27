@@ -29,4 +29,5 @@ public class Request : Auditable
     public string? ProjectBudget { get; set; }
     public string? InquirySource { get; set; }
     public string? AdditionalInformation { get; set; }
+    public long? ChatId { get; set; }
 }

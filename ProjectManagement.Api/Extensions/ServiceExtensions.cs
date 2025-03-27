@@ -24,6 +24,8 @@ using ProjectManagement.Service.Service.Repositories;
 using ProjectManagement.Service.Service.Requests;
 using ProjectManagement.Service.Service.User;
 using System.Text;
+using TrustyTalents.Service.Services.Background;
+using TrustyTalents.Service.Services.Emails;
 
 namespace ProjectManagement.Api.Extensions
 {
@@ -49,6 +51,8 @@ namespace ProjectManagement.Api.Extensions
             services.AddScoped<ILogService, LogService>();
             services.AddScoped<IRequestStatusService, RequestStatusService>();
             services.AddScoped<IMultilingualTextInterface, MultilingualTextService>();
+            services.AddSingleton<IEmailInboxService, EmailInboxService>();
+            services.AddHostedService<EmailSenderBackgroundService>();
         }
         public static void AddSwaggerService(this IServiceCollection services)
         {

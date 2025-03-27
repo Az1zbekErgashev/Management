@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
+using Org.BouncyCastle.Asn1.Ocsp;
+using ProjectManagement.Domain.Entities;
 using ProjectManagement.Domain.Entities.Logs;
 using ProjectManagement.Domain.Entities.Requests;
 using ProjectManagement.Domain.Enum;
@@ -17,6 +19,8 @@ using System.Data.Common;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using Telegram.Bot;
+using TrustyTalents.Service.Services.Emails;
 namespace ProjectManagement.Service.Service.Requests
 {
     public class RequestStatusService : IRequestStatusService
@@ -26,19 +30,25 @@ namespace ProjectManagement.Service.Service.Requests
         private readonly IConfiguration configuration;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IGenericRepository<Logs> _logRepository;
+        private readonly IEmailInboxService emailInboxService;
+        private readonly ITelegramBotClient telegramBotClient;
         public RequestStatusService(
             IGenericRepository<RequestStatus> requestStatusRepository,
             IGenericRepository<Domain.Entities.Requests.Request> requestRepository,
             IConfiguration configuration,
             IHttpContextAccessor httpContextAccessor
 ,
-            IGenericRepository<Logs> logRepository)
+            IGenericRepository<Logs> logRepository,
+            IEmailInboxService emailInboxService,
+            ITelegramBotClient telegramBotClient)
         {
             this.requestStatusRepository = requestStatusRepository;
             this.requestRepository = requestRepository;
             this.configuration = configuration;
             _httpContextAccessor = httpContextAccessor;
             _logRepository = logRepository;
+            this.emailInboxService = emailInboxService;
+            this.telegramBotClient = telegramBotClient;
         }
 
         public async ValueTask<List<RequestStatusModel>> GetAsync()
@@ -439,6 +449,7 @@ namespace ProjectManagement.Service.Service.Requests
                 var conditions = new List<string>();
 
                 conditions.Add("r.\"IsDeleted\" = 0");
+                conditions.Add("r.\"Status\" = 0");
 
                 void AppendFilters(string columnName, List<string>? values, bool strict = false)
                 {
@@ -738,12 +749,12 @@ namespace ProjectManagement.Service.Service.Requests
                 }
 
                 var parameters = new { IsDeleted = dto.IsDeleted, Status = dto.Status };
-                var existRequest = (await db.QueryAsync<Request>(query, parameters)).ToList();
+                var existRequest = (await db.QueryAsync<Domain.Entities.Requests.Request>(query, parameters)).ToList();
 
                 var emptyValue = "Unknown";
                 var groupedFilters = new List<RequestFilterModel>();
 
-                var fields = new Dictionary<string, Func<Request, string>>
+                var fields = new Dictionary<string, Func<Domain.Entities.Requests.Request, string>>
     {
                 { "Client", x => x.Client },
                 { "ClientCompany", x => x.ClientCompany },
@@ -783,23 +794,33 @@ namespace ProjectManagement.Service.Service.Requests
             }
         }
 
-
         public async ValueTask<bool> ChangeRequestStatus(int requestId, bool status)
         {
             var existRequest = await requestRepository.GetAsync(x => x.Id == requestId);
 
-            existRequest.Status = status ? Domain.Enum.ProjectStatus.Create : existRequest.Status;
+            existRequest.Status = status ? Domain.Enum.ProjectStatus.Create : ProjectStatus.Canceled;
             existRequest.IsDeleted = status ? 0 : 1;
 
             requestRepository.UpdateAsync(existRequest);
             await requestRepository.SaveChangesAsync();
 
+            if(existRequest.ChatId != null)
+            {
+                await telegramBotClient.SendMessage(existRequest.ChatId, status ? "Request approved! We have started working on it. Stay tuned for updates" : "Your request cannot be processed in its current form. Please provide more details and resubmit");
+            }
+            var verificationMessage = new EmailMessage();
+
+            if(status)
+                verificationMessage = EmailMessage.SuccessSendRequest(existRequest.Email, existRequest.ResponsiblePerson);
+            else
+                verificationMessage = EmailMessage.DenySendRequest(existRequest.Email, existRequest.ResponsiblePerson);
+
+            emailInboxService.EnqueueEmail(verificationMessage);
+
             await StringExtensions.StringExtensions.SaveLogAsync(_logRepository, _httpContextAccessor, Domain.Enum.LogAction.ChangeRequestStatus);
 
             return true;
         }
-
-
 
     }
 }

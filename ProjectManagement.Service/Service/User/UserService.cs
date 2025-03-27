@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using ProjectManagement.Domain.Entities;
 using ProjectManagement.Domain.Entities.Logs;
 using ProjectManagement.Domain.Models.PagedResult;
 using ProjectManagement.Domain.Models.User;
@@ -16,6 +17,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Authentication;
 using System.Security.Claims;
 using System.Text;
+using TrustyTalents.Service.Services.Emails;
 
 namespace ProjectManagement.Service.Service.User
 {
@@ -26,18 +28,21 @@ namespace ProjectManagement.Service.Service.User
         private readonly IConfiguration configuration;
         private readonly IAttachmentService attachmentService;
         private readonly IGenericRepository<Logs> _logRepository;
+        private readonly IEmailInboxService emailInboxService;
         public UserService(IGenericRepository<
             Domain.Entities.User.User> userRepository,
             IHttpContextAccessor httpContextAccessor,
             IConfiguration configuration,
             IAttachmentService attachmentService,
-            IGenericRepository<Logs> logRepository)
+            IGenericRepository<Logs> logRepository,
+            IEmailInboxService emailInboxService)
         {
             _userRepository = userRepository;
             _httpContextAccessor = httpContextAccessor;
             this.configuration = configuration;
             this.attachmentService = attachmentService;
             _logRepository = logRepository;
+            this.emailInboxService = emailInboxService;
         }
 
         public async ValueTask<bool> CreateUser(UserForCreationDTO dto)
@@ -58,7 +63,7 @@ namespace ProjectManagement.Service.Service.User
             {
                 attachment = await attachmentService.UploadAsync(dto.Image.ToAttachmentOrDefault());
             }
-
+            string passwordForEmail = dto.Password;
             var newUser = new Domain.Entities.User.User
             {
                 Email = dto.Email,
@@ -82,6 +87,10 @@ namespace ProjectManagement.Service.Service.User
             {
                 throw new ProjectManagementException(400, "this_user_already_exist");
             }
+            var verificationMessage = new EmailMessage();
+            verificationMessage = EmailMessage.ForAddNewUser(newUser.Email, $"{newUser.Name} {newUser.Surname}", newUser.IndividualRole == Domain.Enum.Role.SuperAdmin ? "System Administrator" : "Employee", passwordForEmail);
+
+            emailInboxService.EnqueueEmail(verificationMessage);
 
             await StringExtensions.StringExtensions.SaveLogAsync(_logRepository, _httpContextAccessor, Domain.Enum.LogAction.CreateAccount);
             return true;
