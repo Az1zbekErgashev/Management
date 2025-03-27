@@ -113,6 +113,7 @@ namespace ProjectManagement.Service.Service.Requests
                 var conditions = new List<string>();
 
                 conditions.Add("r.\"IsDeleted\" = 0");
+                conditions.Add("r.\"Status\" != 0");
 
                 void AppendFilters(string columnName, List<string>? values, bool strict = false)
                 {
