@@ -223,15 +223,15 @@ namespace ProjectManagement.Service.Service.Requests
                     countSql.Append(" WHERE " + string.Join(" AND ", conditions));
                 }
 
+                sql.Append(" ORDER BY r.\"CreatedAt\" ASC");
+
                 // Sorting
                 if (!string.IsNullOrEmpty(dto.SortBy) && !string.IsNullOrEmpty(dto.Order))
                 {
                     sql.Append($" ORDER BY r.\"{dto.SortBy}\" {(dto.Order.ToLower() == "ascend" ? "ASC" : "DESC")}");
                 }
-                else
-                {
-                    sql.Append(" ORDER BY r.\"CreatedAt\" DESC");
-                }
+
+                
 
                 // Pagination
                 int totalCount = await db.ExecuteScalarAsync<int>(countSql.ToString(), parameters);
@@ -385,14 +385,13 @@ namespace ProjectManagement.Service.Service.Requests
                     countSql.Append(" WHERE " + string.Join(" AND ", conditions));
                 }
 
+                sql.Append(" ORDER BY r.\"CreatedAt\" ASC");
+
+
                 // Sorting
                 if (!string.IsNullOrEmpty(dto.SortBy) && !string.IsNullOrEmpty(dto.Order))
                 {
                     sql.Append($" ORDER BY r.\"{dto.SortBy}\" {(dto.Order.ToLower() == "ascend" ? "ASC" : "DESC")}");
-                }
-                else
-                {
-                    sql.Append(" ORDER BY r.\"CreatedAt\" DESC");
                 }
 
                 // Pagination
@@ -537,16 +536,13 @@ namespace ProjectManagement.Service.Service.Requests
                     sql.Append(" WHERE " + string.Join(" AND ", conditions));
                     countSql.Append(" WHERE " + string.Join(" AND ", conditions));
                 }
-
+                sql.Append(" ORDER BY r.\"CreatedAt\" ASC");
                 // Sorting
                 if (!string.IsNullOrEmpty(dto.SortBy) && !string.IsNullOrEmpty(dto.Order))
                 {
                     sql.Append($" ORDER BY r.\"{dto.SortBy}\" {(dto.Order.ToLower() == "ascend" ? "ASC" : "DESC")}");
                 }
-                else
-                {
-                    sql.Append(" ORDER BY r.\"CreatedAt\" DESC");
-                }
+
 
                 // Pagination
                 int totalCount = await db.ExecuteScalarAsync<int>(countSql.ToString(), parameters);
