@@ -216,7 +216,6 @@ namespace ProjectManagement.Service.Service.Requests
                     conditions.Add($"r.\"Priority\" IN ({string.Join(", ", statusParams)})");
                 }
 
-                // Append WHERE clause if there are conditions
                 if (conditions.Any())
                 {
                     sql.Append(" WHERE " + string.Join(" AND ", conditions));
@@ -233,7 +232,6 @@ namespace ProjectManagement.Service.Service.Requests
 
                 
 
-                // Pagination
                 int totalCount = await db.ExecuteScalarAsync<int>(countSql.ToString(), parameters);
 
                 if (totalCount == 0)
@@ -241,15 +239,22 @@ namespace ProjectManagement.Service.Service.Requests
                     return PagedResult<RequestModel>.Create(new List<RequestModel>(), 0, dto.PageSize, 0, dto.PageIndex, 0);
                 }
 
-                if(dto?.PageIndex != 0 && dto?.PageSize != 0)
+                if (dto.PageIndex == 0) dto.PageIndex = 1;
+                if (dto.PageSize == 0) dto.PageSize = totalCount;
+
+                int itemsPerPage = dto.PageSize;
+                int totalPages = (totalCount / itemsPerPage) + (totalCount % itemsPerPage == 0 ? 0 : 1);
+
+                if (dto.PageIndex > totalPages)
                 {
-                    int skip = (dto.PageIndex - 1) * dto.PageSize;
-                    sql.Append(" LIMIT @PageSize OFFSET @Offset");
-                    parameters.Add("@PageSize", dto.PageSize);
-                    parameters.Add("@Offset", skip);
+                    dto.PageIndex = totalPages;
                 }
 
-                // Fetch data
+                int skip = (dto.PageIndex - 1) * dto.PageSize;
+                sql.Append(" LIMIT @PageSize OFFSET @Offset");
+                parameters.Add("@PageSize", dto.PageSize);
+                parameters.Add("@Offset", skip);
+
                 var list = await db.QueryAsync<RequestModel, RequestStatusModel, RequestModel>(
                     sql.ToString(),
                     (request, status) =>
@@ -260,8 +265,6 @@ namespace ProjectManagement.Service.Service.Requests
                     parameters,
                     splitOn: "RequestStatus_Id"
                 );
-
-                int totalPages = (int)Math.Ceiling((double)totalCount / dto.PageSize);
 
                 return PagedResult<RequestModel>.Create(list.ToList(), totalCount, dto.PageSize, list.Count(), dto.PageIndex, totalPages);
             }
@@ -405,6 +408,17 @@ namespace ProjectManagement.Service.Service.Requests
                     return PagedResult<RequestModel>.Create(new List<RequestModel>(), 0, dto.PageSize, 0, dto.PageIndex, 0);
                 }
 
+                if (dto.PageIndex == 0) dto.PageIndex = 1;
+                if (dto.PageSize == 0) dto.PageSize = totalCount;
+
+                int itemsPerPage = dto.PageSize;
+                int totalPages = (totalCount / itemsPerPage) + (totalCount % itemsPerPage == 0 ? 0 : 1);
+
+                if (dto.PageIndex > totalPages)
+                {
+                    dto.PageIndex = totalPages;
+                }
+
                 int skip = (dto.PageIndex - 1) * dto.PageSize;
                 sql.Append(" LIMIT @PageSize OFFSET @Offset");
                 parameters.Add("@PageSize", dto.PageSize);
@@ -421,8 +435,6 @@ namespace ProjectManagement.Service.Service.Requests
                     parameters,
                     splitOn: "RequestStatus_Id"
                 );
-
-                int totalPages = (int)Math.Ceiling((double)totalCount / dto.PageSize);
 
                 return PagedResult<RequestModel>.Create(list.ToList(), totalCount, dto.PageSize, list.Count(), dto.PageIndex, totalPages);
             }
@@ -555,6 +567,18 @@ namespace ProjectManagement.Service.Service.Requests
                     return PagedResult<RequestModel>.Create(new List<RequestModel>(), 0, dto.PageSize, 0, dto.PageIndex, 0);
                 }
 
+
+                if (dto.PageIndex == 0) dto.PageIndex = 1;
+                if (dto.PageSize == 0) dto.PageSize = totalCount;
+
+                int itemsPerPage = dto.PageSize;
+                int totalPages = (totalCount / itemsPerPage) + (totalCount % itemsPerPage == 0 ? 0 : 1);
+
+                if (dto.PageIndex > totalPages)
+                {
+                    dto.PageIndex = totalPages;
+                }
+
                 int skip = (dto.PageIndex - 1) * dto.PageSize;
                 sql.Append(" LIMIT @PageSize OFFSET @Offset");
                 parameters.Add("@PageSize", dto.PageSize);
@@ -570,8 +594,6 @@ namespace ProjectManagement.Service.Service.Requests
                     parameters,
                     splitOn: "RequestStatus_Id"
                 );
-
-                int totalPages = (int)Math.Ceiling((double)totalCount / dto.PageSize);
 
                 return PagedResult<RequestModel>.Create(list.ToList(), totalCount, dto.PageSize, list.Count(), dto.PageIndex, totalPages);
             }
