@@ -119,7 +119,6 @@ namespace ProjectManagement.Api.Controllers.Request
         public async ValueTask<IActionResult> GetFilterValue([FromQuery] RequestStatusForFilterDTO dto) => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetFilterValue(dto));
 
 
-
         [HttpGet("get-json")]
         public async Task<IActionResult> GetJson()
         {
@@ -140,7 +139,6 @@ namespace ProjectManagement.Api.Controllers.Request
         }
 
         [HttpGet("export-excel")]
-        [Authorize]
         public async Task<IActionResult> ExportToExcel(int? requestCategoryId, int languageId = 0)
         {
             var query = genericRepository.GetAll().OrderBy(x => x.Id).AsQueryable();
