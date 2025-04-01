@@ -241,7 +241,7 @@ namespace ProjectManagement.Service.Service.Requests
                     return PagedResult<RequestModel>.Create(new List<RequestModel>(), 0, dto.PageSize, 0, dto.PageIndex, 0);
                 }
 
-                if(dto?.PageIndex != null && dto?.PageSize != null)
+                if(dto?.PageIndex != 0 && dto?.PageSize != 0)
                 {
                     int skip = (dto.PageIndex - 1) * dto.PageSize;
                     sql.Append(" LIMIT @PageSize OFFSET @Offset");
