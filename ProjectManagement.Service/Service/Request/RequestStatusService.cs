@@ -561,7 +561,6 @@ namespace ProjectManagement.Service.Service.Requests
                 parameters.Add("@PageSize", dto.PageSize);
                 parameters.Add("@Offset", skip);
 
-                // Fetch data
                 var list = await db.QueryAsync<RequestModel, RequestStatusModel, RequestModel>(
                     sql.ToString(),
                     (request, status) =>

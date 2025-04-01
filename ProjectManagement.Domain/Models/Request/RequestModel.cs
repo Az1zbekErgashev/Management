@@ -23,6 +23,9 @@ namespace ProjectManagement.Domain.Models.Request
         public RequestStatusModel? RequestStatus { get; set; }
         public int IsDeleted { get; set; }
         public string? Date { get; set; }
+        public string? AdditionalInformation { get; set; }
+        public string? InquirySource { get; set; }
+        public string? ProjectBudget { get; set; }
         public Priority Priority { get; set; }
         public DateTime? Deadline { get; set; }
         public ProjectStatus Status { get; set; }
