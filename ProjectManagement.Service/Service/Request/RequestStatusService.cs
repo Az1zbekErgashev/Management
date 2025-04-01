@@ -241,10 +241,13 @@ namespace ProjectManagement.Service.Service.Requests
                     return PagedResult<RequestModel>.Create(new List<RequestModel>(), 0, dto.PageSize, 0, dto.PageIndex, 0);
                 }
 
-                int skip = (dto.PageIndex - 1) * dto.PageSize;
-                sql.Append(" LIMIT @PageSize OFFSET @Offset");
-                parameters.Add("@PageSize", dto.PageSize);
-                parameters.Add("@Offset", skip);
+                if(dto?.PageIndex != null && dto?.PageSize != null)
+                {
+                    int skip = (dto.PageIndex - 1) * dto.PageSize;
+                    sql.Append(" LIMIT @PageSize OFFSET @Offset");
+                    parameters.Add("@PageSize", dto.PageSize);
+                    parameters.Add("@Offset", skip);
+                }
 
                 // Fetch data
                 var list = await db.QueryAsync<RequestModel, RequestStatusModel, RequestModel>(
