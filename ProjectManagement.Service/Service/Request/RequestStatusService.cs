@@ -223,7 +223,7 @@ namespace ProjectManagement.Service.Service.Requests
                     countSql.Append(" WHERE " + string.Join(" AND ", conditions));
                 }
 
-                sql.Append(" ORDER BY r.\"CreatedAt\" ASC");
+                sql.Append(" ORDER BY r.\"CreatedAt\" DESC");
 
                 // Sorting
                 if (!string.IsNullOrEmpty(dto.SortBy) && !string.IsNullOrEmpty(dto.Order))
@@ -385,7 +385,7 @@ namespace ProjectManagement.Service.Service.Requests
                     countSql.Append(" WHERE " + string.Join(" AND ", conditions));
                 }
 
-                sql.Append(" ORDER BY r.\"CreatedAt\" ASC");
+                sql.Append(" ORDER BY r.\"CreatedAt\" DESC");
 
 
                 // Sorting
@@ -536,7 +536,7 @@ namespace ProjectManagement.Service.Service.Requests
                     sql.Append(" WHERE " + string.Join(" AND ", conditions));
                     countSql.Append(" WHERE " + string.Join(" AND ", conditions));
                 }
-                sql.Append(" ORDER BY r.\"CreatedAt\" ASC");
+                sql.Append(" ORDER BY r.\"CreatedAt\" DESC");
                 // Sorting
                 if (!string.IsNullOrEmpty(dto.SortBy) && !string.IsNullOrEmpty(dto.Order))
                 {
