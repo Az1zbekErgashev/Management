@@ -286,6 +286,19 @@ namespace ProjectManagement.Service.Service.User
                 attachment = await attachmentService.UploadAsync(dto.Image.ToAttachmentOrDefault());
             }
 
+            var allusers = await _userRepository.GetAll(x => x.IsDeleted == 0 && x.IndividualRole == Domain.Enum.Role.SuperAdmin).ToListAsync();
+
+            var allAdmins = await _userRepository
+           .GetAll(x => x.IsDeleted == 0 && x.IndividualRole == Domain.Enum.Role.SuperAdmin)
+           .ToListAsync();
+
+            if (existUser.IndividualRole == Domain.Enum.Role.SuperAdmin
+                && dto.Role == Domain.Enum.Role.Employees
+                && allAdmins.Count == 1)
+            {
+                throw new ProjectManagementException(400, "cannot_change_last_admin");
+            }
+
             existUser.UpdatedAt = DateTime.UtcNow;
             existUser.CountryId = dto.CountryId;
             existUser.PhoneNumber = dto.PhoneNumber;
