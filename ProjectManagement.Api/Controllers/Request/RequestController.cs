@@ -193,5 +193,9 @@ namespace ProjectManagement.Api.Controllers.Request
 
             return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"{(requestStatus != null ? requestStatus.Title : "All")}.xlsx");
         }
+
+
+        [HttpGet("counts")]
+        public async Task<IActionResult> GetCounts() => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetRequestsCount());
     }
 }

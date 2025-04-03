@@ -8,6 +8,7 @@ namespace ProjectManagement.Domain.Models.Request
         public DateTime? CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public int Id { get; set; }
+        public int Count { get; set; }
 
         public virtual RequestStatusModel MapFromEntity(RequestStatus entity)
         {

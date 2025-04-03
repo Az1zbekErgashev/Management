@@ -13,6 +13,7 @@ using ProjectManagement.Service.DTOs.Request;
 using ProjectManagement.Service.Exception;
 using ProjectManagement.Service.Interfaces.IRepositories;
 using ProjectManagement.Service.Interfaces.Request;
+using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using Telegram.Bot;
@@ -73,8 +74,7 @@ namespace ProjectManagement.Service.Service.Requests
 
             if (existStatus is null) throw new ProjectManagementException(404, "request_status_not_found");
 
-
-            existStatus.IsDeleted = 1;
+            int requestsCount = requestRepository.GetAll(x => x.IsDeleted == 0 && x.RequestStatusId == existStatus.Id).Count();
 
             requestStatusRepository.UpdateAsync(existStatus);
             await requestStatusRepository.SaveChangesAsync();
@@ -86,7 +86,6 @@ namespace ProjectManagement.Service.Service.Requests
             var existStatus = await requestStatusRepository.GetAsync(x => x.Id == id);
 
             if (existStatus is null) throw new ProjectManagementException(404, "request_status_not_found");
-
 
             existStatus.Title = dto.Title;
 
@@ -119,95 +118,29 @@ namespace ProjectManagement.Service.Service.Requests
                 conditions.Add("r.\"IsDeleted\" = 0");
                 conditions.Add("r.\"Status\" != 0");
 
-                void AppendFilters(string columnName, List<string>? values, bool strict = false)
+                if (!string.IsNullOrWhiteSpace(dto.Text))
                 {
-
-                    if (values != null && values.Any())
+                    var searchableColumns = new List<string>
                     {
-                        bool hasUnknown = values.Contains("Unknown");
-                        values.RemoveAll(v => v == "Unknown");
+                        "InquiryType", "InquiryField", "CompanyName", "Department", "ResponsiblePerson",
+                        "ClientCompany", "Email", "ProcessingStatus", "FinalResult", "Notes", "Date",
+                        "Client", "ContactNumber", "ProjectDetails"
+                    };
 
-                        var conditionsList = new List<string>();
-
-                        if (values.Any()) 
-                        {
-                            var paramNames = new List<string>();
-                            for (int i = 0; i < values.Count; i++)
-                            {
-                                string paramName = $"@{columnName}{i}";
-                                paramNames.Add(paramName);
-                                parameters.Add(paramName, strict ? values[i] : $"%{values[i]}%");
-                            }
-
-                            string condition = string.Join(" OR ", paramNames.Select(p => strict
-                                ? $"r.\"{columnName}\" = {p}"
-                                : $"r.\"{columnName}\" ILIKE {p}"));
-
-                            conditionsList.Add($"({condition})");
-                        }
-
-                        if (hasUnknown) 
-                        {
-                            conditionsList.Add($"r.\"{columnName}\" IS NULL");
-                        }
-
-                        if (conditionsList.Any())
-                        {
-                            conditions.Add($"({string.Join(" OR ", conditionsList)})");
-                        }
+                    var searchConditions = new List<string>();
+                    foreach (var column in searchableColumns)
+                    {
+                        searchConditions.Add($"r.\"{column}\" ILIKE @searchText");
                     }
+
+                    conditions.Add($"({string.Join(" OR ", searchConditions)})");
+                    parameters.Add("@searchText", $"%{dto.Text}%");
                 }
 
-                // Apply filters
-                AppendFilters("InquiryType", dto.InquiryType, strict: true);
-                AppendFilters("InquiryField", dto.InquiryField, strict: true);
-                AppendFilters("CompanyName", dto.CompanyName, strict: true);
-                AppendFilters("Department", dto.Department, strict: true);
-                AppendFilters("ResponsiblePerson", dto.ResponsiblePerson, strict: true);
-                AppendFilters("ClientCompany", dto.ClientCompany, strict: true);
-                AppendFilters("Email", dto.Email, strict: true);
-                AppendFilters("ProcessingStatus", dto.ProcessingStatus, strict: true);
-                AppendFilters("FinalResult", dto.FinalResult, strict: true);
-                AppendFilters("Notes", dto.Notes, strict: true);
-                AppendFilters("Date", dto.Date, strict: true);
-                AppendFilters("Client", dto.Client, strict: true);
-                AppendFilters("ContactNumber", dto.ContactNumber, strict: true);
-                AppendFilters("ProjectDetails", dto.ProjectDetails, strict: true);
-
-                if (dto?.RequestStatusId != null)
+                if (dto?.Category != null)
                 {
                     conditions.Add("r.\"RequestStatusId\" = @RequestStatusId");
-                    parameters.Add("@RequestStatusId", dto.RequestStatusId);
-                }
-
-                if (dto.Status != null && dto.Status.Any())
-                {
-                    var statusParams = new List<string>();
-                    for (int i = 0; i < dto.Status.Count; i++)
-                    {
-                        string paramName = $"@Status{i}";
-                        statusParams.Add(paramName);
-                        parameters.Add(paramName, (int)dto.Status[i]); 
-                    }
-                    conditions.Add($"r.\"Status\" IN ({string.Join(", ", statusParams)})");
-                }
-
-                if (dto.Deadline.HasValue)
-                {
-                    conditions.Add($"DATE_PART('day', r.\"Deadline\" - r.\"CreatedAt\") = @DeadlineDays");
-                    parameters.Add("@DeadlineDays", dto.Deadline.Value);
-                }
-
-                if (dto.Priority != null && dto.Priority.Any())
-                {
-                    var statusParams = new List<string>();
-                    for (int i = 0; i < dto.Priority.Count; i++)
-                    {
-                        string paramName = $"@Priority{i}";
-                        statusParams.Add(paramName);
-                        parameters.Add(paramName, (int)dto.Priority[i]);
-                    }
-                    conditions.Add($"r.\"Priority\" IN ({string.Join(", ", statusParams)})");
+                    parameters.Add("@RequestStatusId", dto.Category);
                 }
 
                 if (conditions.Any())
@@ -217,14 +150,6 @@ namespace ProjectManagement.Service.Service.Requests
                 }
 
                 sql.Append(" ORDER BY r.\"CreatedAt\" DESC");
-
-                // Sorting
-                if (!string.IsNullOrEmpty(dto.SortBy) && !string.IsNullOrEmpty(dto.Order))
-                {
-                    sql.Append($" ORDER BY r.\"{dto.SortBy}\" {(dto.Order.ToLower() == "ascend" ? "ASC" : "DESC")}");
-                }
-
-                
 
                 int totalCount = await db.ExecuteScalarAsync<int>(countSql.ToString(), parameters);
 
@@ -288,94 +213,29 @@ namespace ProjectManagement.Service.Service.Requests
 
                 conditions.Add("r.\"IsDeleted\" = 1");
 
-                void AppendFilters(string columnName, List<string>? values, bool strict = false)
+                if (!string.IsNullOrWhiteSpace(dto.Text))
                 {
-                    if (values != null && values.Any())
+                    var searchableColumns = new List<string>
                     {
-                        bool hasUnknown = values.Contains("Unknown");
-                        values.RemoveAll(v => v == "Unknown");
+                        "InquiryType", "InquiryField", "CompanyName", "Department", "ResponsiblePerson",
+                        "ClientCompany", "Email", "ProcessingStatus", "FinalResult", "Notes", "Date",
+                        "Client", "ContactNumber", "ProjectDetails"
+                    };
 
-                        var conditionsList = new List<string>();
-
-                        if (values.Any())
-                        {
-                            var paramNames = new List<string>();
-                            for (int i = 0; i < values.Count; i++)
-                            {
-                                string paramName = $"@{columnName}{i}";
-                                paramNames.Add(paramName);
-                                parameters.Add(paramName, strict ? values[i] : $"%{values[i]}%");
-                            }
-
-                            string condition = string.Join(" OR ", paramNames.Select(p => strict
-                                ? $"r.\"{columnName}\" = {p}"
-                                : $"r.\"{columnName}\" ILIKE {p}"));
-
-                            conditionsList.Add($"({condition})");
-                        }
-
-                        if (hasUnknown)
-                        {
-                            conditionsList.Add($"r.\"{columnName}\" IS NULL");
-                        }
-
-                        if (conditionsList.Any())
-                        {
-                            conditions.Add($"({string.Join(" OR ", conditionsList)})");
-                        }
+                    var searchConditions = new List<string>();
+                    foreach (var column in searchableColumns)
+                    {
+                        searchConditions.Add($"r.\"{column}\" ILIKE @searchText");
                     }
+
+                    conditions.Add($"({string.Join(" OR ", searchConditions)})");
+                    parameters.Add("@searchText", $"%{dto.Text}%");
                 }
 
-                // Apply filters
-                AppendFilters("InquiryType", dto.InquiryType, strict: true);
-                AppendFilters("InquiryField", dto.InquiryField, strict: true);
-                AppendFilters("CompanyName", dto.CompanyName, strict: true);
-                AppendFilters("Department", dto.Department, strict: true);
-                AppendFilters("ResponsiblePerson", dto.ResponsiblePerson, strict: true);
-                AppendFilters("ClientCompany", dto.ClientCompany, strict: true);
-                AppendFilters("Email", dto.Email, strict: true);
-                AppendFilters("ProcessingStatus", dto.ProcessingStatus, strict: true);
-                AppendFilters("FinalResult", dto.FinalResult, strict: true);
-                AppendFilters("Notes", dto.Notes, strict: true);
-                AppendFilters("Date", dto.Date, strict: true);
-                AppendFilters("Client", dto.Client, strict: true);
-                AppendFilters("ContactNumber", dto.ContactNumber, strict: true);
-                AppendFilters("ProjectDetails", dto.ProjectDetails, strict: true);
-
-                if (dto?.RequestStatusId != null)
+                if (dto?.Category != null)
                 {
                     conditions.Add("r.\"RequestStatusId\" = @RequestStatusId");
-                    parameters.Add("@RequestStatusId", dto.RequestStatusId);
-                }
-
-                if (dto.Status != null && dto.Status.Any())
-                {
-                    var statusParams = new List<string>();
-                    for (int i = 0; i < dto.Status.Count; i++)
-                    {
-                        string paramName = $"@Status{i}";
-                        statusParams.Add(paramName);
-                        parameters.Add(paramName, (int)dto.Status[i]);
-                    }
-                    conditions.Add($"r.\"Status\" IN ({string.Join(", ", statusParams)})");
-                }
-
-                if (dto.Deadline.HasValue)
-                {
-                    conditions.Add($"DATE_PART('day', r.\"Deadline\" - r.\"CreatedAt\") = @DeadlineDays");
-                    parameters.Add("@DeadlineDays", dto.Deadline.Value);
-                }
-
-                if (dto.Priority != null && dto.Priority.Any())
-                {
-                    var statusParams = new List<string>();
-                    for (int i = 0; i < dto.Priority.Count; i++)
-                    {
-                        string paramName = $"@Priority{i}";
-                        statusParams.Add(paramName);
-                        parameters.Add(paramName, (int)dto.Priority[i]);
-                    }
-                    conditions.Add($"r.\"Priority\" IN ({string.Join(", ", statusParams)})");
+                    parameters.Add("@RequestStatusId", dto.Category);
                 }
 
                 // Append WHERE clause if there are conditions
@@ -387,12 +247,6 @@ namespace ProjectManagement.Service.Service.Requests
 
                 sql.Append(" ORDER BY r.\"CreatedAt\" DESC");
 
-
-                // Sorting
-                if (!string.IsNullOrEmpty(dto.SortBy) && !string.IsNullOrEmpty(dto.Order))
-                {
-                    sql.Append($" ORDER BY r.\"{dto.SortBy}\" {(dto.Order.ToLower() == "ascend" ? "ASC" : "DESC")}");
-                }
 
                 // Pagination
                 int totalCount = await db.ExecuteScalarAsync<int>(countSql.ToString(), parameters);
@@ -459,99 +313,39 @@ namespace ProjectManagement.Service.Service.Requests
                 conditions.Add("r.\"IsDeleted\" = 0");
                 conditions.Add("r.\"Status\" = 0");
 
-                void AppendFilters(string columnName, List<string>? values, bool strict = false)
+                if (!string.IsNullOrWhiteSpace(dto.Text))
                 {
-                    if (values != null && values.Any())
+                    var searchableColumns = new List<string>
                     {
-                        bool hasUnknown = values.Contains("Unknown");
-                        values.RemoveAll(v => v == "Unknown");
+                        "InquiryType", "InquiryField", "CompanyName", "Department", "ResponsiblePerson",
+                        "ClientCompany", "Email", "ProcessingStatus", "FinalResult", "Notes", "Date",
+                        "Client", "ContactNumber", "ProjectDetails"
+                    };
 
-                        var conditionsList = new List<string>();
-
-                        if (values.Any())
-                        {
-                            var paramNames = new List<string>();
-                            for (int i = 0; i < values.Count; i++)
-                            {
-                                string paramName = $"@{columnName}{i}";
-                                paramNames.Add(paramName);
-                                parameters.Add(paramName, strict ? values[i] : $"%{values[i]}%");
-                            }
-
-                            string condition = string.Join(" OR ", paramNames.Select(p => strict
-                                ? $"r.\"{columnName}\" = {p}"
-                                : $"r.\"{columnName}\" ILIKE {p}"));
-
-                            conditionsList.Add($"({condition})");
-                        }
-
-                        if (hasUnknown)
-                        {
-                            conditionsList.Add($"r.\"{columnName}\" IS NULL");
-                        }
-
-                        if (conditionsList.Any())
-                        {
-                            conditions.Add($"({string.Join(" OR ", conditionsList)})");
-                        }
+                    var searchConditions = new List<string>();
+                    foreach (var column in searchableColumns)
+                    {
+                        searchConditions.Add($"r.\"{column}\" ILIKE @searchText");
                     }
+
+                    conditions.Add($"({string.Join(" OR ", searchConditions)})");
+                    parameters.Add("@searchText", $"%{dto.Text}%");
                 }
 
-                // Apply filters
-                AppendFilters("InquiryType", dto.InquiryType, strict: true);
-                AppendFilters("InquiryField", dto.InquiryField, strict: true);
-                AppendFilters("CompanyName", dto.CompanyName, strict: true);
-                AppendFilters("Department", dto.Department, strict: true);
-                AppendFilters("ResponsiblePerson", dto.ResponsiblePerson, strict: true);
-                AppendFilters("ClientCompany", dto.ClientCompany, strict: true);
-                AppendFilters("Email", dto.Email, strict: true);
-                AppendFilters("ProcessingStatus", dto.ProcessingStatus, strict: true);
-                AppendFilters("FinalResult", dto.FinalResult, strict: true);
-                AppendFilters("Notes", dto.Notes, strict: true);
-                AppendFilters("Date", dto.Date, strict: true);
-                AppendFilters("Client", dto.Client, strict: true);
-                AppendFilters("ContactNumber", dto.ContactNumber, strict: true);
-                AppendFilters("ProjectDetails", dto.ProjectDetails, strict: true);
-
-                if (dto?.RequestStatusId != null)
+                if (dto?.Category != null)
                 {
                     conditions.Add("r.\"RequestStatusId\" = @RequestStatusId");
-                    parameters.Add("@RequestStatusId", dto.RequestStatusId);
+                    parameters.Add("@RequestStatusId", dto.Category);
                 }
 
                 conditions.Add($"r.\"Status\" = 0");
 
-                if (dto.Deadline.HasValue)
-                {
-                    conditions.Add($"DATE_PART('day', r.\"Deadline\" - r.\"CreatedAt\") = @DeadlineDays");
-                    parameters.Add("@DeadlineDays", dto.Deadline.Value);
-                }
-
-                if (dto.Priority != null && dto.Priority.Any())
-                {
-                    var statusParams = new List<string>();
-                    for (int i = 0; i < dto.Priority.Count; i++)
-                    {
-                        string paramName = $"@Priority{i}";
-                        statusParams.Add(paramName);
-                        parameters.Add(paramName, (int)dto.Priority[i]);
-                    }
-                    conditions.Add($"r.\"Priority\" IN ({string.Join(", ", statusParams)})");
-                }
-
-                // Append WHERE clause if there are conditions
                 if (conditions.Any())
                 {
                     sql.Append(" WHERE " + string.Join(" AND ", conditions));
                     countSql.Append(" WHERE " + string.Join(" AND ", conditions));
                 }
                 sql.Append(" ORDER BY r.\"CreatedAt\" DESC");
-                // Sorting
-                if (!string.IsNullOrEmpty(dto.SortBy) && !string.IsNullOrEmpty(dto.Order))
-                {
-                    sql.Append($" ORDER BY r.\"{dto.SortBy}\" {(dto.Order.ToLower() == "ascend" ? "ASC" : "DESC")}");
-                }
-
 
                 // Pagination
                 int totalCount = await db.ExecuteScalarAsync<int>(countSql.ToString(), parameters);
@@ -834,6 +628,58 @@ namespace ProjectManagement.Service.Service.Requests
             await StringExtensions.StringExtensions.SaveLogAsync(_logRepository, _httpContextAccessor, Domain.Enum.LogAction.ChangeRequestStatus);
 
             return true;
+        }
+
+
+
+        public async ValueTask<List<RequestsCountModel>> GetRequestsCount()
+        {
+            var requests = await requestRepository.GetAll(x => x.IsDeleted == 0).Include(x => x.RequestStatus).ToListAsync();
+
+            var statusCounts = Enum.GetValues(typeof(ProjectStatus))
+            .Cast<ProjectStatus>()
+            .Select(status => new RequestsCountModel
+            {
+                Title = status.ToString(),
+                Count = requests.Count(r => r.Status == status)
+            })
+            .ToList();
+
+            var priorityCounts = Enum.GetValues(typeof(Priority))
+                .Cast<Priority>()
+                .Select(priority => new RequestsCountModel
+                {
+                    Title = priority.ToString(),
+                    Count = requests.Count(r => r.Priority == priority)
+                })
+                .ToList();
+
+            var requestStatusCounts = requests
+                .GroupBy(x => x.RequestStatus.Title)
+                .Select(g => new RequestsCountModel
+                {
+                    Title = g.Key,
+                    Count = g.Count()
+                })
+                .ToList();
+
+
+            var requestAllCounts = requests
+                .GroupBy(x => x.IsDeleted == 0)
+                .Select(g => new RequestsCountModel
+                {
+                    Title = "all",
+                    Count = requests.Count()
+                })
+                .ToList();
+
+            var allRequests = new List<RequestsCountModel>();
+            allRequests.AddRange(statusCounts);
+            allRequests.AddRange(priorityCounts);
+            allRequests.AddRange(requestStatusCounts);
+            allRequests.AddRange(requestAllCounts);
+
+            return allRequests;
         }
 
     }
