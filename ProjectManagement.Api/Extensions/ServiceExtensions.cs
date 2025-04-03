@@ -83,30 +83,29 @@ namespace ProjectManagement.Api.Extensions
                 });
             });
         }
+
         public static void ConfigureJwt(this IServiceCollection services, IConfiguration configuration)
         {
-
-
             services.AddAuthentication(options =>
             {
                 options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             })
-                 .AddCookie()
-                 .AddJwtBearer(options =>
-                 {
-                     options.TokenValidationParameters = new TokenValidationParameters
-                     {
-                         ValidateIssuer = true,
-                         ValidateAudience = false,
-                         ValidateLifetime = true,
-                         ValidateIssuerSigningKey = true,
-                         ValidIssuer = "project-management",
-                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("3249f3f0-8b1e-4ebb-a8ee-1e40b0e90034dasfdq-asd23da"))
-                     };
-                 })
-                 .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("BasicAuthentication", null);
+            .AddCookie()
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = false,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = "project-management",
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("3249f3f0-8b1e-4ebb-a8ee-1e40b0e90034dasfdq-asd23da"))
+                };
+            })
+            .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("BasicAuthentication", null);
         }
     }
 }

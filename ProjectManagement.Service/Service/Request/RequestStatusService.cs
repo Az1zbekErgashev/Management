@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
-using Org.BouncyCastle.Asn1.Ocsp;
 using ProjectManagement.Domain.Entities;
 using ProjectManagement.Domain.Entities.Logs;
 using ProjectManagement.Domain.Entities.Requests;
@@ -13,10 +12,7 @@ using ProjectManagement.Domain.Models.Request;
 using ProjectManagement.Service.DTOs.Request;
 using ProjectManagement.Service.Exception;
 using ProjectManagement.Service.Interfaces.IRepositories;
-using ProjectManagement.Service.Interfaces.Log;
 using ProjectManagement.Service.Interfaces.Request;
-using System.Data.Common;
-using System.Linq;
 using System.Text;
 using System.Text.Json;
 using Telegram.Bot;
@@ -36,8 +32,7 @@ namespace ProjectManagement.Service.Service.Requests
             IGenericRepository<RequestStatus> requestStatusRepository,
             IGenericRepository<Domain.Entities.Requests.Request> requestRepository,
             IConfiguration configuration,
-            IHttpContextAccessor httpContextAccessor
-,
+            IHttpContextAccessor httpContextAccessor,
             IGenericRepository<Logs> logRepository,
             IEmailInboxService emailInboxService,
             ITelegramBotClient telegramBotClient)
@@ -71,7 +66,6 @@ namespace ProjectManagement.Service.Service.Requests
             await requestStatusRepository.SaveChangesAsync();
             return true;
         }
-
 
         public async ValueTask<bool> DeleteAsync(int id)
         {

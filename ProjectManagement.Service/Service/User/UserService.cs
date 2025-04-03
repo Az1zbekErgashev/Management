@@ -273,7 +273,7 @@ namespace ProjectManagement.Service.Service.User
         public async ValueTask<bool> UpdateUser(UserForUpdateDTO dto)
         {
             var existUser = await _userRepository
-                .GetAll(x => x.Id == dto.UserId && x.IsDeleted == 0)
+                .GetAll(x => x.Id == dto.UserId && x.IsDeleted == 0).Include(x => x.Image).Include(x => x.Country)
                 .FirstOrDefaultAsync();
 
             if (existUser is null)

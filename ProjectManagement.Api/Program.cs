@@ -69,6 +69,7 @@ builder.Services.AddDbContext<ProjectManagementDB>(options =>
     options.EnableDetailedErrors();
 });
 
+
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 builder.Services.AddAuthorization();

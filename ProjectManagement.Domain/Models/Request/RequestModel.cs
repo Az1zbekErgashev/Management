@@ -7,18 +7,18 @@ namespace ProjectManagement.Domain.Models.Request
         public int Id { get; set; }
         public DateTime? CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
-        public string? InquiryType { get; set; } // Тип запроса
-        public string? CompanyName { get; set; } // Название компании
-        public string? Department { get; set; } // Ответственный отдел
-        public string? ResponsiblePerson { get; set; } // Имя ответственного
-        public string? InquiryField { get; set; } // Область запроса
-        public string? ClientCompany { get; set; } // Компания клиента
-        public string? ProjectDetails { get; set; } // Описание проекта
-        public string? Client { get; set; } // Клиент
-        public string? ContactNumber { get; set; } // Контактный номер
-        public string? Email { get; set; } // Электронная почта
-        public string? ProcessingStatus { get; set; } // Статус обработки
-        public string? FinalResult { get; set; } // Итоговый результат
+        public string? InquiryType { get; set; } 
+        public string? CompanyName { get; set; } 
+        public string? Department { get; set; } 
+        public string? ResponsiblePerson { get; set; } 
+        public string? InquiryField { get; set; } 
+        public string? ClientCompany { get; set; } 
+        public string? ProjectDetails { get; set; } 
+        public string? Client { get; set; } 
+        public string? ContactNumber { get; set; } 
+        public string? Email { get; set; } 
+        public string? ProcessingStatus { get; set; } 
+        public string? FinalResult { get; set; } 
         public string? Notes { get; set; } 
         public RequestStatusModel? RequestStatus { get; set; }
         public int IsDeleted { get; set; }
