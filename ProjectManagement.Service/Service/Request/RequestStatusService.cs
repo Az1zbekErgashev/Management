@@ -582,20 +582,18 @@ namespace ProjectManagement.Service.Service.Requests
 
                 foreach (var field in fields)
                 {
-                    if (field.Value != null)
+                    var uniqueValues = existRequest
+                    .Select(x => field.Value(x))
+                    .Where(value => !string.IsNullOrWhiteSpace(value))
+                    .Distinct()
+                    .Select(value => new RequestFilterModel
                     {
-                        var uniqueValues = existRequest
-                        .Select(x => field.Value(x))
-                        .Distinct()
-                        .Select(value => new RequestFilterModel
-                        {
-                            Text = value,
-                            Value = field.Key
-                        })
-                        .ToList();
+                        Text = value,
+                        Value = field.Key
+                    })
+                    .ToList();
 
-                        groupedFilters.AddRange(uniqueValues);
-                    }
+                    groupedFilters.AddRange(uniqueValues);
                 }
 
                 return groupedFilters;
