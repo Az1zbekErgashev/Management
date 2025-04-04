@@ -558,10 +558,7 @@ namespace ProjectManagement.Service.Service.Requests
 
                 var parameters = new { IsDeleted = dto.IsDeleted, Status = dto.Status };
                 var existRequest = (await db.QueryAsync<Domain.Entities.Requests.Request>(query, parameters)).ToList();
-
-                var emptyValue = "Unknown";
                 var groupedFilters = new List<RequestFilterModel>();
-
                 var fields = new Dictionary<string, Func<Domain.Entities.Requests.Request, string>>
     {
                 { "Client", x => x.Client },
@@ -585,8 +582,10 @@ namespace ProjectManagement.Service.Service.Requests
 
                 foreach (var field in fields)
                 {
-                    var uniqueValues = existRequest
-                        .Select(x => field.Value(x) ?? emptyValue)
+                    if (field.Value != null)
+                    {
+                        var uniqueValues = existRequest
+                        .Select(x => field.Value(x))
                         .Distinct()
                         .Select(value => new RequestFilterModel
                         {
@@ -595,7 +594,8 @@ namespace ProjectManagement.Service.Service.Requests
                         })
                         .ToList();
 
-                    groupedFilters.AddRange(uniqueValues);
+                        groupedFilters.AddRange(uniqueValues);
+                    }
                 }
 
                 return groupedFilters;

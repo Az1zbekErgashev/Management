@@ -1,24 +1,16 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using NPOI.SS.UserModel;
-using NPOI.XSSF.UserModel;
-using OfficeOpenXml;
-using ProjectManagement.Domain.Models.Request;
 using ProjectManagement.Infrastructure.Contexts;
 using ProjectManagement.Service.DTOs.Request;
 using ProjectManagement.Service.Extencions;
 using ProjectManagement.Service.Interfaces.IRepositories;
 using ProjectManagement.Service.Interfaces.Request;
-using ProjectManagement.Service.Service.Repositories;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
-using F23.StringSimilarity;
 using ClosedXML.Excel;
-using System.Globalization;
-using ProjectManagement.Domain.Enum;
 
 namespace ProjectManagement.Api.Controllers.Request
 {
