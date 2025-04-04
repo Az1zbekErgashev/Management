@@ -560,25 +560,25 @@ namespace ProjectManagement.Service.Service.Requests
                 var existRequest = (await db.QueryAsync<Domain.Entities.Requests.Request>(query, parameters)).ToList();
                 var groupedFilters = new List<RequestFilterModel>();
                 var fields = new Dictionary<string, Func<Domain.Entities.Requests.Request, string>>
-    {
-                { "Client", x => x.Client },
-                { "ClientCompany", x => x.ClientCompany },
-                { "CompanyName", x => x.CompanyName },
-                { "ContactNumber", x => x.ContactNumber },
-                { "Notes", x => x.Notes },
-                { "ProjectDetails", x => x.ProjectDetails },
-                { "Date", x => x.Date },
-                { "Department", x => x.Department },
-                { "Email", x => x.Email },
-                { "InquiryField", x => x.InquiryField },
-                { "InquiryType", x => x.InquiryType },
-                { "FinalResult", x => x.FinalResult },
-                { "ProcessingStatus", x => x.ProcessingStatus },
-                { "ResponsiblePerson", x => x.ResponsiblePerson },
-                { "Priority", x => x.Priority.ToString() },
-                { "Deadline", x => x?.Deadline?.ToString() },
-                { "Status", x => x.Status.ToString() },
-            };
+                {
+                    { "Client", x => x.Client },
+                    { "ClientCompany", x => x.ClientCompany },
+                    { "CompanyName", x => x.CompanyName },
+                    { "ContactNumber", x => x.ContactNumber },
+                    { "Notes", x => x.Notes },
+                    { "ProjectDetails", x => x.ProjectDetails },
+                    { "Date", x => x.Date },
+                    { "Department", x => x.Department },
+                    { "Email", x => x.Email },
+                    { "InquiryField", x => x.InquiryField },
+                    { "InquiryType", x => x.InquiryType },
+                    { "FinalResult", x => x.FinalResult },
+                    { "ProcessingStatus", x => x.ProcessingStatus },
+                    { "ResponsiblePerson", x => x.ResponsiblePerson },
+                    { "Priority", x => x.Priority.ToString() },
+                    { "Deadline", x => x?.Deadline?.ToString() },
+                    { "Status", x => x.Status.ToString() },
+                };
 
                 foreach (var field in fields)
                 {
@@ -604,7 +604,7 @@ namespace ProjectManagement.Service.Service.Requests
         {
             var existRequest = await requestRepository.GetAsync(x => x.Id == requestId);
 
-            existRequest.Status = status ? Domain.Enum.ProjectStatus.Create : ProjectStatus.Canceled;
+            existRequest.Status = status ? Domain.Enum.ProjectStatus.InProgress : ProjectStatus.Rejected;
             existRequest.IsDeleted = status ? 0 : 1;
 
             requestRepository.UpdateAsync(existRequest);

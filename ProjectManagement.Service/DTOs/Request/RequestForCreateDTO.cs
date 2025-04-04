@@ -26,6 +26,6 @@ namespace ProjectManagement.Service.DTOs.Request
         public string? Date { get; set; }
         public ProjectStatus Status { get; set; } = 0;
         public DateTime? Deadline { get; set; }
-        public Priority Priority { get; set; } = Priority.Normal;
+        public Priority Priority { get; set; } = Priority.Medium;
     }
 }

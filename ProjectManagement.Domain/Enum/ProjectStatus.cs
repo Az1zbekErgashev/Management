@@ -2,10 +2,9 @@
 {
     public enum ProjectStatus
     {
-        ToDO,
-        Create,
+        Pending,
         InProgress,
         Completed,
-        Canceled
+        Rejected
     }
 }

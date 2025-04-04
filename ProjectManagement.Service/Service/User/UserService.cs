@@ -241,7 +241,7 @@ namespace ProjectManagement.Service.Service.User
         public async ValueTask<LoginModel> Login(UserForLoginDTO dto)
         {
             var user = await _userRepository.GetAll(u =>
-            u.Email == dto.Email && u.Password.Equals(dto.Password.Encrypt()) && u.IsDeleted == 0).FirstOrDefaultAsync();
+            u.Email == dto.Email && u.Password.Equals(dto.Password.Encrypt()) && u.IsDeleted == 0).Include(x => x.Image).FirstOrDefaultAsync();
 
             if (user is null)
                 throw new ProjectManagementException(400, "login_or_password_is_incorrect", false);

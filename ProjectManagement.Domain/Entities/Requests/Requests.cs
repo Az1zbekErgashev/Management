@@ -25,7 +25,7 @@ public class Request : Auditable
     public string? Date { get; set; }
     public ProjectStatus Status { get; set; } = 0;
     public DateTime? Deadline { get; set; }
-    public Priority Priority { get; set; } = Priority.Normal;
+    public Priority Priority { get; set; } = Priority.Medium;
     public string? ProjectBudget { get; set; }
     public string? InquirySource { get; set; }
     public string? AdditionalInformation { get; set; }

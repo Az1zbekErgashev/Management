@@ -1,4 +1,5 @@
 ﻿using ProjectManagement.Domain.Enum;
+using ProjectManagement.Domain.Models.Attachment;
 
 namespace ProjectManagement.Domain.Models.User
 {
@@ -10,6 +11,7 @@ namespace ProjectManagement.Domain.Models.User
         public string Surname { get; set; }
         public Role? Role { get; set; }
         public string Token { get; set; }
+        public AttachmentModel? Image { get; set; }
 
         public virtual LoginModel MapFromEntity(Domain.Entities.User.User entity, Enum.Role? role, string token)
         {
@@ -19,6 +21,7 @@ namespace ProjectManagement.Domain.Models.User
             Surname = entity.Surname;
             Role = role;
             Token = token;
+            Image = new AttachmentModel().MapFromEntity(entity.Image);
             return this;
         }
     }
