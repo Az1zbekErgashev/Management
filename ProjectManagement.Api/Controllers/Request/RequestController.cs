@@ -11,6 +11,10 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using ClosedXML.Excel;
+using NPOI.SS.UserModel;
+using NPOI.XSSF.UserModel;
+using System.Globalization;
+using ProjectManagement.Domain.Entities.Requests;
 
 namespace ProjectManagement.Api.Controllers.Request
 {
@@ -189,5 +193,146 @@ namespace ProjectManagement.Api.Controllers.Request
 
         [HttpGet("counts")]
         public async Task<IActionResult> GetCounts() => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetRequestsCount());
+
+
+        [HttpPost("upload")]
+        public async ValueTask<IActionResult> UploadExcel(IFormFile file, [FromForm] int requestStatusId)
+        {
+            if (file == null || file.Length == 0 || requestStatusId == null)
+            {
+                return BadRequest("Файл не загружен.");
+            }
+
+            using (var stream = file.OpenReadStream())
+            {
+                IWorkbook workbook = new XSSFWorkbook(stream);
+                ISheet sheet = workbook.GetSheetAt(0);
+                int rowCount = sheet.LastRowNum;
+                int startRow = -1;
+
+                var columnMapping = new Dictionary<string, string>
+                {
+                    { "접수일", "Date" },
+                    { "문의\n유형", "InquiryType" },
+                    { "문의 유형", "InquiryType" },
+                    { "기업명", "CompanyName" },
+                    { "담당부서", "Department" },
+                    { "담당자명", "ResponsiblePerson" },
+                    { "문의분야", "InquiryField" },
+                    { "고객사 회사", "ClientCompany" },
+                    { "프로젝트 내용", "ProjectDetails" },
+                    { "고객사", "Client" },
+                    { "연락처", "ContactNumber" },
+                    { "이메일", "Email" },
+                    { "대응 상황", "ProcessingStatus" },
+                    { "최종 결과", "FinalResult" },
+                    { "비고 (최종결과 사유)", "Notes" }
+                };
+
+                var columnIndexes = new Dictionary<string, int>();
+
+                // Поиск строки с заголовками
+                for (int i = 0; i <= sheet.LastRowNum; i++)
+                {
+                    IRow row = sheet.GetRow(i);
+                    if (row == null) continue;
+
+                    foreach (var cell in row.Cells)
+                    {
+                        if (cell != null && cell.ToString().Trim().Contains("접수일"))
+                        {
+                            startRow = i + 1;
+                            break;
+                        }
+                    }
+
+                    if (startRow != -1) break;
+                }
+
+                if (startRow == -1)
+                {
+                    throw new Exception("Не найдены заголовки таблицы.");
+                }
+
+                // Маппинг заголовков
+                IRow headerRow = sheet.GetRow(startRow - 1);
+                if (headerRow != null)
+                {
+                    for (int j = 0; j < headerRow.LastCellNum; j++)
+                    {
+                        string columnName = headerRow.GetCell(j) != null ? headerRow.GetCell(j).ToString().Trim() : "";
+                        if (columnMapping.ContainsKey(columnName))
+                        {
+                            columnIndexes[columnMapping[columnName]] = j;
+                        }
+                    }
+                }
+
+                // Удаление всех существующих записей
+                var existingRecords = await _context.Requests.Where(x => x.RequestStatusId == requestStatusId).ToListAsync();
+                if (existingRecords.Any())
+                {
+                    _context.Requests.RemoveRange(existingRecords);
+                    await _context.SaveChangesAsync();
+                }
+
+                // Добавление новых записей
+                for (int row = startRow; row <= rowCount; row++)
+                {
+                    IRow currentRow = sheet.GetRow(row);
+                    if (currentRow == null) continue;
+
+                    var record = new Domain.Entities.Requests.Request
+                    {
+                        Date = GetSafeCellValue(currentRow, columnIndexes, "Date"),
+                        InquiryType = GetSafeCellValue(currentRow, columnIndexes, "InquiryType"),
+                        CompanyName = GetSafeCellValue(currentRow, columnIndexes, "CompanyName"),
+                        Department = GetSafeCellValue(currentRow, columnIndexes, "Department"),
+                        ResponsiblePerson = GetSafeCellValue(currentRow, columnIndexes, "ResponsiblePerson"),
+                        InquiryField = GetSafeCellValue(currentRow, columnIndexes, "InquiryField"),
+                        ClientCompany = GetSafeCellValue(currentRow, columnIndexes, "ClientCompany"),
+                        ProjectDetails = GetSafeCellValue(currentRow, columnIndexes, "ProjectDetails"),
+                        Client = GetSafeCellValue(currentRow, columnIndexes, "Client"),
+                        ContactNumber = GetSafeCellValue(currentRow, columnIndexes, "ContactNumber"),
+                        Email = GetSafeCellValue(currentRow, columnIndexes, "Email"),
+                        ProcessingStatus = GetSafeCellValue(currentRow, columnIndexes, "ProcessingStatus"),
+                        FinalResult = GetSafeCellValue(currentRow, columnIndexes, "FinalResult"),
+                        Notes = GetSafeCellValue(currentRow, columnIndexes, "Notes"),
+                        RequestStatusId = requestStatusId,
+                        AdditionalInformation = string.Empty,
+                        Deadline = null,
+                        Priority = Domain.Enum.Priority.Medium,
+                        CreatedAt = DateTime.UtcNow,
+                        InquirySource = string.Empty,
+                        Status = Domain.Enum.ProjectStatus.InProgress,
+                        ProjectBudget = string.Empty,
+                    };
+
+                    await genericRepository.CreateAsync(record);
+                }
+            }
+
+            await genericRepository.SaveChangesAsync();
+            return Ok(new { message = "Файл успешно загружен" });
+        }
+
+        string GetSafeCellValue(IRow row, Dictionary<string, int> columnIndexes, string key)
+        {
+            if (columnIndexes.ContainsKey(key))
+            {
+                int index = columnIndexes[key];
+                if (index >= 0 && index < row.LastCellNum)
+                {
+                    ICell cell = row.GetCell(index);
+                    if (cell != null && key == "Date" && cell.CellType == CellType.Numeric && DateUtil.IsCellDateFormatted(cell))
+                    {
+                        DateTime? dateValue = cell.DateCellValue;
+                        return dateValue?.Date.ToString("d", CultureInfo.InvariantCulture) ?? "";
+                    }
+                    return cell != null ? cell.ToString().Trim() : "";
+                }
+            }
+            return "";
+        }
     }
 }
