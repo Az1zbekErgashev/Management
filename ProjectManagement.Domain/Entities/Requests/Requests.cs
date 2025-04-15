@@ -20,8 +20,6 @@ public class Request : Auditable
     public string? Notes { get; set; }
     public RequestStatus RequestStatus { get; set; }
     public int RequestStatusId { get; set; }
-
-    [Column(TypeName = "text")]
     public string? Date { get; set; }
     public ProjectStatus Status { get; set; } = 0;
     public DateTime? Deadline { get; set; }

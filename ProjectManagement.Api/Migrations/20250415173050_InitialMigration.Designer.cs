@@ -12,8 +12,8 @@ using ProjectManagement.Infrastructure.Contexts;
 namespace ProjectManagement.Api.Migrations
 {
     [DbContext(typeof(ProjectManagementDB))]
-    [Migration("20250404120247_UPDATE_ENUMS")]
-    partial class UPDATE_ENUMS
+    [Migration("20250415173050_InitialMigration")]
+    partial class InitialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -2760,7 +2760,7 @@ namespace ProjectManagement.Api.Migrations
                         {
                             Id = 1,
                             CountryId = 1,
-                            CreatedAt = new DateTime(2025, 4, 4, 12, 2, 47, 255, DateTimeKind.Utc).AddTicks(8099),
+                            CreatedAt = new DateTime(2025, 4, 15, 17, 30, 50, 241, DateTimeKind.Utc).AddTicks(4398),
                             DateOfBirth = new DateTime(2023, 11, 23, 16, 13, 56, 461, DateTimeKind.Utc),
                             Email = "admin@gmail.com",
                             IndividualRole = 1,

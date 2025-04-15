@@ -28,15 +28,14 @@ namespace ProjectManagement.Service.Service.Requests
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IGenericRepository<Logs> _logRepository;
         private readonly IEmailInboxService emailInboxService;
-        private readonly ITelegramBotClient telegramBotClient;
         public RequestStatusService(
             IGenericRepository<RequestStatus> requestStatusRepository,
             IGenericRepository<Domain.Entities.Requests.Request> requestRepository,
             IConfiguration configuration,
             IHttpContextAccessor httpContextAccessor,
             IGenericRepository<Logs> logRepository,
-            IEmailInboxService emailInboxService,
-            ITelegramBotClient telegramBotClient)
+            IEmailInboxService emailInboxService
+           )
         {
             this.requestStatusRepository = requestStatusRepository;
             this.requestRepository = requestRepository;
@@ -44,7 +43,6 @@ namespace ProjectManagement.Service.Service.Requests
             _httpContextAccessor = httpContextAccessor;
             _logRepository = logRepository;
             this.emailInboxService = emailInboxService;
-            this.telegramBotClient = telegramBotClient;
         }
 
         public async ValueTask<List<RequestStatusModel>> GetAsync()
@@ -74,9 +72,18 @@ namespace ProjectManagement.Service.Service.Requests
 
             if (existStatus is null) throw new ProjectManagementException(404, "request_status_not_found");
 
-            int requestsCount = requestRepository.GetAll(x => x.IsDeleted == 0 && x.RequestStatusId == existStatus.Id).Count();
+            var requestsCount = await requestRepository.GetAll(x => x.IsDeleted == 0 && x.RequestStatusId == existStatus.Id).ToListAsync();
+
+            existStatus.IsDeleted = 0;
+
+            foreach(var item in requestsCount)
+            {
+                item.IsDeleted = 0;
+                requestRepository.UpdateAsync(item);
+            }
 
             requestStatusRepository.UpdateAsync(existStatus);
+            await requestRepository.SaveChangesAsync();
             await requestStatusRepository.SaveChangesAsync();
             return true;
         }
@@ -141,6 +148,18 @@ namespace ProjectManagement.Service.Service.Requests
                 {
                     conditions.Add("r.\"RequestStatusId\" = @RequestStatusId");
                     parameters.Add("@RequestStatusId", dto.Category);
+                }
+
+                if (dto?.Status != null)
+                {
+                    conditions.Add("r.\"Status\" = @Status");
+                    parameters.Add("@Status", dto.Status);
+                }
+
+                if (dto?.Priority != null)
+                {
+                    conditions.Add("r.\"Priority\" = @Priority");
+                    parameters.Add("@Priority", dto.Priority);
                 }
 
                 if (conditions.Any())
@@ -610,10 +629,6 @@ namespace ProjectManagement.Service.Service.Requests
             requestRepository.UpdateAsync(existRequest);
             await requestRepository.SaveChangesAsync();
 
-            if(existRequest.ChatId != null)
-            {
-                await telegramBotClient.SendMessage(existRequest.ChatId, status ? "Request approved! We have started working on it. Stay tuned for updates" : "Your request cannot be processed in its current form. Please provide more details and resubmit");
-            }
             var verificationMessage = new EmailMessage();
 
             if(status)

@@ -137,7 +137,7 @@ namespace ProjectManagement.Api.Controllers.Request
         [HttpGet("export-excel")]
         public async Task<IActionResult> ExportToExcel(int? requestCategoryId, int languageId = 0)
         {
-            var query = genericRepository.GetAll().OrderBy(x => x.Id).AsQueryable();
+            var query = genericRepository.GetAll(x => x.IsDeleted == 0).OrderBy(x => x.Id).AsQueryable();
 
             if (requestCategoryId is not null) query = query.Where(x => x.RequestStatusId == requestCategoryId);
 
@@ -196,12 +196,16 @@ namespace ProjectManagement.Api.Controllers.Request
 
 
         [HttpPost("upload")]
-        public async ValueTask<IActionResult> UploadExcel(IFormFile file, [FromForm] int requestStatusId)
+        public async ValueTask<IActionResult> UploadExcel(IFormFile file, int requestStatusId)
         {
             if (file == null || file.Length == 0 || requestStatusId == null)
             {
                 return BadRequest("Файл не загружен.");
             }
+
+            var existCategory = await _context.RequestStatuses.FirstOrDefaultAsync(x => x.Id == requestStatusId);
+
+            if(existCategory is null) return BadRequest("Request Category Is Not Correct");
 
             using (var stream = file.OpenReadStream())
             {

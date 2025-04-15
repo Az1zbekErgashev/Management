@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
@@ -8,7 +9,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ProjectManagement.Api.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial_Migration : Migration
+    public partial class InitialMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -20,8 +21,8 @@ namespace ProjectManagement.Api.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Path = table.Column<string>(type: "text", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     IsDeleted = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
@@ -36,13 +37,31 @@ namespace ProjectManagement.Api.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "text", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     IsDeleted = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Countrys", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "MultilingualText",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Key = table.Column<string>(type: "text", nullable: true),
+                    Text = table.Column<string>(type: "text", nullable: true),
+                    SupportLanguage = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    IsDeleted = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MultilingualText", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -52,8 +71,8 @@ namespace ProjectManagement.Api.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Title = table.Column<string>(type: "text", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     IsDeleted = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
@@ -73,8 +92,8 @@ namespace ProjectManagement.Api.Migrations
                     Description = table.Column<string>(type: "text", nullable: true),
                     Site = table.Column<string>(type: "text", nullable: true),
                     CountryId = table.Column<int>(type: "integer", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     IsDeleted = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
@@ -101,8 +120,8 @@ namespace ProjectManagement.Api.Migrations
                     Site = table.Column<string>(type: "text", nullable: true),
                     EmployeesCount = table.Column<string>(type: "text", nullable: true),
                     Description = table.Column<string>(type: "text", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     IsDeleted = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
@@ -135,9 +154,9 @@ namespace ProjectManagement.Api.Migrations
                     IndividualRole = table.Column<int>(type: "integer", nullable: false),
                     ImageId = table.Column<int>(type: "integer", nullable: true),
                     CountryId = table.Column<int>(type: "integer", nullable: true),
-                    DateOfBirth = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DateOfBirth = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     IsDeleted = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
@@ -176,8 +195,15 @@ namespace ProjectManagement.Api.Migrations
                     Notes = table.Column<string>(type: "text", nullable: true),
                     RequestStatusId = table.Column<int>(type: "integer", nullable: false),
                     Date = table.Column<string>(type: "text", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    Deadline = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    Priority = table.Column<int>(type: "integer", nullable: false),
+                    ProjectBudget = table.Column<string>(type: "text", nullable: true),
+                    InquirySource = table.Column<string>(type: "text", nullable: true),
+                    AdditionalInformation = table.Column<string>(type: "text", nullable: true),
+                    ChatId = table.Column<long>(type: "bigint", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     IsDeleted = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
@@ -200,8 +226,8 @@ namespace ProjectManagement.Api.Migrations
                     Location = table.Column<string>(type: "text", nullable: false),
                     AssignedCompanyId = table.Column<int>(type: "integer", nullable: true),
                     CompaniesId = table.Column<int>(type: "integer", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     IsDeleted = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
@@ -229,8 +255,8 @@ namespace ProjectManagement.Api.Migrations
                     UserId = table.Column<int>(type: "integer", nullable: false),
                     Ip = table.Column<string>(type: "text", nullable: false),
                     Action = table.Column<int>(type: "integer", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     IsDeleted = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
@@ -255,8 +281,8 @@ namespace ProjectManagement.Api.Migrations
                     TeamId = table.Column<int>(type: "integer", nullable: true),
                     PartnerId = table.Column<int>(type: "integer", nullable: false),
                     CertificateId = table.Column<int>(type: "integer", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     IsDeleted = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
@@ -288,8 +314,8 @@ namespace ProjectManagement.Api.Migrations
                     TeamId = table.Column<int>(type: "integer", nullable: false),
                     UserId = table.Column<int>(type: "integer", nullable: false),
                     Id = table.Column<int>(type: "integer", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     IsDeleted = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
@@ -321,8 +347,8 @@ namespace ProjectManagement.Api.Migrations
                     CompaniesId = table.Column<int>(type: "integer", nullable: false),
                     IssuerToCompanies = table.Column<int>(type: "integer", nullable: false),
                     ImageId = table.Column<int>(type: "integer", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     IsDeleted = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
@@ -361,14 +387,14 @@ namespace ProjectManagement.Api.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     ProjectId = table.Column<int>(type: "integer", nullable: false),
                     IssuesFound = table.Column<int>(type: "integer", nullable: false),
-                    TotalHourse = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    TotalHourse = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     TeamId = table.Column<int>(type: "integer", nullable: true),
                     Status = table.Column<int>(type: "integer", nullable: false),
                     Title = table.Column<string>(type: "text", nullable: true),
                     Price = table.Column<string>(type: "text", nullable: true),
                     Description = table.Column<string>(type: "text", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     IsDeleted = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
@@ -396,8 +422,8 @@ namespace ProjectManagement.Api.Migrations
                     ImageId = table.Column<int>(type: "integer", nullable: false),
                     AttachmentId = table.Column<int>(type: "integer", nullable: false),
                     TaskId = table.Column<int>(type: "integer", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     IsDeleted = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
@@ -427,8 +453,8 @@ namespace ProjectManagement.Api.Migrations
                     TaskId = table.Column<int>(type: "integer", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: false),
                     SpentTime = table.Column<TimeSpan>(type: "interval", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     IsDeleted = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
@@ -457,8 +483,8 @@ namespace ProjectManagement.Api.Migrations
                     ImageId = table.Column<int>(type: "integer", nullable: false),
                     AttachmentId = table.Column<int>(type: "integer", nullable: false),
                     TaskReportId = table.Column<int>(type: "integer", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     IsDeleted = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
@@ -747,7 +773,7 @@ namespace ProjectManagement.Api.Migrations
             migrationBuilder.InsertData(
                 table: "Users",
                 columns: new[] { "Id", "CountryId", "CreatedAt", "DateOfBirth", "Email", "ImageId", "IndividualRole", "IsDeleted", "Name", "Password", "PhoneNumber", "Surname", "UpdatedAt" },
-                values: new object[] { 1, 1, new DateTime(2025, 3, 13, 22, 11, 40, 260, DateTimeKind.Utc).AddTicks(3543), new DateTime(2023, 11, 23, 16, 13, 56, 461, DateTimeKind.Utc), "admin@gmail.com", null, 1, 0, "Admin", "web123$", "998881422030", "System", null });
+                values: new object[] { 1, 1, new DateTime(2025, 4, 15, 17, 30, 50, 241, DateTimeKind.Utc).AddTicks(4398), new DateTime(2023, 11, 23, 16, 13, 56, 461, DateTimeKind.Utc), "admin@gmail.com", null, 1, 0, "Admin", "web123$", "998881422030", "System", null });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Certificates_CompaniesId",
@@ -909,6 +935,9 @@ namespace ProjectManagement.Api.Migrations
 
             migrationBuilder.DropTable(
                 name: "Logs");
+
+            migrationBuilder.DropTable(
+                name: "MultilingualText");
 
             migrationBuilder.DropTable(
                 name: "Requests");

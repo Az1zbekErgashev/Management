@@ -7,6 +7,8 @@ namespace ProjectManagement.Service.DTOs.Request
     {
         public string? Text { get; set; }
         public int? Category { get; set; }
+        public ProjectStatus? Status { get; set; }
+        public Priority? Priority { get; set; }
     }
    
 }
