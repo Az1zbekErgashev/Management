@@ -74,11 +74,11 @@ namespace ProjectManagement.Service.Service.Requests
 
             var requestsCount = await requestRepository.GetAll(x => x.IsDeleted == 0 && x.RequestStatusId == existStatus.Id).ToListAsync();
 
-            existStatus.IsDeleted = 0;
+            existStatus.IsDeleted = 1;
 
             foreach(var item in requestsCount)
             {
-                item.IsDeleted = 0;
+                item.IsDeleted = 1;
                 requestRepository.UpdateAsync(item);
             }
 
