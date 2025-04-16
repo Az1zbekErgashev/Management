@@ -21,7 +21,7 @@ namespace ProjectManagement.Domain.Models.User
             Surname = entity.Surname;
             Role = role;
             Token = token;
-            Image = new AttachmentModel().MapFromEntity(entity.Image);
+            Image = entity.Image is not null ? new AttachmentModel().MapFromEntity(entity.Image) : null;
             return this;
         }
     }
