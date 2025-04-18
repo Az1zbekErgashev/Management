@@ -6,6 +6,7 @@ namespace ProjectManagement.Domain.Entities.Requests;
 public class Request : Auditable
 {
     public string? InquiryType { get; set; } 
+    public string? LastUpdated { get; set; }
     public string? CompanyName { get; set; } 
     public string? Department { get; set; } 
     public string? ResponsiblePerson { get; set; } 
@@ -21,9 +22,9 @@ public class Request : Auditable
     public RequestStatus RequestStatus { get; set; }
     public int RequestStatusId { get; set; }
     public string? Date { get; set; }
-    public ProjectStatus Status { get; set; } = 0;
+    public string? Status { get; set; }
     public DateTime? Deadline { get; set; }
-    public Priority Priority { get; set; } = Priority.Medium;
+    public string? Priority { get; set; }
     public string? ProjectBudget { get; set; }
     public string? InquirySource { get; set; }
     public string? AdditionalInformation { get; set; }

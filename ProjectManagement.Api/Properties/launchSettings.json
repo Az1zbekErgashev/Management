@@ -12,11 +12,11 @@
     "ProjectManagement.Api": {
       "commandName": "Project",
       "dotnetRunMessages": true,
-      "launchBrowser": true,
+      "launchBrowser": false,
       "launchUrl": "swagger",
-      "applicationUrl": "http://127.0.0.1:5000;http://127.0.0.1:8080",
+      "applicationUrl": "https://localhost:7234;https://localhost:7235",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Production"
+        "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
     "IIS Express": {

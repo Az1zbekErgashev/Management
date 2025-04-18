@@ -15,6 +15,7 @@ using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 using System.Globalization;
 using ProjectManagement.Domain.Entities.Requests;
+using NPOI.HSSF.Record.Aggregates;
 
 namespace ProjectManagement.Api.Controllers.Request
 {
@@ -217,25 +218,24 @@ namespace ProjectManagement.Api.Controllers.Request
                 var columnMapping = new Dictionary<string, string>
                 {
                     { "접수일", "Date" },
-                    { "문의\n유형", "InquiryType" },
-                    { "문의 유형", "InquiryType" },
-                    { "기업명", "CompanyName" },
-                    { "담당부서", "Department" },
-                    { "담당자명", "ResponsiblePerson" },
+                    { "최종 업데이트", "LastUpdated"},
+                    { "유입경로", "InquiryType" },
+                    { "법인명", "CompanyName" },
+                    { "법인부서", "Department" },
+                    { "담당자", "ResponsiblePerson" },
                     { "문의분야", "InquiryField" },
                     { "고객사 회사", "ClientCompany" },
                     { "프로젝트 내용", "ProjectDetails" },
-                    { "고객사", "Client" },
-                    { "연락처", "ContactNumber" },
-                    { "이메일", "Email" },
-                    { "대응 상황", "ProcessingStatus" },
-                    { "최종 결과", "FinalResult" },
-                    { "비고 (최종결과 사유)", "Notes" }
+                    { "고객사 담당자", "Client" },
+                    { "고객사 연락처", "ContactNumber" },
+                    { "고객사 이메일", "Email" },
+                    { "처리 상태", "Status" },
+                    { "상세사유", "DetailedReason" },
+                    { "메모", "Notes" }
                 };
 
                 var columnIndexes = new Dictionary<string, int>();
 
-                // Поиск строки с заголовками
                 for (int i = 0; i <= sheet.LastRowNum; i++)
                 {
                     IRow row = sheet.GetRow(i);
@@ -258,7 +258,6 @@ namespace ProjectManagement.Api.Controllers.Request
                     throw new Exception("Не найдены заголовки таблицы.");
                 }
 
-                // Маппинг заголовков
                 IRow headerRow = sheet.GetRow(startRow - 1);
                 if (headerRow != null)
                 {
@@ -272,7 +271,6 @@ namespace ProjectManagement.Api.Controllers.Request
                     }
                 }
 
-                // Удаление всех существующих записей
                 var existingRecords = await _context.Requests.Where(x => x.RequestStatusId == requestStatusId).ToListAsync();
                 if (existingRecords.Any())
                 {
@@ -280,7 +278,6 @@ namespace ProjectManagement.Api.Controllers.Request
                     await _context.SaveChangesAsync();
                 }
 
-                // Добавление новых записей
                 for (int row = startRow; row <= rowCount; row++)
                 {
                     IRow currentRow = sheet.GetRow(row);
@@ -305,11 +302,12 @@ namespace ProjectManagement.Api.Controllers.Request
                         RequestStatusId = requestStatusId,
                         AdditionalInformation = string.Empty,
                         Deadline = null,
-                        Priority = Domain.Enum.Priority.Medium,
+                        Priority = GetSafeCellValue(currentRow, columnIndexes, "Client"),
                         CreatedAt = DateTime.UtcNow,
                         InquirySource = string.Empty,
-                        Status = Domain.Enum.ProjectStatus.InProgress,
+                        Status = GetSafeCellValue(currentRow, columnIndexes, "Client"),
                         ProjectBudget = string.Empty,
+                        LastUpdated = GetSafeCellValue(currentRow, columnIndexes, "LastUpdated")
                     };
 
                     await genericRepository.CreateAsync(record);
@@ -328,7 +326,7 @@ namespace ProjectManagement.Api.Controllers.Request
                 if (index >= 0 && index < row.LastCellNum)
                 {
                     ICell cell = row.GetCell(index);
-                    if (cell != null && key == "Date" && cell.CellType == CellType.Numeric && DateUtil.IsCellDateFormatted(cell))
+                    if (cell != null && (key == "Date" || key == "LastUpdated") && cell.CellType == CellType.Numeric && DateUtil.IsCellDateFormatted(cell))
                     {
                         DateTime? dateValue = cell.DateCellValue;
                         return dateValue?.Date.ToString("d", CultureInfo.InvariantCulture) ?? "";
@@ -337,6 +335,21 @@ namespace ProjectManagement.Api.Controllers.Request
                 }
             }
             return "";
+        }
+
+
+        [HttpDelete("hard-delete")]
+        public async Task<IActionResult> HardDeleteAsync()
+        {
+            var allRequests = await _context.Requests.ToListAsync();
+
+            foreach(var item in allRequests)
+            {
+                _context.Requests.RemoveRange(item);
+            }
+
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "File is deleted" });
         }
     }
 }
