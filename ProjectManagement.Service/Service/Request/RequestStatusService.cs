@@ -9,15 +9,22 @@ using ProjectManagement.Domain.Entities.Requests;
 using ProjectManagement.Domain.Enum;
 using ProjectManagement.Domain.Models.PagedResult;
 using ProjectManagement.Domain.Models.Request;
+using ProjectManagement.Domain.Models.User;
 using ProjectManagement.Service.DTOs.Request;
 using ProjectManagement.Service.Exception;
+using ProjectManagement.Service.Interfaces.Attachment;
 using ProjectManagement.Service.Interfaces.IRepositories;
 using ProjectManagement.Service.Interfaces.Request;
+using ProjectManagement.Service.Service.Attachment;
+using ProjectManagement.Service.StringExtensions;
+using System.Dynamic;
+using System.Security.Authentication;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using Telegram.Bot;
 using TrustyTalents.Service.Services.Emails;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 namespace ProjectManagement.Service.Service.Requests
 {
     public class RequestStatusService : IRequestStatusService
@@ -28,6 +35,8 @@ namespace ProjectManagement.Service.Service.Requests
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IGenericRepository<Logs> _logRepository;
         private readonly IEmailInboxService emailInboxService;
+        private readonly IAttachmentService attachmentService;
+        private readonly IGenericRepository<Comments> commentstService;
         public RequestStatusService(
             IGenericRepository<RequestStatus> requestStatusRepository,
             IGenericRepository<Domain.Entities.Requests.Request> requestRepository,
@@ -35,7 +44,9 @@ namespace ProjectManagement.Service.Service.Requests
             IHttpContextAccessor httpContextAccessor,
             IGenericRepository<Logs> logRepository,
             IEmailInboxService emailInboxService
-           )
+,
+            IAttachmentService attachmentService,
+            IGenericRepository<Comments> commentstService)
         {
             this.requestStatusRepository = requestStatusRepository;
             this.requestRepository = requestRepository;
@@ -43,6 +54,8 @@ namespace ProjectManagement.Service.Service.Requests
             _httpContextAccessor = httpContextAccessor;
             _logRepository = logRepository;
             this.emailInboxService = emailInboxService;
+            this.attachmentService = attachmentService;
+            this.commentstService = commentstService;
         }
 
         public async ValueTask<List<RequestStatusModel>> GetAsync()
@@ -115,9 +128,9 @@ namespace ProjectManagement.Service.Service.Requests
                 LEFT JOIN ""RequestStatuses"" rs ON r.""RequestStatusId"" = rs.""Id""
                 ");
 
-                        var countSql = new StringBuilder(@"SELECT COUNT(*) FROM ""Requests"" r
-                    LEFT JOIN ""RequestStatuses"" rs ON r.""RequestStatusId"" = rs.""Id""
-                ");
+                var countSql = new StringBuilder(@"SELECT COUNT(*) FROM ""Requests"" r
+            LEFT JOIN ""RequestStatuses"" rs ON r.""RequestStatusId"" = rs.""Id""
+        ");
 
                 var parameters = new DynamicParameters();
                 var conditions = new List<string>();
@@ -128,11 +141,11 @@ namespace ProjectManagement.Service.Service.Requests
                 if (!string.IsNullOrWhiteSpace(dto.Text))
                 {
                     var searchableColumns = new List<string>
-                    {
-                        "InquiryType", "InquiryField", "CompanyName", "Department", "ResponsiblePerson",
-                        "ClientCompany", "Email", "ProcessingStatus", "FinalResult", "Notes", "Date",
-                        "Client", "ContactNumber", "ProjectDetails"
-                    };
+            {
+                "InquiryType", "InquiryField", "CompanyName", "Department", "ResponsiblePerson",
+                "ClientCompany", "Email", "ProcessingStatus", "FinalResult", "Notes", "Date",
+                "Client", "ContactNumber", "ProjectDetails"
+            };
 
                     var searchConditions = new List<string>();
                     foreach (var column in searchableColumns)
@@ -140,12 +153,19 @@ namespace ProjectManagement.Service.Service.Requests
                         searchConditions.Add($"r.\"{column}\" ILIKE @searchText");
                     }
 
+                    // Если есть фильтр по категории, добавляем его в условие поиска текста
+                    if (dto?.Category != null)
+                    {
+                        searchConditions.Add("r.\"RequestStatusId\" = @RequestStatusId");
+                        parameters.Add("@RequestStatusId", dto.Category);
+                    }
+
                     conditions.Add($"({string.Join(" OR ", searchConditions)})");
                     parameters.Add("@searchText", $"%{dto.Text}%");
                 }
-
-                if (dto?.Category != null)
+                else if (dto?.Category != null)
                 {
+                    // Если текста нет, но есть категория, добавляем её как отдельное условие
                     conditions.Add("r.\"RequestStatusId\" = @RequestStatusId");
                     parameters.Add("@RequestStatusId", dto.Category);
                 }
@@ -407,62 +427,15 @@ namespace ProjectManagement.Service.Service.Requests
         }
 
 
-        public async ValueTask<string> CreateRequestAsync(int RequestStatusId)
-        {
-            var jsonFilePath = Path.Combine("wwwroot", "images", $"request.json");
-
-            if (!File.Exists(jsonFilePath))
-            {
-                Console.WriteLine("Файл JSON не найден.");
-                return "SAS";
-            }
-
-
-            string jsonContent = await File.ReadAllTextAsync(jsonFilePath);
-
-            var options = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true,
-            };
-
-            List<RequestForCreateDTO>? requests = JsonSerializer.Deserialize<List<RequestForCreateDTO>>(jsonContent, options);
-
-            if (requests == null || requests.Count == 0)
-            {
-                Console.WriteLine("JSON-файл пуст или содержит некорректные данные.");
-                return "AS";
-            }
-                foreach (var item in requests)
-                {
-                    var request = new Domain.Entities.Requests.Request
-                    {
-                        Client = item.Client,
-                        ClientCompany = item.ClientCompany,
-                        CompanyName = item.CompanyName,
-                        ContactNumber = item.ContactNumber,
-                        Department = item.Department,
-                        Email = item.Email,
-                        FinalResult = item.FinalResult,
-                        InquiryField = item.InquiryField,
-                        InquiryType = item.InquiryType,
-                        ProcessingStatus = item.ResponseStatus,
-                        Notes = item.Notes,
-                        ProjectDetails = item.ProjectDetails,
-                        ResponsiblePerson = item.ResponsiblePerson,
-                        CreatedAt = DateTime.UtcNow,
-                        RequestStatusId = item.RequestStatusId,
-                        Date = item.Date,
-                    };
-
-                    await requestRepository.CreateAsync(request);
-                }
-             await requestRepository.SaveChangesAsync();
-            return "success";
-        }
-
-
         public async ValueTask<bool> CreateRequest(RequestForCreateDTO dto)
         {
+            Domain.Entities.Attachment.Attachment attachment = null;
+
+            if (dto.File is not null)
+            {
+                attachment = await attachmentService.UploadAsync(dto.File.ToAttachmentOrDefault());
+            }
+
             var request = new Domain.Entities.Requests.Request
             {
                 Client = dto.Client,
@@ -471,7 +444,6 @@ namespace ProjectManagement.Service.Service.Requests
                 ContactNumber = dto.ContactNumber,
                 Department = dto.Department,
                 Email = dto.Email,
-                FinalResult = dto.FinalResult,
                 InquiryField = dto.InquiryField,
                 InquiryType = dto.InquiryType,
                 ProcessingStatus = dto.ProcessingStatus,
@@ -481,9 +453,10 @@ namespace ProjectManagement.Service.Service.Requests
                 CreatedAt = DateTime.UtcNow,
                 RequestStatusId = dto.RequestStatusId,
                 Date = dto.Date,
-                Deadline = dto.Deadline,
                 Status = dto.Status,
-                Priority = dto.Priority,
+                File = attachment,
+                FileId = attachment?.Id,
+                LastUpdated = dto?.LastUpdated?.ToString(),
             };
 
             await requestRepository.CreateAsync(request);
@@ -502,13 +475,19 @@ namespace ProjectManagement.Service.Service.Requests
 
             if (existRequest is null) throw new ProjectManagementException(404, "request_not_found");
 
+            Domain.Entities.Attachment.Attachment attachment = existRequest.File;
+
+            if (dto.UpdateFile)
+            {
+                attachment = await attachmentService.UploadAsync(dto.File.ToAttachmentOrDefault());
+            }
+
             existRequest.Client = dto.Client;
             existRequest.ClientCompany = dto.ClientCompany;
             existRequest.CompanyName = dto.CompanyName;
             existRequest.ContactNumber = dto.ContactNumber;
             existRequest.Department = dto.Department;
             existRequest.Email = dto.Email;
-            existRequest.FinalResult = dto.FinalResult;
             existRequest.InquiryField = dto.InquiryField;
             existRequest.InquiryType = dto.InquiryType;
             existRequest.ProcessingStatus = dto.ProcessingStatus;
@@ -517,12 +496,11 @@ namespace ProjectManagement.Service.Service.Requests
             existRequest.ResponsiblePerson = dto.ResponsiblePerson;
             existRequest.Date = dto.Date;
             existRequest.Status = dto.Status;
-            existRequest.Priority = dto.Priority;
-            existRequest.Deadline = dto.Deadline;
-
+            existRequest.FileId = attachment?.Id;
             existRequest.RequestStatusId = dto.RequestStatusId;
             existRequest.UpdatedAt = DateTime.UtcNow;
             existRequest.CreatedAt = existRequest.CreatedAt ?? DateTime.UtcNow;
+            existRequest.LastUpdated = dto?.LastUpdated?.ToString();
 
             requestRepository.UpdateAsync(existRequest);
             await requestRepository.SaveChangesAsync();
@@ -591,12 +569,9 @@ namespace ProjectManagement.Service.Service.Requests
                     { "Email", x => x.Email },
                     { "InquiryField", x => x.InquiryField },
                     { "InquiryType", x => x.InquiryType },
-                    { "FinalResult", x => x.FinalResult },
                     { "ProcessingStatus", x => x.ProcessingStatus },
                     { "ResponsiblePerson", x => x.ResponsiblePerson },
-                    { "Priority", x => x.Priority.ToString() },
-                    { "Deadline", x => x?.Deadline?.ToString() },
-                    { "Status", x => x.Status.ToString() },
+                    { "Status", x => x.Status },
                 };
 
                 foreach (var field in fields)
@@ -619,53 +594,19 @@ namespace ProjectManagement.Service.Service.Requests
             }
         }
 
-        public async ValueTask<bool> ChangeRequestStatus(int requestId, bool status)
-        {
-            var existRequest = await requestRepository.GetAsync(x => x.Id == requestId);
-
-            existRequest.Status = status ? Domain.Enum.ProjectStatus.InProgress : ProjectStatus.Rejected;
-            existRequest.IsDeleted = status ? 0 : 1;
-
-            requestRepository.UpdateAsync(existRequest);
-            await requestRepository.SaveChangesAsync();
-
-            var verificationMessage = new EmailMessage();
-
-            if(status)
-                verificationMessage = EmailMessage.SuccessSendRequest(existRequest.Email, existRequest.ResponsiblePerson);
-            else
-                verificationMessage = EmailMessage.DenySendRequest(existRequest.Email, existRequest.ResponsiblePerson);
-
-            emailInboxService.EnqueueEmail(verificationMessage);
-
-            await StringExtensions.StringExtensions.SaveLogAsync(_logRepository, _httpContextAccessor, Domain.Enum.LogAction.ChangeRequestStatus);
-
-            return true;
-        }
-
-
-
         public async ValueTask<List<RequestsCountModel>> GetRequestsCount()
         {
             var requests = await requestRepository.GetAll(x => x.IsDeleted == 0).Include(x => x.RequestStatus).ToListAsync();
 
-            var statusCounts = Enum.GetValues(typeof(ProjectStatus))
-            .Cast<ProjectStatus>()
+            var statusCounts = requests
+            .Where(x => x.Status != null)
+            .GroupBy(x => x.Status)
             .Select(status => new RequestsCountModel
             {
-                Title = status.ToString(),
-                Count = requests.Count(r => r.Status == status)
+                Title = status?.ToString(),
+                Count = status.Count()
             })
             .ToList();
-
-            var priorityCounts = Enum.GetValues(typeof(Priority))
-                .Cast<Priority>()
-                .Select(priority => new RequestsCountModel
-                {
-                    Title = priority.ToString(),
-                    Count = requests.Count(r => r.Priority == priority)
-                })
-                .ToList();
 
             var requestStatusCounts = requests
                 .GroupBy(x => x.RequestStatus.Title)
@@ -688,11 +629,111 @@ namespace ProjectManagement.Service.Service.Requests
 
             var allRequests = new List<RequestsCountModel>();
             allRequests.AddRange(statusCounts);
-            allRequests.AddRange(priorityCounts);
             allRequests.AddRange(requestStatusCounts);
             allRequests.AddRange(requestAllCounts);
 
             return allRequests;
+        }
+
+        public async ValueTask<PagedResult<CommentsModel>> GetCommentsAsync(CommentsForFilterDTO dto)
+        {
+            var comments = commentstService.GetAll(x => x.RequestId == dto.RequestId && x.IsDeleted == 0).AsQueryable();
+
+            int totalCount = comments.Count();
+
+            if (totalCount == 0)
+            {
+                return PagedResult<CommentsModel>.Create(
+                    Enumerable.Empty<CommentsModel>(),
+                    0,
+                    dto.PageSize,
+                    0,
+                    dto.PageIndex,
+                    0
+                );
+            }
+
+            if (dto.PageIndex == 0)
+            {
+                dto.PageIndex = 1;
+            }
+
+            if (dto.PageSize == 0)
+            {
+                dto.PageSize = totalCount;
+            }
+
+            int itemsPerPage = dto.PageSize;
+            int totalPages = (totalCount / itemsPerPage) + (totalCount % itemsPerPage == 0 ? 0 : 1);
+
+            comments =  comments.ToPagedList(dto);
+
+            var list = await comments.ToListAsync();
+
+            List<CommentsModel> models = list.Select(
+                f => new CommentsModel().MapFromEntity(f))
+                .ToList();
+
+            return PagedResult<CommentsModel>.Create(models,
+                totalCount,
+                itemsPerPage,
+                models.Count,
+                dto.PageIndex,
+                totalPages
+                );
+        }
+
+
+        public async ValueTask<bool> CreateComment(CommentForCreateDTO dto)
+        {
+            var existRequest = await requestRepository.GetAsync(x => x.Id == dto.RequestId);
+
+            if (existRequest is null) throw new ProjectManagementException(404, "request_not_found");
+
+            var context = _httpContextAccessor.HttpContext;
+
+            if (!int.TryParse(context.User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
+            {
+                throw new InvalidCredentialException();
+            }
+
+            var newcomment = new Comments
+            {
+                RequestId = existRequest.Id,
+                Text = dto.Text,
+                UserId = userId
+            };
+
+            await commentstService.CreateAsync(newcomment);
+            await commentstService.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async ValueTask<bool> UpdateComment(CommentForCreateDTO dto)
+        {
+            var existComment = await commentstService.GetAsync(x => x.Id == dto.CommentId);
+            if (existComment is null) throw new ProjectManagementException(404, "comment_not_found");
+
+            existComment.UpdatedAt = DateTime.UtcNow;
+            existComment.Text = dto.Text;
+
+            commentstService.UpdateAsync(existComment);
+            await commentstService.SaveChangesAsync();
+            return true;
+        }
+
+        public async ValueTask<bool> DeleteComment(int commentId)
+        {
+            var existComment = await commentstService.GetAsync(x => x.Id == commentId);
+            if (existComment is null) throw new ProjectManagementException(404, "comment_not_found");
+
+            existComment.UpdatedAt = DateTime.UtcNow;
+            existComment.IsDeleted = 1;
+
+            commentstService.UpdateAsync(existComment);
+            await commentstService.SaveChangesAsync();
+            return true;
         }
 
     }

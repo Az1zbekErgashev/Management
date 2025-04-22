@@ -1,15 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ProjectManagement.Domain.Entities.Attachment;
-using ProjectManagement.Domain.Entities.Certificates;
-using ProjectManagement.Domain.Entities.Companies;
 using ProjectManagement.Domain.Entities.Country;
 using ProjectManagement.Domain.Entities.Logs;
 using ProjectManagement.Domain.Entities.MultilingualText;
-using ProjectManagement.Domain.Entities.Partners;
-using ProjectManagement.Domain.Entities.Projects;
 using ProjectManagement.Domain.Entities.Requests;
-using ProjectManagement.Domain.Entities.Task;
-using ProjectManagement.Domain.Entities.Teams;
 using ProjectManagement.Domain.Entities.User;
 namespace ProjectManagement.Infrastructure.Contexts
 {
@@ -21,7 +15,6 @@ namespace ProjectManagement.Infrastructure.Contexts
 
         public DbSet<User> Users { get; set; }
         public DbSet<Logs> Logs { get; set; }
-        public DbSet<Certificates> Certificates { get; set; }
         public DbSet<Attachment> Attachments { get; set; }
         public DbSet<Country> Countrys { get; set; }
         public DbSet<Request> Requests { get; set; }
@@ -29,39 +22,6 @@ namespace ProjectManagement.Infrastructure.Contexts
         public DbSet<MultilingualText> MultilingualText { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<TeamMember>()
-                .HasKey(tm => new { tm.UserId, tm.TeamId });
-
-            modelBuilder.Entity<Team>()
-                .HasOne(t => t.Company)
-                .WithMany(c => c.Teams)
-                .HasForeignKey(t => t.AssignedCompanyId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<Project>()
-                .HasOne(p => p.Companies)
-                .WithMany()
-                .HasForeignKey(p => p.AssignedCompanyId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<Project>()
-                .HasOne(p => p.Partner)
-                .WithMany()
-                .HasForeignKey(p => p.PartnerId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<Project>()
-                .HasOne(p => p.Certificates)
-                .WithOne(c => c.Project)
-                .HasForeignKey<Certificates>(c => c.ProjectId)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            modelBuilder.Entity<Certificates>()
-                .HasOne(c => c.Project)
-                .WithOne(p => p.Certificates)
-                .HasForeignKey<Certificates>(c => c.ProjectId)
-                .OnDelete(DeleteBehavior.Cascade);
-
             modelBuilder.Entity<Logs>()
                 .HasOne(l => l.User)
                 .WithMany(u => u.Logs)
@@ -78,38 +38,27 @@ namespace ProjectManagement.Infrastructure.Contexts
                .WithMany()
                .HasForeignKey(u => u.ImageId);
 
-            modelBuilder.Entity<Team>()
-                .HasOne(t => t.Company)
-                .WithMany()
-                .HasForeignKey(t => t.AssignedCompanyId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<TeamMember>()
-                .HasKey(tm => new { tm.UserId, tm.TeamId });
-
-            modelBuilder.Entity<TeamMember>()
-                .HasOne(tm => tm.Team)
-                .WithMany(t => t.TeamMembers)
-                .HasForeignKey(tm => tm.TeamId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<TeamMember>()
-                .HasOne(tm => tm.Team)
-                .WithMany(t => t.TeamMembers)
-                .HasForeignKey(tm => tm.TeamId)
-                .OnDelete(DeleteBehavior.Cascade);
-
             modelBuilder.Entity<Request>()
                 .HasOne(tm => tm.RequestStatus)
                 .WithMany()
                 .HasForeignKey(tm => tm.RequestStatusId);
 
-            modelBuilder.Entity<Companies>().HasData(
-                new Companies { Id = 1, CompanyCode = "WISESTONET", CompanyName = "WISESTONE T", CountryId = 1, CreatedAt = new DateTime(2025, 3, 13, 4, 29, 39, 768, DateTimeKind.Utc) },
-                new Companies { Id = 2, CompanyCode = "WISESTONEU", CompanyName = "WISESTONE U", CountryId = 67, CreatedAt = new DateTime(2025, 3, 13, 4, 29, 39, 768, DateTimeKind.Utc) },
-                new Companies { Id = 3, CompanyCode = "WISESTONE", CompanyName = "WISESTONE", CountryId = 45, CreatedAt = new DateTime(2025, 3, 13, 4, 29, 39, 768, DateTimeKind.Utc) }
-            );
+            modelBuilder.Entity<Request>()
+                .HasOne(tm => tm.File)
+                .WithMany()
+                .HasForeignKey(tm => tm.FileId);
 
+            modelBuilder.Entity<Comments>()
+                .HasOne(tm => tm.Request)
+                .WithMany(x => x.Comments)
+                .HasForeignKey(l => l.RequestId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+
+            modelBuilder.Entity<Comments>()
+                .HasOne(tm => tm.User)
+                .WithMany()
+                .HasForeignKey(l => l.UserId);
 
             var user = new User
             {
@@ -133,37 +82,9 @@ namespace ProjectManagement.Infrastructure.Contexts
                 .HasIndex(u => u.Name);
             modelBuilder.Entity<User>()
                 .HasIndex(u => u.Email);
-            modelBuilder.Entity<TaskReport>()
-                .HasIndex(tr => tr.TaskId);
-            modelBuilder.Entity<TaskReport>()
-                .HasIndex(tr => tr.UserId);
-            modelBuilder.Entity<Team>()
-                .HasIndex(t => t.AssignedCompanyId);
-
-            modelBuilder.Entity<TeamMember>()
-                .HasIndex(tm => tm.UserId);
-            modelBuilder.Entity<TeamMember>()
-                .HasIndex(tm => tm.TeamId);
-            modelBuilder.Entity<Domain.Entities.Task.Task>()
-                .HasIndex(t => t.Status);
-            modelBuilder.Entity<Domain.Entities.Task.Task>()
-                .HasIndex(t => t.ProjectId);
-            modelBuilder.Entity<Project>()
-                .HasIndex(p => p.TeamId);
-            modelBuilder.Entity<Project>()
-                .HasIndex(p => p.AssignedCompanyId);
-            modelBuilder.Entity<Project>()
-                .HasIndex(p => p.PartnerId);
-            modelBuilder.Entity<Partners>()
-                .HasIndex(p => p.Name);
             modelBuilder.Entity<Logs>()
                 .HasIndex(l => l.UserId);
-            modelBuilder.Entity<Certificates>()
-                .HasIndex(c => c.ProjectId);
-            modelBuilder.Entity<TaskReportPhotos>()
-                .HasIndex(trp => trp.TaskReportId);
-            modelBuilder.Entity<TaskPhotos>()
-                .HasIndex(tp => tp.TaskId);
+           
 
             modelBuilder.Entity<Country>().HasData(
                new Country() { Id = 1, CreatedAt = new DateTime(2023, 11, 23, 16, 13, 56, 461, DateTimeKind.Utc), UpdatedAt = new DateTime(2023, 11, 23, 16, 13, 56, 461, DateTimeKind.Utc), Name = "Afghanistan", IsDeleted = 0 },

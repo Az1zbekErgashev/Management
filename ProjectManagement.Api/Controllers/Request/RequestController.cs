@@ -71,14 +71,6 @@ namespace ProjectManagement.Api.Controllers.Request
         public async ValueTask<IActionResult> DeleteAsync([Required] int id) => ResponseHandler.ReturnIActionResponse(await requestStatusService.DeleteAsync(id));
 
 
-        [HttpPut("change-pending-request")]
-        [Authorize]
-        public async ValueTask<IActionResult> ChangePendingAsync([Required] int id, bool status) => ResponseHandler.ReturnIActionResponse(await requestStatusService.ChangeRequestStatus(id, status));
-
-
-        [HttpPost("create-request-many")]
-        public async ValueTask<IActionResult> CreateManyRequest([FromForm] ForCreateManyRequest dto) => ResponseHandler.ReturnIActionResponse(await requestStatusService.CreateRequestAsync(dto.RequestStatusId));
-
         [HttpDelete("delete-all-data")]
         public async ValueTask<IActionResult> DeleteManyRequest()
         {
@@ -148,8 +140,8 @@ namespace ProjectManagement.Api.Controllers.Request
             var worksheet = workbook.Worksheets.Add("Requests");
 
             var headers = languageId == 1
-               ? new string[] { "No.", "Date", "Inquiry Type", "Company Name", "Department", "Responsible Person", "Inquiry Field", "Client Company", "Project Details", "Client", "Contact Number", "Email", "Processing Status", "Final Result", "Notes" }
-               : new string[] { "번호", "접수일", "문의유형", "기업명", "담당부서", "담당자명", "문의분야", "고객사 회사", "프로젝트 내용", "고객사", "연락처", "이메일", "대응 상황", "최종 결과", "비고 (최종결과 사유)" };
+               ? new string[] { "No.", "Date", "LastUpdated", "Inquiry Type", "Company Name", "Department", "Responsible Person", "Inquiry Field", "Client Company", "Project Details", "Client", "Contact Number", "Email", "Status", "Detailed Reason", "Notes" }
+               : new string[] { "번호", "접수일", "최종 업데이트", "유입경로", "법인명", "법인부서", "담당자", "문의분야", "고객사 회사", "프로젝트 내용", "고객사", "연락처", "이메일", "처리 상태", "상세사유", "메모" };
             for (int i = 0; i < headers.Length; i++)
             {
                 worksheet.Cell(1, i + 1).Value = headers[i];
@@ -164,6 +156,7 @@ namespace ProjectManagement.Api.Controllers.Request
             {
                 worksheet.Cell(row, 1).Value = index++;
                 worksheet.Cell(row, 2).Value = request.Date;
+                worksheet.Cell(row, 3).Value = request.LastUpdated;
                 worksheet.Cell(row, 3).Value = request.InquiryType;
                 worksheet.Cell(row, 4).Value = request.CompanyName;
                 worksheet.Cell(row, 5).Value = request.Department;
@@ -175,7 +168,6 @@ namespace ProjectManagement.Api.Controllers.Request
                 worksheet.Cell(row, 11).Value = request.ContactNumber;
                 worksheet.Cell(row, 12).Value = request.Email;
                 worksheet.Cell(row, 13).Value = request.ProcessingStatus;
-                worksheet.Cell(row, 14).Value = request.FinalResult;
                 worksheet.Cell(row, 15).Value = request.Notes;
                 row++;
             }
@@ -218,19 +210,19 @@ namespace ProjectManagement.Api.Controllers.Request
                 var columnMapping = new Dictionary<string, string>
                 {
                     { "접수일", "Date" },
-                    { "최종 업데이트", "LastUpdated"},
-                    { "유입경로", "InquiryType" },
-                    { "법인명", "CompanyName" },
+                    { "최종 업데이트", "Last Updated"},
+                    { "유입경로", "Inquiry Type" },
+                    { "법인명", "Company Name" },
                     { "법인부서", "Department" },
-                    { "담당자", "ResponsiblePerson" },
-                    { "문의분야", "InquiryField" },
-                    { "고객사 회사", "ClientCompany" },
-                    { "프로젝트 내용", "ProjectDetails" },
+                    { "담당자", "Responsible Person" },
+                    { "문의분야", "Inquiry Field" },
+                    { "고객사 회사", "Client Company" },
+                    { "프로젝트 내용", "Project Details" },
                     { "고객사 담당자", "Client" },
-                    { "고객사 연락처", "ContactNumber" },
+                    { "고객사 연락처", "Contact Number" },
                     { "고객사 이메일", "Email" },
                     { "처리 상태", "Status" },
-                    { "상세사유", "DetailedReason" },
+                    { "상세사유", "Detailed Reason" },
                     { "메모", "Notes" }
                 };
 
@@ -286,28 +278,25 @@ namespace ProjectManagement.Api.Controllers.Request
                     var record = new Domain.Entities.Requests.Request
                     {
                         Date = GetSafeCellValue(currentRow, columnIndexes, "Date"),
-                        InquiryType = GetSafeCellValue(currentRow, columnIndexes, "InquiryType"),
-                        CompanyName = GetSafeCellValue(currentRow, columnIndexes, "CompanyName"),
+                        InquiryType = GetSafeCellValue(currentRow, columnIndexes, "Inquiry Type"),
+                        CompanyName = GetSafeCellValue(currentRow, columnIndexes, "Company Name"),
                         Department = GetSafeCellValue(currentRow, columnIndexes, "Department"),
-                        ResponsiblePerson = GetSafeCellValue(currentRow, columnIndexes, "ResponsiblePerson"),
-                        InquiryField = GetSafeCellValue(currentRow, columnIndexes, "InquiryField"),
-                        ClientCompany = GetSafeCellValue(currentRow, columnIndexes, "ClientCompany"),
-                        ProjectDetails = GetSafeCellValue(currentRow, columnIndexes, "ProjectDetails"),
+                        ResponsiblePerson = GetSafeCellValue(currentRow, columnIndexes, "Responsible Person"),
+                        InquiryField = GetSafeCellValue(currentRow, columnIndexes, "Inquiry Field"),
+                        ClientCompany = GetSafeCellValue(currentRow, columnIndexes, "Client Company"),
+                        ProjectDetails = GetSafeCellValue(currentRow, columnIndexes, "Project Details"),
                         Client = GetSafeCellValue(currentRow, columnIndexes, "Client"),
-                        ContactNumber = GetSafeCellValue(currentRow, columnIndexes, "ContactNumber"),
+                        ContactNumber = GetSafeCellValue(currentRow, columnIndexes, "Contact Number"),
                         Email = GetSafeCellValue(currentRow, columnIndexes, "Email"),
-                        ProcessingStatus = GetSafeCellValue(currentRow, columnIndexes, "ProcessingStatus"),
-                        FinalResult = GetSafeCellValue(currentRow, columnIndexes, "FinalResult"),
+                        ProcessingStatus = GetSafeCellValue(currentRow, columnIndexes, "Detailed Reason"),
                         Notes = GetSafeCellValue(currentRow, columnIndexes, "Notes"),
                         RequestStatusId = requestStatusId,
                         AdditionalInformation = string.Empty,
-                        Deadline = null,
-                        Priority = GetSafeCellValue(currentRow, columnIndexes, "Client"),
                         CreatedAt = DateTime.UtcNow,
                         InquirySource = string.Empty,
-                        Status = GetSafeCellValue(currentRow, columnIndexes, "Client"),
+                        Status = GetSafeCellValue(currentRow, columnIndexes, "Status"),
                         ProjectBudget = string.Empty,
-                        LastUpdated = GetSafeCellValue(currentRow, columnIndexes, "LastUpdated")
+                        LastUpdated = GetSafeCellValue(currentRow, columnIndexes, "Last Updated")
                     };
 
                     await genericRepository.CreateAsync(record);
@@ -326,7 +315,7 @@ namespace ProjectManagement.Api.Controllers.Request
                 if (index >= 0 && index < row.LastCellNum)
                 {
                     ICell cell = row.GetCell(index);
-                    if (cell != null && (key == "Date" || key == "LastUpdated") && cell.CellType == CellType.Numeric && DateUtil.IsCellDateFormatted(cell))
+                    if (cell != null && (key == "Date" || key == "Last Updated") && cell.CellType == CellType.Numeric && DateUtil.IsCellDateFormatted(cell))
                     {
                         DateTime? dateValue = cell.DateCellValue;
                         return dateValue?.Date.ToString("d", CultureInfo.InvariantCulture) ?? "";

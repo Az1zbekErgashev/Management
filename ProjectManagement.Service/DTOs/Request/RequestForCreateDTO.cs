@@ -1,6 +1,4 @@
-﻿using ProjectManagement.Domain.Enum;
-using ProjectManagement.Service.Extencions;
-using System.Text.Json.Serialization;
+﻿using Microsoft.AspNetCore.Http;
 
 namespace ProjectManagement.Service.DTOs.Request
 {
@@ -24,8 +22,9 @@ namespace ProjectManagement.Service.DTOs.Request
         public int RequestStatusId { get; set; }
         public string? ProjectDescription { get; set; }
         public string? Date { get; set; }
-        public ProjectStatus Status { get; set; } = 0;
-        public DateTime? Deadline { get; set; }
-        public Priority Priority { get; set; } = Priority.Medium;
+        public string? Status { get; set; }
+        public IFormFile? File { get; set; }
+        public bool UpdateFile { get; set; }
+        public DateTime? LastUpdated { get; set; }
     }
 }

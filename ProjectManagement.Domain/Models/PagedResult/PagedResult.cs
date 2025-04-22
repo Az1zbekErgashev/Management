@@ -41,18 +41,4 @@ namespace ProjectManagement.Domain.Models.PagedResult
             return new PagedResult<T>(items, totalItems, itemsPerPage, currentItemCount, pageIndex, totalPages);
         }
     }
-
-    public static class PagedResult
-    {
-        public static PagedResult<T> Create<T>(
-            IList<T> items,
-            long totalItems,
-            int itemsPerPage,
-            int pageIndex
-        )
-        {
-            int totalPages = (int)((totalItems % itemsPerPage == 0) ? (totalItems / itemsPerPage) : (1 + totalItems / itemsPerPage));
-            return PagedResult<T>.Create(items, totalItems, itemsPerPage, items.Count, pageIndex, totalPages);
-        }
-    }
 }

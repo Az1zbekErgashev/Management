@@ -1,4 +1,5 @@
 ﻿using ProjectManagement.Domain.Enum;
+using ProjectManagement.Domain.Models.Attachment;
 
 namespace ProjectManagement.Domain.Models.Request
 {
@@ -18,7 +19,6 @@ namespace ProjectManagement.Domain.Models.Request
         public string? ContactNumber { get; set; } 
         public string? Email { get; set; } 
         public string? ProcessingStatus { get; set; } 
-        public string? FinalResult { get; set; } 
         public string? Notes { get; set; } 
         public RequestStatusModel? RequestStatus { get; set; }
         public int IsDeleted { get; set; }
@@ -27,8 +27,9 @@ namespace ProjectManagement.Domain.Models.Request
         public string? InquirySource { get; set; }
         public string? ProjectBudget { get; set; }
         public Priority Priority { get; set; }
-        public DateTime? Deadline { get; set; }
-        public ProjectStatus Status { get; set; }
+        public string? Status { get; set; }
+        public AttachmentModel? File { get; set; }
+        public List<CommentsModel>? Comments { get; set; }
 
         public virtual RequestModel MapFromEntity(Domain.Entities.Requests.Request entity)
         {
@@ -48,14 +49,13 @@ namespace ProjectManagement.Domain.Models.Request
                 ContactNumber = entity.ContactNumber,
                 Email = entity.Email,
                 ProcessingStatus = entity.ProcessingStatus,
-                FinalResult = entity.FinalResult,
                 Notes = entity.Notes,
                 RequestStatus = entity?.RequestStatus != null ? new RequestStatusModel().MapFromEntity(entity.RequestStatus) : null,
                 IsDeleted = entity.IsDeleted,
                 Date = entity.Date,
-                Priority = entity.Priority,
-                Deadline = entity.Deadline,
-                Status = entity.Status
+                Status = entity.Status,
+                File = entity.File != null ? new AttachmentModel().MapFromEntity(entity.File) : null,
+                Comments = entity.Comments != null && entity?.Comments?.Count > 0 ? entity.Comments.Select(x => new CommentsModel().MapFromEntity(x)).ToList() : null
             };
 
         }
