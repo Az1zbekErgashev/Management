@@ -14,8 +14,6 @@ using ClosedXML.Excel;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 using System.Globalization;
-using ProjectManagement.Domain.Entities.Requests;
-using NPOI.HSSF.Record.Aggregates;
 
 namespace ProjectManagement.Api.Controllers.Request
 {
@@ -47,12 +45,6 @@ namespace ProjectManagement.Api.Controllers.Request
         [HttpGet("deleted-requets")]
         [Authorize]
         public async ValueTask<IActionResult> GetDeletedRequeststAsync([FromQuery] RequestForFilterDTO dto) => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetDeletedRequeststAsync(dto));
-
-
-        [HttpGet("pending-requets")]
-        [Authorize]
-        public async ValueTask<IActionResult> GetPendingRequeststAsync([FromQuery] RequestForFilterDTO dto) => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetPendingRequeststAsync(dto));
-
 
 
         [HttpPost("create")]

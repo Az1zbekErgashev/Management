@@ -13,7 +13,6 @@ namespace ProjectManagement.Service.Interfaces.Request
         ValueTask<bool> UpdateAsync(int id, RequestStatusForCreateDTO dto);
         ValueTask<PagedResult<RequestModel>> GetRequeststAsync(RequestForFilterDTO dto);
         ValueTask<PagedResult<RequestModel>> GetDeletedRequeststAsync(RequestForFilterDTO dto);
-        ValueTask<PagedResult<RequestModel>> GetPendingRequeststAsync(RequestForFilterDTO dto);
         ValueTask<bool> CreateRequest(RequestForCreateDTO dto);
         ValueTask<bool> DeleteRequest(int id);
         ValueTask<bool> RecoverRequest(int id);

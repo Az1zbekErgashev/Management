@@ -136,16 +136,15 @@ namespace ProjectManagement.Service.Service.Requests
                 var conditions = new List<string>();
 
                 conditions.Add("r.\"IsDeleted\" = 0");
-                conditions.Add("r.\"Status\" != 0");
 
                 if (!string.IsNullOrWhiteSpace(dto.Text))
                 {
                     var searchableColumns = new List<string>
-            {
-                "InquiryType", "InquiryField", "CompanyName", "Department", "ResponsiblePerson",
-                "ClientCompany", "Email", "ProcessingStatus", "FinalResult", "Notes", "Date",
-                "Client", "ContactNumber", "ProjectDetails"
-            };
+                {
+                    "InquiryType", "InquiryField", "CompanyName", "Department", "ResponsiblePerson",
+                    "ClientCompany", "Email", "ProcessingStatus", "Status", "Notes", "Date", "LastUpdated",
+                    "Client", "ContactNumber", "ProjectDetails"
+                };
 
                     var searchConditions = new List<string>();
                     foreach (var column in searchableColumns)
@@ -174,12 +173,6 @@ namespace ProjectManagement.Service.Service.Requests
                 {
                     conditions.Add("r.\"Status\" = @Status");
                     parameters.Add("@Status", dto.Status);
-                }
-
-                if (dto?.Priority != null)
-                {
-                    conditions.Add("r.\"Priority\" = @Priority");
-                    parameters.Add("@Priority", dto.Priority);
                 }
 
                 if (conditions.Any())
@@ -257,7 +250,7 @@ namespace ProjectManagement.Service.Service.Requests
                     var searchableColumns = new List<string>
                     {
                         "InquiryType", "InquiryField", "CompanyName", "Department", "ResponsiblePerson",
-                        "ClientCompany", "Email", "ProcessingStatus", "FinalResult", "Notes", "Date",
+                        "ClientCompany", "Email", "ProcessingStatus", "Status", "Notes", "Date", "LastUpdated",
                         "Client", "ContactNumber", "ProjectDetails"
                     };
 
@@ -326,106 +319,6 @@ namespace ProjectManagement.Service.Service.Requests
                 return PagedResult<RequestModel>.Create(list.ToList(), totalCount, dto.PageSize, list.Count(), dto.PageIndex, totalPages);
             }
         }
-
-
-        public async ValueTask<PagedResult<RequestModel>> GetPendingRequeststAsync(RequestForFilterDTO dto)
-        {
-            var connectionString = configuration.GetConnectionString("PostgresConnection");
-            using (var db = new NpgsqlConnection(connectionString))
-            {
-                var sql = new StringBuilder(@"
-                SELECT 
-                    r.*, 
-                    rs.""Id"" AS RequestStatus_Id, 
-                    rs.""Title"", rs.""Id""
-                FROM ""Requests"" r
-                LEFT JOIN ""RequestStatuses"" rs ON r.""RequestStatusId"" = rs.""Id""
-                ");
-
-                var countSql = new StringBuilder(@"SELECT COUNT(*) FROM ""Requests"" r
-                    LEFT JOIN ""RequestStatuses"" rs ON r.""RequestStatusId"" = rs.""Id""
-                ");
-
-                var parameters = new DynamicParameters();
-                var conditions = new List<string>();
-
-                conditions.Add("r.\"IsDeleted\" = 0");
-                conditions.Add("r.\"Status\" = 0");
-
-                if (!string.IsNullOrWhiteSpace(dto.Text))
-                {
-                    var searchableColumns = new List<string>
-                    {
-                        "InquiryType", "InquiryField", "CompanyName", "Department", "ResponsiblePerson",
-                        "ClientCompany", "Email", "ProcessingStatus", "FinalResult", "Notes", "Date",
-                        "Client", "ContactNumber", "ProjectDetails"
-                    };
-
-                    var searchConditions = new List<string>();
-                    foreach (var column in searchableColumns)
-                    {
-                        searchConditions.Add($"r.\"{column}\" ILIKE @searchText");
-                    }
-
-                    conditions.Add($"({string.Join(" OR ", searchConditions)})");
-                    parameters.Add("@searchText", $"%{dto.Text}%");
-                }
-
-                if (dto?.Category != null)
-                {
-                    conditions.Add("r.\"RequestStatusId\" = @RequestStatusId");
-                    parameters.Add("@RequestStatusId", dto.Category);
-                }
-
-                conditions.Add($"r.\"Status\" = 0");
-
-                if (conditions.Any())
-                {
-                    sql.Append(" WHERE " + string.Join(" AND ", conditions));
-                    countSql.Append(" WHERE " + string.Join(" AND ", conditions));
-                }
-                sql.Append(" ORDER BY r.\"CreatedAt\" DESC");
-
-                // Pagination
-                int totalCount = await db.ExecuteScalarAsync<int>(countSql.ToString(), parameters);
-
-                if (totalCount == 0)
-                {
-                    return PagedResult<RequestModel>.Create(new List<RequestModel>(), 0, dto.PageSize, 0, dto.PageIndex, 0);
-                }
-
-
-                if (dto.PageIndex == 0) dto.PageIndex = 1;
-                if (dto.PageSize == 0) dto.PageSize = totalCount;
-
-                int itemsPerPage = dto.PageSize;
-                int totalPages = (totalCount / itemsPerPage) + (totalCount % itemsPerPage == 0 ? 0 : 1);
-
-                if (dto.PageIndex > totalPages)
-                {
-                    dto.PageIndex = totalPages;
-                }
-
-                int skip = (dto.PageIndex - 1) * dto.PageSize;
-                sql.Append(" LIMIT @PageSize OFFSET @Offset");
-                parameters.Add("@PageSize", dto.PageSize);
-                parameters.Add("@Offset", skip);
-
-                var list = await db.QueryAsync<RequestModel, RequestStatusModel, RequestModel>(
-                    sql.ToString(),
-                    (request, status) =>
-                    {
-                        request.RequestStatus = status;
-                        return request;
-                    },
-                    parameters,
-                    splitOn: "RequestStatus_Id"
-                );
-
-                return PagedResult<RequestModel>.Create(list.ToList(), totalCount, dto.PageSize, list.Count(), dto.PageIndex, totalPages);
-            }
-        }
-
 
         public async ValueTask<bool> CreateRequest(RequestForCreateDTO dto)
         {
