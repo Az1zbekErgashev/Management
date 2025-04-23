@@ -22,6 +22,7 @@ public class Request : Auditable
     public string? Status { get; set; }
     public Domain.Entities.Attachment.Attachment? File { get; set; }
     public ICollection<Domain.Entities.Requests.Comments>? Comments { get; set; }
+    public ICollection<RequestHistory>? History { get; set; }
     public int? FileId { get; set; }
     public string? ProjectBudget { get; set; }
     public string? InquirySource { get; set; }

@@ -40,6 +40,7 @@ namespace ProjectManagement.Api.Extensions
             services.AddScoped<IGenericRepository<Request>, GenericRepository<Request>>();
             services.AddScoped<IGenericRepository<RequestStatus>, GenericRepository<RequestStatus>>();
             services.AddScoped<IGenericRepository<MultilingualText>, GenericRepository<MultilingualText>>();
+            services.AddScoped<IGenericRepository<RequestHistory>, GenericRepository<RequestHistory>>();
         }
 
         public static void AddCustomServices(this IServiceCollection services)

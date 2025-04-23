@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
-using ProjectManagement.Domain.Entities;
 using ProjectManagement.Domain.Entities.Logs;
 using ProjectManagement.Domain.Entities.Requests;
 using ProjectManagement.Domain.Enum;
@@ -15,16 +14,11 @@ using ProjectManagement.Service.Exception;
 using ProjectManagement.Service.Interfaces.Attachment;
 using ProjectManagement.Service.Interfaces.IRepositories;
 using ProjectManagement.Service.Interfaces.Request;
-using ProjectManagement.Service.Service.Attachment;
 using ProjectManagement.Service.StringExtensions;
-using System.Dynamic;
 using System.Security.Authentication;
 using System.Security.Claims;
 using System.Text;
-using System.Text.Json;
-using Telegram.Bot;
 using TrustyTalents.Service.Services.Emails;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 namespace ProjectManagement.Service.Service.Requests
 {
     public class RequestStatusService : IRequestStatusService
@@ -37,6 +31,7 @@ namespace ProjectManagement.Service.Service.Requests
         private readonly IEmailInboxService emailInboxService;
         private readonly IAttachmentService attachmentService;
         private readonly IGenericRepository<Comments> commentstService;
+        private readonly IGenericRepository<RequestHistory> requestHistory;
         public RequestStatusService(
             IGenericRepository<RequestStatus> requestStatusRepository,
             IGenericRepository<Domain.Entities.Requests.Request> requestRepository,
@@ -46,7 +41,8 @@ namespace ProjectManagement.Service.Service.Requests
             IEmailInboxService emailInboxService
 ,
             IAttachmentService attachmentService,
-            IGenericRepository<Comments> commentstService)
+            IGenericRepository<Comments> commentstService,
+            IGenericRepository<RequestHistory> requestHistory)
         {
             this.requestStatusRepository = requestStatusRepository;
             this.requestRepository = requestRepository;
@@ -56,6 +52,7 @@ namespace ProjectManagement.Service.Service.Requests
             this.emailInboxService = emailInboxService;
             this.attachmentService = attachmentService;
             this.commentstService = commentstService;
+            this.requestHistory = requestHistory;
         }
 
         public async ValueTask<List<RequestStatusModel>> GetAsync()
@@ -222,6 +219,24 @@ namespace ProjectManagement.Service.Service.Requests
         }
 
 
+        public async ValueTask<RequestModel> GetRequestById(int id)
+        {
+            var request = await requestRepository
+                .GetAll(x => x.Id == id)
+                .Include(x => x.History)
+                .ThenInclude(x => x.User)
+                .Include(x => x.Comments.Where(x => x.IsDeleted == 0))
+                .ThenInclude(x => x.User)
+                .Include(x => x.RequestStatus)
+                .Include(x => x.File)
+                .FirstOrDefaultAsync();
+
+
+            if(request is null) throw new ProjectManagementException(404, "request_not_found");
+
+            return new RequestModel().MapFromEntity(request);
+        }
+
         public async ValueTask<PagedResult<RequestModel>> GetDeletedRequeststAsync(RequestForFilterDTO dto)
         {
             var connectionString = configuration.GetConnectionString("PostgresConnection");
@@ -357,10 +372,10 @@ namespace ProjectManagement.Service.Service.Requests
             await requestRepository.SaveChangesAsync();
 
             await StringExtensions.StringExtensions.SaveLogAsync(_logRepository, _httpContextAccessor, Domain.Enum.LogAction.CreateRequest);
+            await StringExtensions.StringExtensions.SaveRequestHistory(requestHistory, RequestLog.CreateRequest, _httpContextAccessor, request.Id);
 
             return true;
         }
-
 
         public async ValueTask<bool> UpdateRequest(int id, RequestForCreateDTO dto)
         {
@@ -399,6 +414,7 @@ namespace ProjectManagement.Service.Service.Requests
             await requestRepository.SaveChangesAsync();
 
             await StringExtensions.StringExtensions.SaveLogAsync(_logRepository, _httpContextAccessor, Domain.Enum.LogAction.UpdateRequest);
+            await StringExtensions.StringExtensions.SaveRequestHistory(requestHistory, RequestLog.UpdateRequest, _httpContextAccessor, id);
 
             return true;
         }
@@ -415,7 +431,7 @@ namespace ProjectManagement.Service.Service.Requests
             await requestRepository.SaveChangesAsync();
 
             await StringExtensions.StringExtensions.SaveLogAsync(_logRepository, _httpContextAccessor, Domain.Enum.LogAction.DeleteRequest);
-
+            await StringExtensions.StringExtensions.SaveRequestHistory(requestHistory, RequestLog.DeleteRequest, _httpContextAccessor, id);
             return true;
         }
 
@@ -486,7 +502,6 @@ namespace ProjectManagement.Service.Service.Requests
                 return groupedFilters;
             }
         }
-
         public async ValueTask<List<RequestsCountModel>> GetRequestsCount()
         {
             var requests = await requestRepository.GetAll(x => x.IsDeleted == 0).Include(x => x.RequestStatus).ToListAsync();
@@ -527,10 +542,9 @@ namespace ProjectManagement.Service.Service.Requests
 
             return allRequests;
         }
-
         public async ValueTask<PagedResult<CommentsModel>> GetCommentsAsync(CommentsForFilterDTO dto)
         {
-            var comments = commentstService.GetAll(x => x.RequestId == dto.RequestId && x.IsDeleted == 0).AsQueryable();
+            var comments = commentstService.GetAll(x => x.RequestId == dto.RequestId && x.IsDeleted == 0).Include(x => x.User).AsQueryable();
 
             int totalCount = comments.Count();
 
@@ -575,8 +589,53 @@ namespace ProjectManagement.Service.Service.Requests
                 totalPages
                 );
         }
+        public async ValueTask<PagedResult<RequestHistoryModel>> GetRequestHistoryAsync(CommentsForFilterDTO dto)
+        {
+            var comments = requestHistory.GetAll(x => x.RequestId == dto.RequestId && x.IsDeleted == 0).Include(x => x.User).AsQueryable();
 
+            int totalCount = comments.Count();
 
+            if (totalCount == 0)
+            {
+                return PagedResult<RequestHistoryModel>.Create(
+                    Enumerable.Empty<RequestHistoryModel>(),
+                    0,
+                    dto.PageSize,
+                    0,
+                    dto.PageIndex,
+                    0
+                );
+            }
+
+            if (dto.PageIndex == 0)
+            {
+                dto.PageIndex = 1;
+            }
+
+            if (dto.PageSize == 0)
+            {
+                dto.PageSize = totalCount;
+            }
+
+            int itemsPerPage = dto.PageSize;
+            int totalPages = (totalCount / itemsPerPage) + (totalCount % itemsPerPage == 0 ? 0 : 1);
+
+            comments = comments.ToPagedList(dto);
+
+            var list = await comments.ToListAsync();
+
+            List<RequestHistoryModel> models = list.Select(
+                f => new RequestHistoryModel().MapFromEntity(f))
+                .ToList();
+
+            return PagedResult<RequestHistoryModel>.Create(models,
+                totalCount,
+                itemsPerPage,
+                models.Count,
+                dto.PageIndex,
+                totalPages
+                );
+        }
         public async ValueTask<bool> CreateComment(CommentForCreateDTO dto)
         {
             var existRequest = await requestRepository.GetAsync(x => x.Id == dto.RequestId);
@@ -602,7 +661,6 @@ namespace ProjectManagement.Service.Service.Requests
 
             return true;
         }
-
         public async ValueTask<bool> UpdateComment(CommentForCreateDTO dto)
         {
             var existComment = await commentstService.GetAsync(x => x.Id == dto.CommentId);
@@ -615,7 +673,6 @@ namespace ProjectManagement.Service.Service.Requests
             await commentstService.SaveChangesAsync();
             return true;
         }
-
         public async ValueTask<bool> DeleteComment(int commentId)
         {
             var existComment = await commentstService.GetAsync(x => x.Id == commentId);

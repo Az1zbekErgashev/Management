@@ -1,8 +1,11 @@
 ﻿using Microsoft.AspNetCore.Http;
 using ProjectManagement.Domain.Configuration;
 using ProjectManagement.Domain.Entities.Logs;
+using ProjectManagement.Domain.Entities.Requests;
+using ProjectManagement.Domain.Enum;
 using ProjectManagement.Service.DTOs.Attachment;
 using ProjectManagement.Service.Interfaces.IRepositories;
+using System.Security.Authentication;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -87,6 +90,25 @@ namespace ProjectManagement.Service.StringExtensions
             var log = new Logs { Action = logAction, CreatedAt = DateTime.UtcNow, UserId = id ?? 0, Ip = GetIp(context) };
             await logRepository.CreateAsync(log);
             await logRepository.SaveChangesAsync();
+            return true;
+        }
+
+        public static async ValueTask<bool> SaveRequestHistory(IGenericRepository<RequestHistory> requestHistoryRepository, RequestLog log, IHttpContextAccessor _httpContextAccessor, int requestId)
+        {
+            if (!int.TryParse(_httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
+            {
+                throw new InvalidCredentialException();
+            }
+
+            var history = new RequestHistory
+            {
+                UserId = userId,
+                RequestId = requestId,
+                Log = log
+            };
+
+            await requestHistoryRepository.CreateAsync(history);
+            await requestHistoryRepository.SaveChangesAsync();
             return true;
         }
     }

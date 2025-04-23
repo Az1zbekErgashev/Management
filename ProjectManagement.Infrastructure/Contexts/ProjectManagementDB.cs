@@ -55,7 +55,13 @@ namespace ProjectManagement.Infrastructure.Contexts
                 .OnDelete(DeleteBehavior.Cascade);
 
 
-            modelBuilder.Entity<Comments>()
+            modelBuilder.Entity<RequestHistory>()
+                .HasOne(tm => tm.Request)
+                .WithMany(x => x.History)
+                .HasForeignKey(l => l.RequestId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<RequestHistory>()
                 .HasOne(tm => tm.User)
                 .WithMany()
                 .HasForeignKey(l => l.UserId);

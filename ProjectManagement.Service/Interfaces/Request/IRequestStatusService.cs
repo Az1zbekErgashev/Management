@@ -12,6 +12,7 @@ namespace ProjectManagement.Service.Interfaces.Request
         ValueTask<bool> DeleteAsync(int id);
         ValueTask<bool> UpdateAsync(int id, RequestStatusForCreateDTO dto);
         ValueTask<PagedResult<RequestModel>> GetRequeststAsync(RequestForFilterDTO dto);
+        ValueTask<RequestModel> GetRequestById(int id);
         ValueTask<PagedResult<RequestModel>> GetDeletedRequeststAsync(RequestForFilterDTO dto);
         ValueTask<bool> CreateRequest(RequestForCreateDTO dto);
         ValueTask<bool> DeleteRequest(int id);
@@ -19,5 +20,10 @@ namespace ProjectManagement.Service.Interfaces.Request
         ValueTask<bool> UpdateRequest(int id, RequestForCreateDTO dto);
         ValueTask<List<RequestsCountModel>> GetRequestsCount();
         ValueTask<List<RequestFilterModel>> GetFilterValue(RequestStatusForFilterDTO dto);
+        ValueTask<PagedResult<CommentsModel>> GetCommentsAsync(CommentsForFilterDTO dto);
+        ValueTask<PagedResult<RequestHistoryModel>> GetRequestHistoryAsync(CommentsForFilterDTO dto);
+        ValueTask<bool> CreateComment(CommentForCreateDTO dto);
+        ValueTask<bool> UpdateComment(CommentForCreateDTO dto);
+        ValueTask<bool> DeleteComment(int commentId);
     }
 }

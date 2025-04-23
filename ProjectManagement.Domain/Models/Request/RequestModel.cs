@@ -30,6 +30,7 @@ namespace ProjectManagement.Domain.Models.Request
         public string? Status { get; set; }
         public AttachmentModel? File { get; set; }
         public List<CommentsModel>? Comments { get; set; }
+        public List<RequestHistoryModel>? History { get; set; }
 
         public virtual RequestModel MapFromEntity(Domain.Entities.Requests.Request entity)
         {
@@ -55,7 +56,8 @@ namespace ProjectManagement.Domain.Models.Request
                 Date = entity.Date,
                 Status = entity.Status,
                 File = entity.File != null ? new AttachmentModel().MapFromEntity(entity.File) : null,
-                Comments = entity.Comments != null && entity?.Comments?.Count > 0 ? entity.Comments.Select(x => new CommentsModel().MapFromEntity(x)).ToList() : null
+                Comments = entity?.Comments != null && entity?.Comments?.Count > 0 ? entity.Comments.Select(x => new CommentsModel().MapFromEntity(x)).ToList() : null,
+                History = entity?.History != null && entity?.History?.Count > 0 ? entity.History.Select(x => new RequestHistoryModel().MapFromEntity(x)).ToList() : null
             };
 
         }
