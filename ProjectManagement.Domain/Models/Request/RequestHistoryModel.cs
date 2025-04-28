@@ -8,6 +8,7 @@ namespace ProjectManagement.Domain.Models.Request
     {
         public UserModel? User { get; set; }
         public RequestLog Log { get; set; }
+        public RequestLogType Type { get; set; }
         public int Id { get; set; }
         public DateTime? CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
@@ -20,6 +21,7 @@ namespace ProjectManagement.Domain.Models.Request
             Id = entity.Id;
             CreatedAt = entity.CreatedAt;
             UpdatedAt = entity.UpdatedAt;
+            Type = entity.Type;
             return this;
         }
     }

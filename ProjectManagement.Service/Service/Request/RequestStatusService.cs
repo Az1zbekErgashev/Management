@@ -372,7 +372,7 @@ namespace ProjectManagement.Service.Service.Requests
             await requestRepository.SaveChangesAsync();
 
             await StringExtensions.StringExtensions.SaveLogAsync(_logRepository, _httpContextAccessor, Domain.Enum.LogAction.CreateRequest);
-            await StringExtensions.StringExtensions.SaveRequestHistory(requestHistory, RequestLog.CreateRequest, _httpContextAccessor, request.Id);
+            await StringExtensions.StringExtensions.SaveRequestHistory(requestHistory, RequestLog.CreateRequest, _httpContextAccessor, request.Id, RequestLogType.Create);
 
             return true;
         }
@@ -414,7 +414,7 @@ namespace ProjectManagement.Service.Service.Requests
             await requestRepository.SaveChangesAsync();
 
             await StringExtensions.StringExtensions.SaveLogAsync(_logRepository, _httpContextAccessor, Domain.Enum.LogAction.UpdateRequest);
-            await StringExtensions.StringExtensions.SaveRequestHistory(requestHistory, RequestLog.UpdateRequest, _httpContextAccessor, id);
+            await StringExtensions.StringExtensions.SaveRequestHistory(requestHistory, RequestLog.UpdateRequest, _httpContextAccessor, id, RequestLogType.Update);
 
             return true;
         }
@@ -431,7 +431,7 @@ namespace ProjectManagement.Service.Service.Requests
             await requestRepository.SaveChangesAsync();
 
             await StringExtensions.StringExtensions.SaveLogAsync(_logRepository, _httpContextAccessor, Domain.Enum.LogAction.DeleteRequest);
-            await StringExtensions.StringExtensions.SaveRequestHistory(requestHistory, RequestLog.DeleteRequest, _httpContextAccessor, id);
+            await StringExtensions.StringExtensions.SaveRequestHistory(requestHistory, RequestLog.DeleteRequest, _httpContextAccessor, id, RequestLogType.Delete);
             return true;
         }
 
@@ -544,7 +544,7 @@ namespace ProjectManagement.Service.Service.Requests
         }
         public async ValueTask<PagedResult<CommentsModel>> GetCommentsAsync(CommentsForFilterDTO dto)
         {
-            var comments = commentstService.GetAll(x => x.RequestId == dto.RequestId && x.IsDeleted == 0).Include(x => x.User).AsQueryable();
+            var comments = commentstService.GetAll(x => x.RequestId == dto.RequestId && x.IsDeleted == 0).Include(x => x.User).ThenInclude(x => x.Image).AsQueryable();
 
             int totalCount = comments.Count();
 
@@ -591,7 +591,7 @@ namespace ProjectManagement.Service.Service.Requests
         }
         public async ValueTask<PagedResult<RequestHistoryModel>> GetRequestHistoryAsync(CommentsForFilterDTO dto)
         {
-            var comments = requestHistory.GetAll(x => x.RequestId == dto.RequestId && x.IsDeleted == 0).Include(x => x.User).AsQueryable();
+            var comments = requestHistory.GetAll(x => x.RequestId == dto.RequestId && x.IsDeleted == 0).Include(x => x.User).ThenInclude(x => x.Image).AsQueryable();
 
             int totalCount = comments.Count();
 
