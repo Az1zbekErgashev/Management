@@ -379,7 +379,7 @@ namespace ProjectManagement.Service.Service.Requests
 
         public async ValueTask<bool> UpdateRequest(int id, RequestForCreateDTO dto)
         {
-            var existRequest = await requestRepository.GetAll(x => x.Id == id && x.IsDeleted == 0).Include(x => x.RequestStatus).FirstOrDefaultAsync();
+            var existRequest = await requestRepository.GetAll(x => x.Id == id && x.IsDeleted == 0).Include(x => x.File).Include(x => x.RequestStatus).FirstOrDefaultAsync();
 
             if (existRequest is null) throw new ProjectManagementException(404, "request_not_found");
 
