@@ -544,7 +544,7 @@ namespace ProjectManagement.Service.Service.Requests
         }
         public async ValueTask<PagedResult<CommentsModel>> GetCommentsAsync(CommentsForFilterDTO dto)
         {
-            var comments = commentstService.GetAll(x => x.RequestId == dto.RequestId && x.IsDeleted == 0).Include(x => x.User).ThenInclude(x => x.Image).OrderByDescending(x => x.Id).AsQueryable();
+            var comments = commentstService.GetAll(x => x.RequestId == dto.RequestId && x.IsDeleted == 0).Include(x => x.User).ThenInclude(x => x.Image).OrderBy(x => x.Id).AsQueryable();
 
             int totalCount = comments.Count();
 
@@ -591,7 +591,7 @@ namespace ProjectManagement.Service.Service.Requests
         }
         public async ValueTask<PagedResult<RequestHistoryModel>> GetRequestHistoryAsync(CommentsForFilterDTO dto)
         {
-            var comments = requestHistory.GetAll(x => x.RequestId == dto.RequestId && x.IsDeleted == 0).Include(x => x.User).ThenInclude(x => x.Image).AsQueryable();
+            var comments = requestHistory.GetAll(x => x.RequestId == dto.RequestId && x.IsDeleted == 0).Include(x => x.User).ThenInclude(x => x.Image).OrderBy(x => x.Id).AsQueryable();
 
             int totalCount = comments.Count();
 
