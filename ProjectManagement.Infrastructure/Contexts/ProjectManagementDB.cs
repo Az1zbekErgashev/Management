@@ -66,6 +66,12 @@ namespace ProjectManagement.Infrastructure.Contexts
                 .WithMany()
                 .HasForeignKey(l => l.UserId);
 
+            modelBuilder.Entity<Comments>()
+                .HasOne(c => c.ParentComment) 
+                .WithMany(c => c.Replies)      
+                .HasForeignKey(c => c.ParentCommentId) 
+                .OnDelete(DeleteBehavior.Cascade);
+
             var user = new User
             {
                 Id = 1,

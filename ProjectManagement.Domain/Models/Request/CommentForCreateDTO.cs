@@ -11,5 +11,6 @@ namespace ProjectManagement.Domain.Models.Request
         public string Text { get; set; }
 
         public int? CommentId { get; set; }
+        public int? ParentCommentId { get; set; }
     }
 }

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
 using Npgsql;
 using ProjectManagement.Domain.Entities.Logs;
 using ProjectManagement.Domain.Entities.Requests;
@@ -544,11 +545,19 @@ namespace ProjectManagement.Service.Service.Requests
         }
         public async ValueTask<PagedResult<CommentsModel>> GetCommentsAsync(CommentsForFilterDTO dto)
         {
-            var comments = commentstService.GetAll(x => x.RequestId == dto.RequestId && x.IsDeleted == 0).Include(x => x.User).ThenInclude(x => x.Image).OrderBy(x => x.Id).AsQueryable();
+            var commentsQuery = commentstService
+            .GetAll(x => x.RequestId == dto.RequestId && x.IsDeleted == 0)
+            .Include(x => x.Replies) 
+            .Include(x => x.User)
+            .ThenInclude(x => x.Image)
+            .AsQueryable();
 
-            int totalCount = comments.Count();
+            var commentsQueryWithReplies = commentsQuery
+                .OrderBy(c => c.CreatedAt);
 
-            if (totalCount == 0)
+            int totalCommentsCount = await commentsQueryWithReplies.CountAsync();
+
+            if (totalCommentsCount == 0)
             {
                 return PagedResult<CommentsModel>.Create(
                     Enumerable.Empty<CommentsModel>(),
@@ -560,34 +569,37 @@ namespace ProjectManagement.Service.Service.Requests
                 );
             }
 
-            if (dto.PageIndex == 0)
+            if (dto.PageIndex <= 0)
             {
                 dto.PageIndex = 1;
             }
 
-            if (dto.PageSize == 0)
+            if (dto.PageSize <= 0)
             {
-                dto.PageSize = totalCount;
+                dto.PageSize = totalCommentsCount;
             }
 
             int itemsPerPage = dto.PageSize;
-            int totalPages = (totalCount / itemsPerPage) + (totalCount % itemsPerPage == 0 ? 0 : 1);
+            int totalPages = (int)Math.Ceiling((double)totalCommentsCount / itemsPerPage);
 
-            comments =  comments.ToPagedList(dto);
+            var pagedComments = commentsQueryWithReplies
+                .Skip((dto.PageIndex - 1) * itemsPerPage)
+                .Take(itemsPerPage);
 
-            var list = await comments.ToListAsync();
+            var allCommentsList = await pagedComments.ToListAsync();
 
-            List<CommentsModel> models = list.Select(
-                f => new CommentsModel().MapFromEntity(f))
+            List<CommentsModel> models = allCommentsList
+                .Select(f => new CommentsModel().MapFromEntity(f))
                 .ToList();
 
-            return PagedResult<CommentsModel>.Create(models,
-                totalCount,
+            return PagedResult<CommentsModel>.Create(
+                models,
+                totalCommentsCount,
                 itemsPerPage,
                 models.Count,
                 dto.PageIndex,
                 totalPages
-                );
+            );
         }
         public async ValueTask<PagedResult<RequestHistoryModel>> GetRequestHistoryAsync(CommentsForFilterDTO dto)
         {
@@ -649,16 +661,33 @@ namespace ProjectManagement.Service.Service.Requests
                 throw new InvalidCredentialException();
             }
 
-            var newcomment = new Comments
+            Comments? parentComment = null;
+            if (dto.ParentCommentId.HasValue)
+            {
+                parentComment = await commentstService.GetAsync(x => x.Id == dto.ParentCommentId.Value);
+                if (parentComment is null)
+                    throw new ProjectManagementException(404, "parent_comment_not_found");
+            }
+
+            var newComment = new Comments
             {
                 RequestId = existRequest.Id,
                 Text = dto.Text,
-                UserId = userId
+                UserId = userId,
+                ParentCommentId = dto.ParentCommentId, 
+                CreatedAt = DateTime.UtcNow
             };
 
-            await commentstService.CreateAsync(newcomment);
-            await commentstService.SaveChangesAsync();
+            await commentstService.CreateAsync(newComment);
 
+            if (parentComment != null)
+            {
+                parentComment.Replies ??= new List<Comments>();
+                parentComment.Replies.Add(newComment);
+                commentstService.UpdateAsync(parentComment);
+            }
+
+            await commentstService.SaveChangesAsync();
             return true;
         }
         public async ValueTask<bool> UpdateComment(CommentForCreateDTO dto)
@@ -669,8 +698,22 @@ namespace ProjectManagement.Service.Service.Requests
             existComment.UpdatedAt = DateTime.UtcNow;
             existComment.Text = dto.Text;
 
+            if (dto.ParentCommentId.HasValue)
+            {
+                var parentComment = await commentstService.GetAsync(x => x.Id == dto.ParentCommentId.Value);
+                if (parentComment is null)
+                    throw new ProjectManagementException(404, "parent_comment_not_found");
+
+                existComment.ParentCommentId = dto.ParentCommentId;
+            }
+            else
+            {
+                existComment.ParentCommentId = null;
+            }
+
             commentstService.UpdateAsync(existComment);
             await commentstService.SaveChangesAsync();
+
             return true;
         }
         public async ValueTask<bool> DeleteComment(int commentId)

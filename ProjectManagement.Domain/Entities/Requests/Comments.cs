@@ -9,5 +9,8 @@ namespace ProjectManagement.Domain.Entities.Requests
         public int UserId { get; set; }
         public Entities.Requests.Request Request { get; set; }
         public int RequestId { get; set; }
+        public int? ParentCommentId { get; set; }
+        public Comments? ParentComment { get; set; }
+        public ICollection<Comments> Replies { get; set; } = new List<Comments>();
     }
 }
