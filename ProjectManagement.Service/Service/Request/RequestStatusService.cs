@@ -14,6 +14,7 @@ using ProjectManagement.Service.Interfaces.Attachment;
 using ProjectManagement.Service.Interfaces.IRepositories;
 using ProjectManagement.Service.Interfaces.Request;
 using ProjectManagement.Service.StringExtensions;
+using System.Linq;
 using System.Security.Authentication;
 using System.Security.Claims;
 using System.Text;
@@ -541,79 +542,34 @@ namespace ProjectManagement.Service.Service.Requests
 
             return allRequests;
         }
-        public async ValueTask<PagedResult<CommentsModel>> GetCommentsAsync(CommentsForFilterDTO dto)
+        public async ValueTask<List<CommentsModel>> GetCommentsAsync(CommentsForFilterDTO dto)
         {
-            // Загружаем все комментарии для RequestId
             var allComments = await commentstService
-                .GetAll(x => x.RequestId == dto.RequestId && x.IsDeleted == 0)
-                .Include(x => x.User)
-                    .ThenInclude(u => u.Image)
-                .OrderBy(x => x.CreatedAt)
-                .ToListAsync();
+               .GetAll(x => x.RequestId == dto.RequestId && x.IsDeleted == 0)
+               .Include(x => x.User)
+                   .ThenInclude(u => u.Image)
+               .OrderBy(x => x.CreatedAt)
+               .ToListAsync();
 
-            // Находим корневой комментарий (parentCommentId == null)
-            var rootComment = allComments.FirstOrDefault(x => x.ParentCommentId == null);
-            int totalCommentsCount = rootComment != null ? 1 : 0;
-
-            if (totalCommentsCount == 0)
-            {
-                return PagedResult<CommentsModel>.Create(
-                    Enumerable.Empty<CommentsModel>(),
-                    0,
-                    dto.PageSize,
-                    0,
-                    dto.PageIndex,
-                    0
-                );
-            }
-
-            // Проверяем параметры пейджинга
-            if (dto.PageIndex <= 0)
-            {
-                dto.PageIndex = 1;
-            }
-
-            if (dto.PageSize <= 0)
-            {
-                dto.PageSize = totalCommentsCount;
-            }
-
-            int itemsPerPage = dto.PageSize;
-            int totalPages = (int)Math.Ceiling((double)totalCommentsCount / itemsPerPage);
-
-            // Проверяем, попадает ли корневой комментарий в текущую страницу
-            if (dto.PageIndex > totalPages)
-            {
-                return PagedResult<CommentsModel>.Create(
-                    Enumerable.Empty<CommentsModel>(),
-                    totalCommentsCount,
-                    itemsPerPage,
-                    0,
-                    dto.PageIndex,
-                    totalPages
-                );
-            }
-
-            // Мапим корневой комментарий
-            var rootModel = new CommentsModel().MapFromEntity(rootComment);
-
-            // Добавляем все остальные комментарии в replies корневого комментария
-            rootModel.Replies = allComments
-                .Where(x => x.Id != rootComment.Id) // Исключаем корневой комментарий
-                .Select(x => new CommentsModel().MapFromEntity(x))
+            var rootComments = allComments
+                .Where(x => x.ParentCommentId == null)
+                .Take(dto.PageSize)  
                 .ToList();
 
-            // Формируем результат
-            var result = new List<CommentsModel> { rootModel };
+            var rootModels = rootComments
+                .Select(rootComment => new CommentsModel().MapFromEntity(rootComment))
+                .ToList();
 
-            return PagedResult<CommentsModel>.Create(
-                result,
-                totalCommentsCount,
-                itemsPerPage,
-                result.Count,
-                dto.PageIndex,
-                totalPages
-            );
+            foreach (var rootModel in rootModels)
+            {
+                rootModel.Replies = allComments
+                    .Where(x => x.ParentCommentId == rootModel.Id)  
+                    .Take(dto.RepliesPageSize)  
+                    .Select(x => new CommentsModel().MapFromEntity(x))
+                    .ToList();
+            }
+
+            return rootModels;
         }
         public async ValueTask<PagedResult<RequestHistoryModel>> GetRequestHistoryAsync(CommentsForFilterDTO dto)
         {

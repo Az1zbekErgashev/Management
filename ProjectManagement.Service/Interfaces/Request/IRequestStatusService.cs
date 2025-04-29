@@ -20,7 +20,7 @@ namespace ProjectManagement.Service.Interfaces.Request
         ValueTask<bool> UpdateRequest(int id, RequestForCreateDTO dto);
         ValueTask<List<RequestsCountModel>> GetRequestsCount();
         ValueTask<List<RequestFilterModel>> GetFilterValue(RequestStatusForFilterDTO dto);
-        ValueTask<PagedResult<CommentsModel>> GetCommentsAsync(CommentsForFilterDTO dto);
+        ValueTask<List<CommentsModel>> GetCommentsAsync(CommentsForFilterDTO dto);
         ValueTask<PagedResult<RequestHistoryModel>> GetRequestHistoryAsync(CommentsForFilterDTO dto);
         ValueTask<bool> CreateComment(CommentForCreateDTO dto);
         ValueTask<bool> UpdateComment(CommentForCreateDTO dto);
