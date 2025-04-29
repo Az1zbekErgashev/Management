@@ -7,6 +7,7 @@ namespace ProjectManagement.Service.DTOs.Request
     {
         [Required]
         public int RequestId { get; set; }
-        public int RepliesPageSize { get; set; } = 10;
+        public int ReplyPageSize { get; set; } = 10;
+        public int? RootCommentId { get; set; }
     }
 }

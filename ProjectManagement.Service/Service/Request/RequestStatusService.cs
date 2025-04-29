@@ -545,15 +545,15 @@ namespace ProjectManagement.Service.Service.Requests
         public async ValueTask<List<CommentsModel>> GetCommentsAsync(CommentsForFilterDTO dto)
         {
             var allComments = await commentstService
-               .GetAll(x => x.RequestId == dto.RequestId && x.IsDeleted == 0)
-               .Include(x => x.User)
-                   .ThenInclude(u => u.Image)
-               .OrderBy(x => x.CreatedAt)
-               .ToListAsync();
+                .GetAll(x => x.RequestId == dto.RequestId && x.IsDeleted == 0)
+                .Include(x => x.User)
+                    .ThenInclude(u => u.Image)
+                .OrderBy(x => x.CreatedAt)
+                .ToListAsync();
 
             var rootComments = allComments
                 .Where(x => x.ParentCommentId == null)
-                .Take(dto.PageSize)  
+                .Take(dto.PageSize)
                 .ToList();
 
             var rootModels = rootComments
@@ -562,10 +562,37 @@ namespace ProjectManagement.Service.Service.Requests
 
             foreach (var rootModel in rootModels)
             {
-                rootModel.Replies = allComments
-                    .Where(x => x.ParentCommentId == rootModel.Id)  
-                    .Take(dto.RepliesPageSize)  
-                    .Select(x => new CommentsModel().MapFromEntity(x))
+                var applyReplyLimit = dto.RootCommentId.HasValue && rootModel.Id == dto.RootCommentId;
+
+                var allReplies = new List<CommentsModel>();
+                var repliesToProcess = allComments
+                    .Where(x => x.ParentCommentId == rootModel.Id)
+                    .ToList();
+
+                var queue = new Queue<Comments>(repliesToProcess); // Replace CommentEntity with actual type
+                while (queue.Count > 0 && (!applyReplyLimit || allReplies.Count < dto.ReplyPageSize))
+                {
+                    var reply = queue.Dequeue();
+                    var replyModel = new CommentsModel().MapFromEntity(reply);
+                    allReplies.Add(replyModel);
+
+                    var nestedReplies = allComments
+                        .Where(x => x.ParentCommentId == reply.Id)
+                        .ToList();
+
+                    foreach (var nestedReply in nestedReplies)
+                    {
+                        if (!applyReplyLimit || allReplies.Count < dto.ReplyPageSize)
+                        {
+                            queue.Enqueue(nestedReply);
+                        }
+                    }
+                }
+
+                var repliesLimit = applyReplyLimit ? Math.Max(0, dto.ReplyPageSize) : allReplies.Count;
+                rootModel.Replies = allReplies
+                    .OrderBy(x => x.CreatedAt)
+                    .Take(repliesLimit)
                     .ToList();
             }
 
