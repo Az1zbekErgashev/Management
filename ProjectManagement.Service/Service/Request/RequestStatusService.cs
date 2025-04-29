@@ -548,6 +548,7 @@ namespace ProjectManagement.Service.Service.Requests
                 .GetAll(x => x.RequestId == dto.RequestId && x.IsDeleted == 0)
                 .Include(x => x.User)
                     .ThenInclude(u => u.Image)
+                    .Include(x => x.Replies).ThenInclude(x => x.User).ThenInclude(x => x.Image)
                 .OrderBy(x => x.CreatedAt)
                 .ToListAsync();
 
