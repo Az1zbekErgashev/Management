@@ -2,14 +2,12 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
 using Npgsql;
 using ProjectManagement.Domain.Entities.Logs;
 using ProjectManagement.Domain.Entities.Requests;
 using ProjectManagement.Domain.Enum;
 using ProjectManagement.Domain.Models.PagedResult;
 using ProjectManagement.Domain.Models.Request;
-using ProjectManagement.Domain.Models.User;
 using ProjectManagement.Service.DTOs.Request;
 using ProjectManagement.Service.Exception;
 using ProjectManagement.Service.Interfaces.Attachment;
@@ -545,17 +543,17 @@ namespace ProjectManagement.Service.Service.Requests
         }
         public async ValueTask<PagedResult<CommentsModel>> GetCommentsAsync(CommentsForFilterDTO dto)
         {
-            var commentsQuery = commentstService
-            .GetAll(x => x.RequestId == dto.RequestId && x.IsDeleted == 0)
-            .Include(x => x.Replies) 
-            .Include(x => x.User)
-            .ThenInclude(x => x.Image)
-            .AsQueryable();
+            // Загружаем все комментарии для RequestId
+            var allComments = await commentstService
+                .GetAll(x => x.RequestId == dto.RequestId && x.IsDeleted == 0)
+                .Include(x => x.User)
+                    .ThenInclude(u => u.Image)
+                .OrderBy(x => x.CreatedAt)
+                .ToListAsync();
 
-            var commentsQueryWithReplies = commentsQuery
-                .OrderBy(c => c.CreatedAt);
-
-            int totalCommentsCount = await commentsQueryWithReplies.CountAsync();
+            // Находим корневой комментарий (parentCommentId == null)
+            var rootComment = allComments.FirstOrDefault(x => x.ParentCommentId == null);
+            int totalCommentsCount = rootComment != null ? 1 : 0;
 
             if (totalCommentsCount == 0)
             {
@@ -569,6 +567,7 @@ namespace ProjectManagement.Service.Service.Requests
                 );
             }
 
+            // Проверяем параметры пейджинга
             if (dto.PageIndex <= 0)
             {
                 dto.PageIndex = 1;
@@ -582,21 +581,36 @@ namespace ProjectManagement.Service.Service.Requests
             int itemsPerPage = dto.PageSize;
             int totalPages = (int)Math.Ceiling((double)totalCommentsCount / itemsPerPage);
 
-            var pagedComments = commentsQueryWithReplies
-                .Skip((dto.PageIndex - 1) * itemsPerPage)
-                .Take(itemsPerPage);
+            // Проверяем, попадает ли корневой комментарий в текущую страницу
+            if (dto.PageIndex > totalPages)
+            {
+                return PagedResult<CommentsModel>.Create(
+                    Enumerable.Empty<CommentsModel>(),
+                    totalCommentsCount,
+                    itemsPerPage,
+                    0,
+                    dto.PageIndex,
+                    totalPages
+                );
+            }
 
-            var allCommentsList = await pagedComments.ToListAsync();
+            // Мапим корневой комментарий
+            var rootModel = new CommentsModel().MapFromEntity(rootComment);
 
-            List<CommentsModel> models = allCommentsList
-                .Select(f => new CommentsModel().MapFromEntity(f))
+            // Добавляем все остальные комментарии в replies корневого комментария
+            rootModel.Replies = allComments
+                .Where(x => x.Id != rootComment.Id) // Исключаем корневой комментарий
+                .Select(x => new CommentsModel().MapFromEntity(x))
                 .ToList();
 
+            // Формируем результат
+            var result = new List<CommentsModel> { rootModel };
+
             return PagedResult<CommentsModel>.Create(
-                models,
+                result,
                 totalCommentsCount,
                 itemsPerPage,
-                models.Count,
+                result.Count,
                 dto.PageIndex,
                 totalPages
             );

@@ -21,13 +21,6 @@ namespace ProjectManagement.Domain.Models.Request
             CreatedAt = entity.CreatedAt;
             UpdatedAt = entity.UpdatedAt;
             ParentCommentId = entity.ParentCommentId;
-
-            if (entity.Replies != null && entity.Replies.Any())
-            {
-                Replies = entity.Replies.OrderBy(x => x.CreatedAt)
-                    .Select(reply => new CommentsModel().MapFromEntity(reply))
-                    .ToList();
-            }
             return this;
         }
     }
