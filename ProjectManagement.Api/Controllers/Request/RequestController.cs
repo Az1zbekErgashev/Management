@@ -305,5 +305,11 @@ namespace ProjectManagement.Api.Controllers.Request
         
         [HttpGet("request-status-count")]
         public async Task<IActionResult> GetStatusCounts() => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetStatusCounts());
+        
+        [HttpGet("request-status-years")]
+        public async Task<IActionResult> GetStatusYears() => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetAvailableYears()); 
+        
+        [HttpGet("request-request-by-years")]
+        public async Task<IActionResult> GetMonthlyChartData(int year) => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetMonthlyChartData(year));
     }
 }

@@ -27,5 +27,7 @@ namespace ProjectManagement.Service.Interfaces.Request
         ValueTask<bool> DeleteComment(int commentId);
         ValueTask<List<RequestRateModel>> GetRequestProcent();
         ValueTask<List<RequestCountByStatusModel>> GetStatusCounts();
+        ValueTask<List<int>> GetAvailableYears();
+        ValueTask<List<Dictionary<string, object>>> GetMonthlyChartData(int year);
     }
 }

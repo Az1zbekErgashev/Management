@@ -796,5 +796,53 @@ namespace ProjectManagement.Service.Service.Requests
             return result;
         }
 
+        public async ValueTask<List<int>> GetAvailableYears()
+        {
+            var allRequests = await requestRepository
+                .GetAll(x => x.IsDeleted == 0 && x.Status != null)
+                .ToListAsync();
+
+            var years = allRequests
+                .Where(x => DateTime.TryParse(x.Date, out _))
+                .Select(x => DateTime.Parse(x.Date).Year)
+                .Distinct()
+                .OrderBy(y => y)
+                .ToList();
+
+            return years;
+        }
+
+        public async ValueTask<List<Dictionary<string, object>>> GetMonthlyChartData(int year)
+        {
+            var allRequests = await requestRepository
+                .GetAll(x => x.IsDeleted == 0 && x.Status != null)
+                .ToListAsync();
+
+            var filtered = allRequests
+                .Where(x => DateTime.TryParse(x.Date, out var parsedDate) && parsedDate.Year == year)
+                .GroupBy(x => DateTime.Parse(x.Date).Month)
+                .OrderBy(x => x.Key);
+
+            var result = new List<Dictionary<string, object>>();
+
+            foreach (var group in filtered)
+            {
+                var month = group.Key; 
+
+                var dict = new Dictionary<string, object>
+                {
+                    ["month"] = month,
+                    ["Made"] = group.Count(x => x.Status == "Made"),
+                    ["Failed"] = group.Count(x => x.Status == "Failed"),
+                    ["On-going"] = group.Count(x => x.Status == "On-going"),
+                    ["OnHold"] = group.Count(x => x.Status == "On-hold"),
+                    ["Dropped"] = group.Count(x => x.Status == "Dropped")
+                };
+
+                result.Add(dict);
+            }
+
+            return result;
+        }
     }
 }
