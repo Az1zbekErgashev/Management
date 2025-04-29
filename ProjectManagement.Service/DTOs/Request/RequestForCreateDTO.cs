@@ -25,5 +25,6 @@ namespace ProjectManagement.Service.DTOs.Request
         public IFormFile? File { get; set; }
         public bool UpdateFile { get; set; }
         public DateTime? LastUpdated { get; set; }
+        public bool RemoveFile { get; set; } = false;
     }
 }

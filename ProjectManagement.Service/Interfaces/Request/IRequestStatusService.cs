@@ -25,5 +25,7 @@ namespace ProjectManagement.Service.Interfaces.Request
         ValueTask<bool> CreateComment(CommentForCreateDTO dto);
         ValueTask<bool> UpdateComment(CommentForCreateDTO dto);
         ValueTask<bool> DeleteComment(int commentId);
+        ValueTask<List<RequestRateModel>> GetRequestProcent();
+        ValueTask<List<RequestCountByStatusModel>> GetStatusCounts();
     }
 }

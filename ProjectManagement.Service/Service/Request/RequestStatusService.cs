@@ -389,6 +389,10 @@ namespace ProjectManagement.Service.Service.Requests
             {
                 attachment = await attachmentService.UploadAsync(dto.File.ToAttachmentOrDefault());
             }
+            else if (dto.RemoveFile)
+            {
+                attachment = null;
+            }
 
             existRequest.Client = dto.Client;
             existRequest.ClientCompany = dto.ClientCompany;
@@ -725,6 +729,71 @@ namespace ProjectManagement.Service.Service.Requests
             commentstService.UpdateAsync(existComment);
             await commentstService.SaveChangesAsync();
             return true;
+        }
+
+
+        public async ValueTask<List<RequestRateModel>> GetRequestProcent()
+        {
+            var allRequestsRaw = await requestRepository.GetAll(x => x.IsDeleted == 0 && x.Status != null).Include(x => x.RequestStatus).ToListAsync();
+
+            var totalCount = allRequestsRaw.Count;
+            var madeCount = allRequestsRaw.Count(x => x.Status == "Made");
+            var result = new List<RequestRateModel>();
+            var totalPercent = totalCount > 0 ? (int)Math.Round((double)madeCount / totalCount * 100) : 0;
+            result.Add(new RequestRateModel().MapFromEntity("all_requests", totalPercent, totalCount));
+            var grouped = allRequestsRaw
+            .GroupBy(x => x.RequestStatus)
+            .ToList();
+
+            foreach (var group in grouped)
+            {
+                var categoryText = group.Key?.Title;
+                var categoryTotal = group.Count();
+                var categoryMade = group.Count(x => x.Status == "Made");
+                var categoryPercent = categoryTotal > 0 ? (int)Math.Round((double)categoryMade / categoryTotal * 100) : 0;
+
+                result.Add(new RequestRateModel().MapFromEntity(categoryText, categoryPercent, categoryTotal));
+            }
+
+            return result;
+        }
+
+        public async ValueTask<List<RequestCountByStatusModel>> GetStatusCounts()
+        {
+            var allRequestsRaw = await requestRepository.GetAll(x => x.IsDeleted == 0 && x.Status != null).Include(x => x.RequestStatus).ToListAsync();
+
+            var groupedRequests = allRequestsRaw
+            .GroupBy(x => x.RequestStatusId)
+            .ToList();
+
+            var result = new List<RequestCountByStatusModel>();
+
+            var allRequestsModel = new RequestCountByStatusModel
+            {
+                CategoryText = "all_requests",
+                Counts = new List<StatusCountItem>
+                {
+                    new StatusCountItem { Status = "Failed", Count = allRequestsRaw.Count(x => x.Status == "Failed") },
+                    new StatusCountItem { Status = "Made", Count = allRequestsRaw.Count(x => x.Status == "Made") },
+                    new StatusCountItem { Status = "On-going", Count = allRequestsRaw.Count(x => x.Status == "On-going") },
+                    new StatusCountItem { Status = "On-hold", Count = allRequestsRaw.Count(x => x.Status == "On-hold") },
+                    new StatusCountItem { Status = "Dropped", Count = allRequestsRaw.Count(x => x.Status == "Dropped") },
+                },
+                Total = allRequestsRaw.Count()
+            };
+
+            result.Add(allRequestsModel);
+
+            foreach (var group in groupedRequests)
+            {
+                var requestList = group.ToList(); 
+
+                var model = new RequestCountByStatusModel().MapFromEntity(requestList);
+
+                result.Add(model);
+            }
+
+            return result;
         }
 
     }

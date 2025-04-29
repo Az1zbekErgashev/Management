@@ -22,6 +22,7 @@ namespace ProjectManagement.Api.Controllers.Request
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class RequestController : ControllerBase
     {
         private readonly IRequestStatusService requestStatusService;
@@ -36,23 +37,19 @@ namespace ProjectManagement.Api.Controllers.Request
         }
 
         [HttpGet("category")]
-        [Authorize]
         public async ValueTask<IActionResult> GetAsync() => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetAsync());
 
 
         [HttpGet("requets")]
-        [Authorize]
         public async ValueTask<IActionResult> GetRequestsAsync([FromQuery] RequestForFilterDTO dto) => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetRequeststAsync(dto));
 
 
 
         [HttpGet("requets/{id}")]
-        [Authorize]
         public async ValueTask<IActionResult> GetRequestsByIdAsync(int id) => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetRequestById(id));
 
 
         [HttpGet("deleted-requets")]
-        [Authorize]
         public async ValueTask<IActionResult> GetDeletedRequeststAsync([FromQuery] RequestForFilterDTO dto) => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetDeletedRequeststAsync(dto));
 
 
@@ -62,71 +59,30 @@ namespace ProjectManagement.Api.Controllers.Request
 
 
         [HttpPut("update")]
-        [Authorize]
         public async ValueTask<IActionResult> UpdateAsync([Required] int id, RequestStatusForCreateDTO dto) => ResponseHandler.ReturnIActionResponse(await requestStatusService.UpdateAsync(id, dto));
 
 
 
         [HttpDelete("delete")]
-        [Authorize]
         public async ValueTask<IActionResult> DeleteAsync([Required] int id) => ResponseHandler.ReturnIActionResponse(await requestStatusService.DeleteAsync(id));
 
-
-        [HttpDelete("delete-all-data")]
-        public async ValueTask<IActionResult> DeleteManyRequest()
-        {
-            var alldata = await genericRepository.GetAll().ToListAsync();
-
-            foreach (var item in alldata)
-            {
-                await genericRepository.DeleteAsync(item.Id);
-            }
-
-            await genericRepository.SaveChangesAsync();
-
-            return ResponseHandler.ReturnIActionResponse("true");
-        }
-
         [HttpPost("create-request")]
-        [Authorize]
         public async ValueTask<IActionResult> CreateRequest(RequestForCreateDTO dto) => ResponseHandler.ReturnIActionResponse(await requestStatusService.CreateRequest(dto));
 
 
         [HttpDelete("delete-request")]
-        [Authorize]
         public async ValueTask<IActionResult> DeleteRequest([Required] int id) => ResponseHandler.ReturnIActionResponse(await requestStatusService.DeleteRequest(id));
 
         [HttpPut("recover-request")]
-        [Authorize]
         public async ValueTask<IActionResult> RecoverRequest([Required] int id) => ResponseHandler.ReturnIActionResponse(await requestStatusService.RecoverRequest(id));
 
         [HttpPut("update-request")]
-        [Authorize]
         public async ValueTask<IActionResult> UpdateRequest([Required] int id, RequestForCreateDTO dto) => ResponseHandler.ReturnIActionResponse(await requestStatusService.UpdateRequest(id, dto));
 
 
         [HttpGet("filter-values")]
         public async ValueTask<IActionResult> GetFilterValue([FromQuery] RequestStatusForFilterDTO dto) => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetFilterValue(dto));
 
-
-        [HttpGet("get-json")]
-        public async Task<IActionResult> GetJson()
-        {
-            var allRequests = await genericRepository.GetAll().ToListAsync();
-
-            var json = JsonSerializer.Serialize(allRequests, new JsonSerializerOptions
-            {
-                WriteIndented = true,
-                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-            });
-
-            var fileName = "requests.json";
-            var filePath = Path.Combine(Path.GetTempPath(), fileName);
-            await System.IO.File.WriteAllTextAsync(filePath, json, Encoding.UTF8);
-
-            var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
-            return File(fileBytes, "application/json", fileName);
-        }
 
         [HttpGet("export-excel")]
         public async Task<IActionResult> ExportToExcel(int? requestCategoryId, int languageId = 0)
@@ -341,5 +297,13 @@ namespace ProjectManagement.Api.Controllers.Request
             await _context.SaveChangesAsync();
             return Ok(new { message = "File is deleted" });
         }
+
+
+        [HttpGet("request-procent")]
+        public async Task<IActionResult> GetProcent() => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetRequestProcent());
+        
+        
+        [HttpGet("request-status-count")]
+        public async Task<IActionResult> GetStatusCounts() => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetStatusCounts());
     }
 }
