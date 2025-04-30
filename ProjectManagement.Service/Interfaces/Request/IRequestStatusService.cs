@@ -29,5 +29,6 @@ namespace ProjectManagement.Service.Interfaces.Request
         ValueTask<List<RequestCountByStatusModel>> GetStatusCounts();
         ValueTask<List<int>> GetAvailableYears();
         ValueTask<List<Dictionary<string, object>>> GetMonthlyChartData(int year);
+        ValueTask<Dictionary<string, object>> GetPieChartData(int year);
     }
 }

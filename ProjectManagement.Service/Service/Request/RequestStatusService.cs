@@ -14,7 +14,6 @@ using ProjectManagement.Service.Interfaces.Attachment;
 using ProjectManagement.Service.Interfaces.IRepositories;
 using ProjectManagement.Service.Interfaces.Request;
 using ProjectManagement.Service.StringExtensions;
-using System.Linq;
 using System.Security.Authentication;
 using System.Security.Claims;
 using System.Text;
@@ -835,7 +834,7 @@ namespace ProjectManagement.Service.Service.Requests
                     ["Made"] = group.Count(x => x.Status == "Made"),
                     ["Failed"] = group.Count(x => x.Status == "Failed"),
                     ["On-going"] = group.Count(x => x.Status == "On-going"),
-                    ["OnHold"] = group.Count(x => x.Status == "On-hold"),
+                    ["On-Hold"] = group.Count(x => x.Status == "On-hold"),
                     ["Dropped"] = group.Count(x => x.Status == "Dropped")
                 };
 
@@ -843,6 +842,27 @@ namespace ProjectManagement.Service.Service.Requests
             }
 
             return result;
+        }
+
+        public async ValueTask<Dictionary<string, object>> GetPieChartData(int year)
+        {
+            var allRequests = await requestRepository
+                .GetAll(x => x.IsDeleted == 0 && x.Status != null)
+                .ToListAsync();
+
+            var filtered = allRequests
+                .Where(x => DateTime.TryParse(x.Date, out var parsedDate) && parsedDate.Year == year);
+
+            var dict = new Dictionary<string, object>
+            {
+                ["Made"] = allRequests.Count(x => x.Status == "Made"),
+                ["Failed"] = allRequests.Count(x => x.Status == "Failed"),
+                ["On-going"] = allRequests.Count(x => x.Status == "On-going"),
+                ["On-Hold"] = allRequests.Count(x => x.Status == "On-hold"),
+                ["Dropped"] = allRequests.Count(x => x.Status == "Dropped")
+            };
+
+            return dict;
         }
     }
 }
