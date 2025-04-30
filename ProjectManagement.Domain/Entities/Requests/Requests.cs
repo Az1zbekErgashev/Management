@@ -14,7 +14,8 @@ public class Request : Auditable
     public string? Client { get; set; } 
     public string? ContactNumber { get; set; } 
     public string? Email { get; set; } 
-    public string? ProcessingStatus { get; set; } 
+    public ProcessingStatus? ProcessingStatus { get; set; } 
+    public int? ProcessingStatusId { get; set; }
     public string? Notes { get; set; }
     public RequestStatus RequestStatus { get; set; }
     public int RequestStatusId { get; set; }

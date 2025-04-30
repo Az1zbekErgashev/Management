@@ -7,16 +7,10 @@ using ProjectManagement.Service.Extencions;
 using ProjectManagement.Service.Interfaces.IRepositories;
 using ProjectManagement.Service.Interfaces.Request;
 using System.ComponentModel.DataAnnotations;
-using System.Text;
-using System.Text.Encodings.Web;
-using System.Text.Json;
 using ClosedXML.Excel;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
-using System.Globalization;
 using ProjectManagement.Domain.Entities.Requests;
-using ProjectManagement.Domain.Enum;
-using ProjectManagement.Service.StringExtensions;
 
 namespace ProjectManagement.Api.Controllers.Request
 {
@@ -27,13 +21,15 @@ namespace ProjectManagement.Api.Controllers.Request
     {
         private readonly IRequestStatusService requestStatusService;
         private readonly IGenericRepository<Domain.Entities.Requests.Request> genericRepository;
+        private readonly IGenericRepository<Domain.Entities.Requests.ProcessingStatus> processingStatusRepository;
         private readonly ProjectManagementDB _context;
 
-        public RequestController(IRequestStatusService requestStatusService, IGenericRepository<Domain.Entities.Requests.Request> genericRepository, ProjectManagementDB context)
+        public RequestController(IRequestStatusService requestStatusService, IGenericRepository<Domain.Entities.Requests.Request> genericRepository, ProjectManagementDB context, IGenericRepository<ProcessingStatus> processingStatusRepository)
         {
             this.requestStatusService = requestStatusService;
             this.genericRepository = genericRepository;
             _context = context;
+            this.processingStatusRepository = processingStatusRepository;
         }
 
         [HttpGet("category")]
@@ -85,7 +81,7 @@ namespace ProjectManagement.Api.Controllers.Request
         [HttpGet("export-excel")]
         public async Task<IActionResult> ExportToExcel(int? requestCategoryId, int languageId = 0)
         {
-            var query = genericRepository.GetAll(x => x.IsDeleted == 0).OrderBy(x => x.Id).AsQueryable();
+            var query = genericRepository.GetAll(x => x.IsDeleted == 0).Include(x => x.ProcessingStatus).OrderBy(x => x.Id).AsQueryable();
 
             if (requestCategoryId is not null) query = query.Where(x => x.RequestStatusId == requestCategoryId);
 
@@ -134,7 +130,7 @@ namespace ProjectManagement.Api.Controllers.Request
                 worksheet.Cell(row, 12).Value = request.ContactNumber;
                 worksheet.Cell(row, 13).Value = request.Email;
                 worksheet.Cell(row, 14).Value = request.Status;
-                worksheet.Cell(row, 15).Value = request.ProcessingStatus;
+                worksheet.Cell(row, 15).Value = request?.ProcessingStatus?.Text;
                 worksheet.Cell(row, 16).Value = request.Notes;
                 row++;
             }
@@ -164,7 +160,6 @@ namespace ProjectManagement.Api.Controllers.Request
             }
 
             var existCategory = await _context.RequestStatuses.FirstOrDefaultAsync(x => x.Id == requestStatusId);
-
             if(existCategory is null) return BadRequest("Request Category Is Not Correct");
 
             using (var stream = file.OpenReadStream())
@@ -256,7 +251,7 @@ namespace ProjectManagement.Api.Controllers.Request
                         Client = GetSafeCellValue(currentRow, columnIndexes, "Client"),
                         ContactNumber = GetSafeCellValue(currentRow, columnIndexes, "Contact Number"),
                         Email = GetSafeCellValue(currentRow, columnIndexes, "Email"),
-                        ProcessingStatus = GetSafeCellValue(currentRow, columnIndexes, "Detailed Reason"),
+                        ProcessingStatusId = await ProccesStatus(GetSafeCellValue(currentRow, columnIndexes, "Detailed Reason")),
                         Status = GetSafeCellValue(currentRow, columnIndexes, "Status"),
                         Notes = GetSafeCellValue(currentRow, columnIndexes, "Notes"),
                         RequestStatusId = requestStatusId,
@@ -282,7 +277,7 @@ namespace ProjectManagement.Api.Controllers.Request
                     if (cell != null && (key == "Date" || key == "Last Updated") && cell.CellType == CellType.Numeric && DateUtil.IsCellDateFormatted(cell))
                     {
                         DateTime? dateValue = cell.DateCellValue;
-                        return dateValue?.Date.ToString("d", CultureInfo.InvariantCulture) ?? "";
+                        return dateValue?.Date.ToString("yyyy.MM.dd") ?? "";
                     }
                     return cell != null ? cell.ToString().Trim() : "";
                 }
@@ -290,6 +285,26 @@ namespace ProjectManagement.Api.Controllers.Request
             return "";
         }
 
+        async ValueTask<int?> ProccesStatus(string? text)
+        {
+            if (text == null) return null;
+            var existStatus = await processingStatusRepository.GetAsync(x => x.Text == text);
+            if (existStatus == null)
+            {
+                var newExistStatus = new ProcessingStatus
+                {
+                    Color = "#000000",
+                    Text = text
+                };
+                await processingStatusRepository.CreateAsync(newExistStatus);
+                await processingStatusRepository.SaveChangesAsync();
+                return newExistStatus.Id;
+            }
+            else
+            {
+                return existStatus.Id;
+            }
+        }
 
         [HttpDelete("hard-delete")]
         public async Task<IActionResult> HardDeleteAsync()

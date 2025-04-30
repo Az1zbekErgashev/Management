@@ -20,6 +20,7 @@ namespace ProjectManagement.Infrastructure.Contexts
         public DbSet<Request> Requests { get; set; }
         public DbSet<RequestStatus> RequestStatuses { get; set; }
         public DbSet<MultilingualText> MultilingualText { get; set; }
+        public DbSet<ProcessingStatus> ProcessingStatus { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Logs>()
@@ -41,7 +42,12 @@ namespace ProjectManagement.Infrastructure.Contexts
             modelBuilder.Entity<Request>()
                 .HasOne(tm => tm.RequestStatus)
                 .WithMany()
-                .HasForeignKey(tm => tm.RequestStatusId);
+                .HasForeignKey(tm => tm.RequestStatusId);  
+            
+            modelBuilder.Entity<Request>()
+                .HasOne(tm => tm.ProcessingStatus)
+                .WithMany()
+                .HasForeignKey(tm => tm.ProcessingStatusId);
 
             modelBuilder.Entity<Request>()
                 .HasOne(tm => tm.File)

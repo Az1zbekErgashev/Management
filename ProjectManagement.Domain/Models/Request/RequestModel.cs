@@ -1,5 +1,4 @@
-﻿using ProjectManagement.Domain.Enum;
-using ProjectManagement.Domain.Models.Attachment;
+﻿using ProjectManagement.Domain.Models.Attachment;
 
 namespace ProjectManagement.Domain.Models.Request
 {
@@ -18,7 +17,7 @@ namespace ProjectManagement.Domain.Models.Request
         public string? Client { get; set; } 
         public string? ContactNumber { get; set; } 
         public string? Email { get; set; } 
-        public string? ProcessingStatus { get; set; } 
+        public ProcessingStatusModel? ProcessingStatus { get; set; } 
         public string? Notes { get; set; } 
         public RequestStatusModel? RequestStatus { get; set; }
         public int IsDeleted { get; set; }
@@ -45,7 +44,7 @@ namespace ProjectManagement.Domain.Models.Request
                 Client = entity.Client,
                 ContactNumber = entity.ContactNumber,
                 Email = entity.Email,
-                ProcessingStatus = entity.ProcessingStatus,
+                ProcessingStatus = entity.ProcessingStatus != null ? new ProcessingStatusModel().MapFromEntity(entity.ProcessingStatus) : null,
                 Notes = entity.Notes,
                 RequestStatus = entity?.RequestStatus != null ? new RequestStatusModel().MapFromEntity(entity.RequestStatus) : null,
                 IsDeleted = entity.IsDeleted,

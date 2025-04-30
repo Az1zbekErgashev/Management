@@ -21,6 +21,7 @@ using ProjectManagement.Service.Service.Country;
 using ProjectManagement.Service.Service.Log;
 using ProjectManagement.Service.Service.MultilingualText;
 using ProjectManagement.Service.Service.Repositories;
+using ProjectManagement.Service.Service.Request;
 using ProjectManagement.Service.Service.Requests;
 using ProjectManagement.Service.Service.User;
 using System.Text;
@@ -41,6 +42,7 @@ namespace ProjectManagement.Api.Extensions
             services.AddScoped<IGenericRepository<RequestStatus>, GenericRepository<RequestStatus>>();
             services.AddScoped<IGenericRepository<MultilingualText>, GenericRepository<MultilingualText>>();
             services.AddScoped<IGenericRepository<RequestHistory>, GenericRepository<RequestHistory>>();
+            services.AddScoped<IGenericRepository<ProcessingStatus>, GenericRepository<ProcessingStatus>>();
         }
 
         public static void AddCustomServices(this IServiceCollection services)
@@ -52,6 +54,7 @@ namespace ProjectManagement.Api.Extensions
             services.AddScoped<ILogService, LogService>();
             services.AddScoped<IRequestStatusService, RequestStatusService>();
             services.AddScoped<IMultilingualTextInterface, MultilingualTextService>();
+            services.AddScoped<IProcessingStatusService, ProcessingStatusService>();
             services.AddSingleton<IEmailInboxService, EmailInboxService>();
             services.AddHostedService<EmailSenderBackgroundService>();
         }

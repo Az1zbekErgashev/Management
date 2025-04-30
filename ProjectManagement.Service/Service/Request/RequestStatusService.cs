@@ -114,6 +114,7 @@ namespace ProjectManagement.Service.Service.Requests
         public async ValueTask<PagedResult<RequestModel>> GetRequeststAsync(RequestForFilterDTO dto)
         {
             var query = requestRepository.GetAll(null)
+               .Include(x => x.ProcessingStatus)
                .Include(x => x.RequestStatus)
                .AsQueryable();
 
@@ -142,7 +143,7 @@ namespace ProjectManagement.Service.Service.Requests
                     EF.Functions.Like(x.Department, searchText) ||
                     EF.Functions.Like(x.InquiryType, searchText) ||
                     EF.Functions.Like(x.Status, searchText) ||
-                    EF.Functions.Like(x.ProcessingStatus, searchText) ||
+                    EF.Functions.Like(x.ProcessingStatus == null ? x.ProcessingStatus.Text : "", searchText) ||
                     EF.Functions.Like(x.LastUpdated, searchText));
             }
 
@@ -208,6 +209,7 @@ namespace ProjectManagement.Service.Service.Requests
                 .ThenInclude(x => x.User)
                 .Include(x => x.RequestStatus)
                 .Include(x => x.File)
+                .Include(x => x.ProcessingStatus)
                 .FirstOrDefaultAsync();
 
 
@@ -333,7 +335,7 @@ namespace ProjectManagement.Service.Service.Requests
                 Email = dto.Email,
                 InquiryField = dto.InquiryField,
                 InquiryType = dto.InquiryType,
-                ProcessingStatus = dto.ProcessingStatus,
+                ProcessingStatusId = dto.ProcessingStatus,
                 Notes = dto.Notes,
                 ProjectDetails = dto.ProjectDetails,
                 ResponsiblePerson = dto.ResponsiblePerson,
@@ -381,7 +383,7 @@ namespace ProjectManagement.Service.Service.Requests
             existRequest.Email = dto.Email;
             existRequest.InquiryField = dto.InquiryField;
             existRequest.InquiryType = dto.InquiryType;
-            existRequest.ProcessingStatus = dto.ProcessingStatus;
+            existRequest.ProcessingStatusId = dto.ProcessingStatus;
             existRequest.Notes = dto.Notes;
             existRequest.ProjectDetails = dto.ProjectDetails;
             existRequest.ResponsiblePerson = dto.ResponsiblePerson;
@@ -439,7 +441,7 @@ namespace ProjectManagement.Service.Service.Requests
             var connectionString = configuration.GetConnectionString("PostgresConnection");
             using (var db = new NpgsqlConnection(connectionString))
             {
-                var query = "SELECT * FROM \"Requests\" WHERE \"IsDeleted\" = @IsDeleted";
+                var query = "SELECT * FROM \"Requests\" r LEFT JOIN \"ProcessingStatus\" rs ON r.\"ProcessingStatusId\" = rs.\"Id\" WHERE r.\"IsDeleted\" = @IsDeleted";
                 if (dto.Status is not null)
                 {
                     query += " AND \"Status\" = @Status";
@@ -461,7 +463,7 @@ namespace ProjectManagement.Service.Service.Requests
                     { "Email", x => x.Email },
                     { "InquiryField", x => x.InquiryField },
                     { "InquiryType", x => x.InquiryType },
-                    { "ProcessingStatus", x => x.ProcessingStatus },
+                    { "ProcessingStatus", x => x.ProcessingStatus == null ? null : x.ProcessingStatus.Text },
                     { "ResponsiblePerson", x => x.ResponsiblePerson },
                     { "Status", x => x.Status },
                 };
