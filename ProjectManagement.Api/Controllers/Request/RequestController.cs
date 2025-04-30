@@ -243,6 +243,7 @@ namespace ProjectManagement.Api.Controllers.Request
 
                     var record = new Domain.Entities.Requests.Request
                     {
+                        LastUpdated = GetSafeCellValue(currentRow, columnIndexes, "Last Updated"),
                         Date = GetSafeCellValue(currentRow, columnIndexes, "Date"),
                         InquiryType = GetSafeCellValue(currentRow, columnIndexes, "Inquiry Type"),
                         CompanyName = GetSafeCellValue(currentRow, columnIndexes, "Company Name"),
@@ -255,11 +256,10 @@ namespace ProjectManagement.Api.Controllers.Request
                         ContactNumber = GetSafeCellValue(currentRow, columnIndexes, "Contact Number"),
                         Email = GetSafeCellValue(currentRow, columnIndexes, "Email"),
                         ProcessingStatus = GetSafeCellValue(currentRow, columnIndexes, "Detailed Reason"),
+                        Status = GetSafeCellValue(currentRow, columnIndexes, "Status"),
                         Notes = GetSafeCellValue(currentRow, columnIndexes, "Notes"),
                         RequestStatusId = requestStatusId,
                         CreatedAt = DateTime.UtcNow,
-                        Status = GetSafeCellValue(currentRow, columnIndexes, "Status"),
-                        LastUpdated = GetSafeCellValue(currentRow, columnIndexes, "Last Updated")
                     };
 
                     await genericRepository.CreateAsync(record);
