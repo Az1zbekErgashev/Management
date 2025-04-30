@@ -341,7 +341,7 @@ namespace ProjectManagement.Service.Service.Requests
                 ResponsiblePerson = dto.ResponsiblePerson,
                 CreatedAt = DateTime.UtcNow,
                 RequestStatusId = dto.RequestStatusId,
-                Date = dto.Date,
+                Date = DateTime.TryParse(dto.Date, out var parsedDate) ? parsedDate.ToString("yyyy.MM.dd") : DateTime.UtcNow.ToString("yyyy.MM.dd"),
                 Status = dto.Status,
                 File = attachment,
                 FileId = attachment?.Id,
@@ -387,7 +387,7 @@ namespace ProjectManagement.Service.Service.Requests
             existRequest.Notes = dto.Notes;
             existRequest.ProjectDetails = dto.ProjectDetails;
             existRequest.ResponsiblePerson = dto.ResponsiblePerson;
-            existRequest.Date = dto.Date;
+            existRequest.Date = DateTime.TryParse(dto.Date, out var parsedDate) ? parsedDate.ToString("yyyy.MM.dd") : DateTime.UtcNow.ToString("yyyy.MM.dd");
             existRequest.Status = dto.Status;
             existRequest.FileId = attachment?.Id;
             existRequest.RequestStatusId = dto.RequestStatusId;
