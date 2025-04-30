@@ -113,6 +113,7 @@ namespace ProjectManagement.Api.Controllers.Request
                 worksheet.Cell(1, i + 1).Style.Fill.BackgroundColor = XLColor.FromHtml("#3A70B3");
                 worksheet.Cell(1, i + 1).Style.Font.Bold = true;
                 worksheet.Cell(1, i + 1).Style.Font.FontColor = XLColor.White;
+                worksheet.Column(i + 1).Width = 20;
             }
             worksheet.Row(1).Height = 20;
             int row = 2;
