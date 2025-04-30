@@ -8,6 +8,7 @@ using ProjectManagement.Domain.Entities.Requests;
 using ProjectManagement.Domain.Enum;
 using ProjectManagement.Domain.Models.PagedResult;
 using ProjectManagement.Domain.Models.Request;
+using ProjectManagement.Domain.Models.User;
 using ProjectManagement.Service.DTOs.Request;
 using ProjectManagement.Service.Exception;
 using ProjectManagement.Service.Interfaces.Attachment;
@@ -112,109 +113,90 @@ namespace ProjectManagement.Service.Service.Requests
 
         public async ValueTask<PagedResult<RequestModel>> GetRequeststAsync(RequestForFilterDTO dto)
         {
-            var connectionString = configuration.GetConnectionString("PostgresConnection");
-            using (var db = new NpgsqlConnection(connectionString))
+            var query = requestRepository.GetAll(x => x.IsDeleted == 0)
+               .Include(x => x.RequestStatus)
+               .AsQueryable();
+
+            query = query.OrderBy(x => x.Id);
+
+            if (dto.Category != null)
             {
-                var sql = new StringBuilder(@"
-                SELECT 
-                    r.*, 
-                    rs.""Id"" AS RequestStatus_Id, 
-                    rs.""Title"", rs.""Id""
-                FROM ""Requests"" r
-                LEFT JOIN ""RequestStatuses"" rs ON r.""RequestStatusId"" = rs.""Id""
-                ");
+                query = query.Where(x => x.RequestStatusId == dto.Category);
+            }
 
-                var countSql = new StringBuilder(@"SELECT COUNT(*) FROM ""Requests"" r
-            LEFT JOIN ""RequestStatuses"" rs ON r.""RequestStatusId"" = rs.""Id""
-        ");
+            if (!string.IsNullOrEmpty(dto.Text))
+            {
+                string searchText = $"%{dto.Text}%";
 
-                var parameters = new DynamicParameters();
-                var conditions = new List<string>();
+                query = query.Where(x =>
+                    EF.Functions.Like(x.InquiryField, searchText) ||
+                    EF.Functions.Like(x.Email, searchText) ||
+                    EF.Functions.Like(x.ProjectDetails, searchText) ||
+                    EF.Functions.Like(x.ResponsiblePerson, searchText) ||
+                    EF.Functions.Like(x.Date, searchText) ||
+                    EF.Functions.Like(x.ContactNumber, searchText) ||
+                    EF.Functions.Like(x.CompanyName, searchText) ||
+                    EF.Functions.Like(x.Notes, searchText) ||
+                    EF.Functions.Like(x.Client, searchText) ||
+                    EF.Functions.Like(x.ClientCompany, searchText) ||
+                    EF.Functions.Like(x.Department, searchText) ||
+                    EF.Functions.Like(x.InquiryType, searchText) ||
+                    EF.Functions.Like(x.Status, searchText) ||
+                    EF.Functions.Like(x.ProcessingStatus, searchText) ||
+                    EF.Functions.Like(x.LastUpdated, searchText));
+            }
 
-                conditions.Add("r.\"IsDeleted\" = 0");
+            if (dto.IsDeleted != null)
+            {
+                query = query.Where(x => x.IsDeleted == dto.IsDeleted);
+            }
 
-                if (!string.IsNullOrWhiteSpace(dto.Text))
-                {
-                    var searchableColumns = new List<string>
-                {
-                    "InquiryType", "InquiryField", "CompanyName", "Department", "ResponsiblePerson",
-                    "ClientCompany", "Email", "ProcessingStatus", "Status", "Notes", "Date", "LastUpdated",
-                    "Client", "ContactNumber", "ProjectDetails"
-                };
+            int totalCount = await query.CountAsync();
 
-                    var searchConditions = new List<string>();
-                    foreach (var column in searchableColumns)
-                    {
-                        searchConditions.Add($"r.\"{column}\" ILIKE @searchText");
-                    }
+            if (totalCount == 0)
+            {
+                return PagedResult<RequestModel>.Create(
+                    Enumerable.Empty<RequestModel>(),
+                    0,
+                    dto.PageSize,
+                    0,
+                    dto.PageIndex,
+                    0
+                );
+            }
 
-                    // Если есть фильтр по категории, добавляем его в условие поиска текста
-                    if (dto?.Category != null)
-                    {
-                        searchConditions.Add("r.\"RequestStatusId\" = @RequestStatusId");
-                        parameters.Add("@RequestStatusId", dto.Category);
-                    }
 
-                    conditions.Add($"({string.Join(" OR ", searchConditions)})");
-                    parameters.Add("@searchText", $"%{dto.Text}%");
-                }
-                else if (dto?.Category != null)
-                {
-                    // Если текста нет, но есть категория, добавляем её как отдельное условие
-                    conditions.Add("r.\"RequestStatusId\" = @RequestStatusId");
-                    parameters.Add("@RequestStatusId", dto.Category);
-                }
+            if (dto.PageIndex == 0)
+            {
+                dto.PageIndex = 1;
+            }
 
-                if (dto?.Status != null)
-                {
-                    conditions.Add("r.\"Status\" = @Status");
-                    parameters.Add("@Status", dto.Status);
-                }
+            if (dto.PageSize == 0)
+            {
+                dto.PageSize = totalCount;
+            }
 
-                if (conditions.Any())
-                {
-                    sql.Append(" WHERE " + string.Join(" AND ", conditions));
-                    countSql.Append(" WHERE " + string.Join(" AND ", conditions));
-                }
+            int itemsPerPage = dto.PageSize;
+            int totalPages = (totalCount / itemsPerPage) + (totalCount % itemsPerPage == 0 ? 0 : 1);
 
-                sql.Append(" ORDER BY r.\"CreatedAt\" DESC");
+            query = query.ToPagedList(dto);
 
-                int totalCount = await db.ExecuteScalarAsync<int>(countSql.ToString(), parameters);
+            var list = await query.ToListAsync();
 
-                if (totalCount == 0)
-                {
-                    return PagedResult<RequestModel>.Create(new List<RequestModel>(), 0, dto.PageSize, 0, dto.PageIndex, 0);
-                }
+            List<RequestModel> models = list.Select(
+                f => new RequestModel().MapFromEntity(f))
+                .ToList();
 
-                if (dto.PageIndex == 0) dto.PageIndex = 1;
-                if (dto.PageSize == 0) dto.PageSize = totalCount;
 
-                int itemsPerPage = dto.PageSize;
-                int totalPages = (totalCount / itemsPerPage) + (totalCount % itemsPerPage == 0 ? 0 : 1);
-
-                if (dto.PageIndex > totalPages)
-                {
-                    dto.PageIndex = totalPages;
-                }
-
-                int skip = (dto.PageIndex - 1) * dto.PageSize;
-                sql.Append(" LIMIT @PageSize OFFSET @Offset");
-                parameters.Add("@PageSize", dto.PageSize);
-                parameters.Add("@Offset", skip);
-
-                var list = await db.QueryAsync<RequestModel, RequestStatusModel, RequestModel>(
-                    sql.ToString(),
-                    (request, status) =>
-                    {
-                        request.RequestStatus = status;
-                        return request;
-                    },
-                    parameters,
-                    splitOn: "RequestStatus_Id"
+            var pagedResult = PagedResult<RequestModel>.Create(models,
+                totalCount,
+                itemsPerPage,
+                models.Count,
+                dto.PageIndex,
+                totalPages
                 );
 
-                return PagedResult<RequestModel>.Create(list.ToList(), totalCount, dto.PageSize, list.Count(), dto.PageIndex, totalPages);
-            }
+            return pagedResult;
         }
 
 

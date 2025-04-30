@@ -57,10 +57,8 @@ namespace ProjectManagement.Api.Controllers.Request
         public async ValueTask<IActionResult> CreateAsync([FromBody] RequestStatusForCreateDTO dto) => ResponseHandler.ReturnIActionResponse(await requestStatusService.CreateAsync(dto));
 
 
-
         [HttpPut("update")]
         public async ValueTask<IActionResult> UpdateAsync([Required] int id, RequestStatusForCreateDTO dto) => ResponseHandler.ReturnIActionResponse(await requestStatusService.UpdateAsync(id, dto));
-
 
 
         [HttpDelete("delete")]
@@ -248,11 +246,8 @@ namespace ProjectManagement.Api.Controllers.Request
                         ProcessingStatus = GetSafeCellValue(currentRow, columnIndexes, "Detailed Reason"),
                         Notes = GetSafeCellValue(currentRow, columnIndexes, "Notes"),
                         RequestStatusId = requestStatusId,
-                        AdditionalInformation = string.Empty,
                         CreatedAt = DateTime.UtcNow,
-                        InquirySource = string.Empty,
                         Status = GetSafeCellValue(currentRow, columnIndexes, "Status"),
-                        ProjectBudget = string.Empty,
                         LastUpdated = GetSafeCellValue(currentRow, columnIndexes, "Last Updated")
                     };
 

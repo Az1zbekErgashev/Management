@@ -8,6 +8,7 @@ namespace ProjectManagement.Service.DTOs.Request
         public string? Text { get; set; }
         public int? Category { get; set; }
         public string? Status { get; set; }
+        public int? IsDeleted { get; set; } = 0;
     }
    
 }
