@@ -458,7 +458,7 @@ namespace ProjectManagement.Service.Service.Requests
                     { "ContactNumber", x => x.ContactNumber },
                     { "Notes", x => x.Notes },
                     { "ProjectDetails", x => x.ProjectDetails },
-                    { "Date", x => x.Date },
+                    { "Date", x => DateTime.TryParse(x.Date, out var parsedDate) ? parsedDate.ToString("yyyy.MM.dd") : "" },
                     { "Department", x => x.Department },
                     { "Email", x => x.Email },
                     { "InquiryField", x => x.InquiryField },
