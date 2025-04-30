@@ -113,7 +113,7 @@ namespace ProjectManagement.Service.Service.Requests
 
         public async ValueTask<PagedResult<RequestModel>> GetRequeststAsync(RequestForFilterDTO dto)
         {
-            var query = requestRepository.GetAll(x => x.IsDeleted == 0)
+            var query = requestRepository.GetAll(null)
                .Include(x => x.RequestStatus)
                .AsQueryable();
 
