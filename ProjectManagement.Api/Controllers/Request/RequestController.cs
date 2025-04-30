@@ -95,8 +95,18 @@ namespace ProjectManagement.Api.Controllers.Request
             var worksheet = workbook.Worksheets.Add("Requests");
 
             var headers = languageId == 1
-               ? new string[] { "No.", "Date", "LastUpdated", "Inquiry Type", "Company Name", "Department", "Responsible Person", "Inquiry Field", "Client Company", "Project Details", "Client", "Contact Number", "Email", "Status", "Detailed Reason", "Notes" }
-               : new string[] { "번호", "접수일", "최종 업데이트", "유입경로", "법인명", "법인부서", "담당자", "문의분야", "고객사 회사", "프로젝트 내용", "고객사", "연락처", "이메일", "처리 상태", "상세사유", "메모" };
+               ? new string[] { "No.", "Date", "Last Updated",
+                   "Inquiry Type", "Company Name", "Department",
+                   "Responsible Person", "Inquiry Field", "Client Company", 
+                   "Project Details", "Client", "Contact Number",
+                   "Email", "Status", "Detailed Reason", 
+                   "Notes" }
+               : new string[] { "구분", "접수일", "최종 업데이트",
+                   "문의 유형", "기업명", "담당부서",
+                   "담당자", "문의분야", "고객사 회사",
+                   "프로젝트 내용", "고객사", "연락처",
+                   "이메일", "대응 상황", "비고",
+                   "메모" };
             for (int i = 0; i < headers.Length; i++)
             {
                 worksheet.Cell(1, i + 1).Value = headers[i];
@@ -122,7 +132,8 @@ namespace ProjectManagement.Api.Controllers.Request
                 worksheet.Cell(row, 10).Value = request.Client;
                 worksheet.Cell(row, 11).Value = request.ContactNumber;
                 worksheet.Cell(row, 12).Value = request.Email;
-                worksheet.Cell(row, 13).Value = request.ProcessingStatus;
+                worksheet.Cell(row, 13).Value = request.Status;
+                worksheet.Cell(row, 14).Value = request.ProcessingStatus;
                 worksheet.Cell(row, 15).Value = request.Notes;
                 row++;
             }
@@ -165,19 +176,19 @@ namespace ProjectManagement.Api.Controllers.Request
                 var columnMapping = new Dictionary<string, string>
                 {
                     { "접수일", "Date" },
-                    { "최종 업데이트", "Last Updated"},
-                    { "유입경로", "Inquiry Type" },
-                    { "법인명", "Company Name" },
-                    { "법인부서", "Department" },
+                    { "최종 업데이트", "Last Updated" },
+                    { "문의 유형", "Inquiry Type" },
+                    { "기업명", "Company Name" },
+                    { "담당부서", "Department" },
                     { "담당자", "Responsible Person" },
                     { "문의분야", "Inquiry Field" },
                     { "고객사 회사", "Client Company" },
                     { "프로젝트 내용", "Project Details" },
-                    { "고객사 담당자", "Client" },
-                    { "고객사 연락처", "Contact Number" },
-                    { "고객사 이메일", "Email" },
-                    { "처리 상태", "Status" },
-                    { "상세사유", "Detailed Reason" },
+                    { "고객사", "Client" },
+                    { "연락처", "Contact Number" },
+                    { "이메일", "Email" },
+                    { "대응 상황", "Status" },
+                    { "비고", "Detailed Reason" },
                     { "메모", "Notes" }
                 };
 
@@ -190,7 +201,7 @@ namespace ProjectManagement.Api.Controllers.Request
 
                     foreach (var cell in row.Cells)
                     {
-                        if (cell != null && cell.ToString().Trim().Contains("접수일"))
+                        if (cell != null && (cell.ToString().Trim().Contains("접수일") || cell.ToString().Trim().Contains("Date")))
                         {
                             startRow = i + 1;
                             break;

@@ -198,8 +198,6 @@ namespace ProjectManagement.Service.Service.Requests
 
             return pagedResult;
         }
-
-
         public async ValueTask<RequestModel> GetRequestById(int id)
         {
             var request = await requestRepository

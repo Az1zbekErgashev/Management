@@ -16,7 +16,6 @@ namespace ProjectManagement.Service.DTOs.Request
         public string? ContactNumber { get; set; }
         public string? Email { get; set; } 
         public string? ProcessingStatus { get; set; } 
-        public string? ResponseStatus { get; set; }
         public string? Notes { get; set; } 
         public int RequestStatusId { get; set; }
         public string? ProjectDescription { get; set; }
