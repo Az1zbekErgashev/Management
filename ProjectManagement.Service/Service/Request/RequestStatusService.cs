@@ -855,11 +855,11 @@ namespace ProjectManagement.Service.Service.Requests
 
             var dict = new Dictionary<string, object>
             {
-                ["Made"] = allRequests.Count(x => x.Status == "Made"),
-                ["Failed"] = allRequests.Count(x => x.Status == "Failed"),
-                ["On-going"] = allRequests.Count(x => x.Status == "On-going"),
-                ["On-Hold"] = allRequests.Count(x => x.Status == "On-hold"),
-                ["Dropped"] = allRequests.Count(x => x.Status == "Dropped")
+                ["Made"] = filtered.Count(x => x.Status == "Made"),
+                ["Failed"] = filtered.Count(x => x.Status == "Failed"),
+                ["On-going"] = filtered.Count(x => x.Status == "On-going"),
+                ["On-Hold"] = filtered.Count(x => x.Status == "On-hold"),
+                ["Dropped"] = filtered.Count(x => x.Status == "Dropped")
             };
 
             return dict;
