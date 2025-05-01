@@ -287,7 +287,7 @@ namespace ProjectManagement.Api.Controllers.Request
 
         async ValueTask<int?> ProccesStatus(string? text)
         {
-            if (text == null) return null;
+            if (!string.IsNullOrEmpty(text)) return null;
             var existStatus = await processingStatusRepository.GetAsync(x => x.Text == text);
             if (existStatus == null)
             {
