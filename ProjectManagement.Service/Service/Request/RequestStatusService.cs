@@ -849,31 +849,33 @@ namespace ProjectManagement.Service.Service.Requests
 
             return result;
         }
-        public async ValueTask<Dictionary<string, object>> GetPieChartData(int year)
+        public async ValueTask<List<Dictionary<string, object>>> GetPieChartData()
         {
             var allRequests = await requestRepository
                 .GetAll(x => x.IsDeleted == 0 && x.Status != null)
                 .ToListAsync();
 
-            var filtered = allRequests
-                .Where(x => DateTime.TryParse(x.Date, out var parsedDate) && parsedDate.Year == year);
+            var allCategory = await requestStatusRepository.GetAll(x => x.IsDeleted == 0).ToListAsync();
 
-            var categoryIds = filtered
-                .Select(x => x.RequestStatusId)
-                .Distinct()
-                .ToList();
+            var result = new List<Dictionary<string, object>>();
 
-            var dict = new Dictionary<string, object>
+            foreach (var item in allCategory)
             {
-                ["Category"] = categoryIds,
-                ["Made"] = filtered.Count(x => x.Status == "Made"),
-                ["Failed"] = filtered.Count(x => x.Status == "Failed"),
-                ["On-going"] = filtered.Count(x => x.Status == "On-going"),
-                ["On-Hold"] = filtered.Count(x => x.Status == "On-hold"),
-                ["Dropped"] = filtered.Count(x => x.Status == "Dropped")
-            };
+                var dict = new Dictionary<string, object>
+                {
+                    ["CategoryId"] = item.Id,
+                    ["Category"] = item.Title,
+                    ["Made"] = allRequests.Where(x => x.RequestStatusId == item.Id).Count(x => x.Status == "Made"),
+                    ["Failed"] = allRequests.Where(x => x.RequestStatusId == item.Id).Count(x => x.Status == "Failed"),
+                    ["On-going"] = allRequests.Where(x => x.RequestStatusId == item.Id).Count(x => x.Status == "On-going"),
+                    ["On-Hold"] = allRequests.Where(x => x.RequestStatusId == item.Id).Count(x => x.Status == "On-hold"),
+                    ["Dropped"] = allRequests.Where(x => x.RequestStatusId == item.Id).Count(x => x.Status == "Dropped")
+                };
 
-            return dict;
+                result.Add(dict);
+            }
+
+            return result;
         }
     }
 }
