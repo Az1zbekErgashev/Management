@@ -802,7 +802,6 @@ namespace ProjectManagement.Service.Service.Requests
 
             return result;
         }
-
         public async ValueTask<List<int>> GetAvailableYears()
         {
             var allRequests = await requestRepository
@@ -818,7 +817,6 @@ namespace ProjectManagement.Service.Service.Requests
 
             return years;
         }
-
         public async ValueTask<List<Dictionary<string, object>>> GetMonthlyChartData(int year)
         {
             var allRequests = await requestRepository
@@ -851,7 +849,6 @@ namespace ProjectManagement.Service.Service.Requests
 
             return result;
         }
-
         public async ValueTask<Dictionary<string, object>> GetPieChartData(int year)
         {
             var allRequests = await requestRepository
@@ -861,8 +858,14 @@ namespace ProjectManagement.Service.Service.Requests
             var filtered = allRequests
                 .Where(x => DateTime.TryParse(x.Date, out var parsedDate) && parsedDate.Year == year);
 
+            var categoryIds = filtered
+                .Select(x => x.RequestStatusId)
+                .Distinct()
+                .ToList();
+
             var dict = new Dictionary<string, object>
             {
+                ["Category"] = categoryIds,
                 ["Made"] = filtered.Count(x => x.Status == "Made"),
                 ["Failed"] = filtered.Count(x => x.Status == "Failed"),
                 ["On-going"] = filtered.Count(x => x.Status == "On-going"),
