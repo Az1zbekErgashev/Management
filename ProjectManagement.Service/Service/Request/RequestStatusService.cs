@@ -715,25 +715,37 @@ namespace ProjectManagement.Service.Service.Requests
 
         public async ValueTask<List<RequestRateModel>> GetRequestProcent()
         {
-            var allRequestsRaw = await requestRepository.GetAll(x => x.IsDeleted == 0 && x.Status != null).Include(x => x.RequestStatus).ToListAsync();
+            var allRequestsRaw = await requestRepository
+               .GetAll(x => x.IsDeleted == 0 && x.Status != null)
+               .Include(x => x.RequestStatus)
+               .ToListAsync();
+
+            var allCategory = await requestStatusRepository
+                .GetAll(x => x.IsDeleted == 0)
+                .ToListAsync();
 
             var totalCount = allRequestsRaw.Count;
             var madeCount = allRequestsRaw.Count(x => x.Status == "Made");
+
             var result = new List<RequestRateModel>();
+
             var totalPercent = totalCount > 0 ? (int)Math.Round((double)madeCount / totalCount * 100) : 0;
             result.Add(new RequestRateModel().MapFromEntity("all_requests", totalPercent, totalCount));
-            var grouped = allRequestsRaw
-            .GroupBy(x => x.RequestStatus)
-            .ToList();
 
-            foreach (var group in grouped)
+            var grouped = allRequestsRaw
+                .GroupBy(x => x.RequestStatusId)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
+            foreach (var category in allCategory)
             {
-                var categoryText = group.Key?.Title;
-                var categoryTotal = group.Count();
-                var categoryMade = group.Count(x => x.Status == "Made");
+                grouped.TryGetValue(category.Id, out var requestList);
+                requestList ??= new List<Domain.Entities.Requests.Request>(); 
+
+                var categoryTotal = requestList.Count;
+                var categoryMade = requestList.Count(x => x.Status == "Made");
                 var categoryPercent = categoryTotal > 0 ? (int)Math.Round((double)categoryMade / categoryTotal * 100) : 0;
 
-                result.Add(new RequestRateModel().MapFromEntity(categoryText, categoryPercent, categoryTotal));
+                result.Add(new RequestRateModel().MapFromEntity(category.Title, categoryPercent, categoryTotal));
             }
 
             return result;
@@ -742,10 +754,11 @@ namespace ProjectManagement.Service.Service.Requests
         public async ValueTask<List<RequestCountByStatusModel>> GetStatusCounts()
         {
             var allRequestsRaw = await requestRepository.GetAll(x => x.IsDeleted == 0 && x.Status != null).Include(x => x.RequestStatus).ToListAsync();
+            var allCategory = await requestStatusRepository.GetAll(x => x.IsDeleted == 0).ToListAsync();
 
             var groupedRequests = allRequestsRaw
-            .GroupBy(x => x.RequestStatusId)
-            .ToList();
+             .GroupBy(x => x.RequestStatusId)
+             .ToDictionary(g => g.Key, g => g.ToList());
 
             var result = new List<RequestCountByStatusModel>();
 
@@ -765,11 +778,24 @@ namespace ProjectManagement.Service.Service.Requests
 
             result.Add(allRequestsModel);
 
-            foreach (var group in groupedRequests)
+            foreach (var category in allCategory)
             {
-                var requestList = group.ToList(); 
+                groupedRequests.TryGetValue(category.Id, out var requestList);
+                requestList ??= new List<Domain.Entities.Requests.Request>();
 
-                var model = new RequestCountByStatusModel().MapFromEntity(requestList);
+                var model = new RequestCountByStatusModel
+                {
+                    CategoryText = category.Title,
+                    Counts = new List<StatusCountItem>
+                    {
+                        new StatusCountItem { Status = "Failed", Count = requestList.Count(x => x.Status == "Failed") },
+                        new StatusCountItem { Status = "Made", Count = requestList.Count(x => x.Status == "Made") },
+                        new StatusCountItem { Status = "On-going", Count = requestList.Count(x => x.Status == "On-going") },
+                        new StatusCountItem { Status = "On-hold", Count = requestList.Count(x => x.Status == "On-hold") },
+                        new StatusCountItem { Status = "Dropped", Count = requestList.Count(x => x.Status == "Dropped") },
+                    },
+                    Total = requestList.Count
+                };
 
                 result.Add(model);
             }
