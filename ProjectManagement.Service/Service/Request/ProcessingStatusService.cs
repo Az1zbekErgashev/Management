@@ -15,10 +15,12 @@ namespace ProjectManagement.Service.Service.Request
     public class ProcessingStatusService : IProcessingStatusService
     {
         private readonly IGenericRepository<ProcessingStatus> processingStatusRepository;
+        private readonly IGenericRepository<Domain.Entities.Requests.Request> requestsRepository;
 
-        public ProcessingStatusService(IGenericRepository<ProcessingStatus> processingStatusRepository)
+        public ProcessingStatusService(IGenericRepository<ProcessingStatus> processingStatusRepository, IGenericRepository<Domain.Entities.Requests.Request> requestsRepository)
         {
             this.processingStatusRepository = processingStatusRepository;
+            this.requestsRepository = requestsRepository;
         }
 
         public async ValueTask<bool> CreateAsync(ProcessingStatusDTO dto)
@@ -38,6 +40,16 @@ namespace ProjectManagement.Service.Service.Request
         {
             var existStatus = await processingStatusRepository.GetAsync(x => x.Id == id);
             if (existStatus == null) throw new ProjectManagementException(404, "status_not_found");
+
+            var allRequests = await requestsRepository.GetAll(x => x.ProcessingStatusId == existStatus.Id).ToListAsync();
+
+            foreach (var item in allRequests)
+            {
+                item.ProcessingStatusId = null;
+                requestsRepository.UpdateAsync(item);
+            }
+
+            await requestsRepository.SaveChangesAsync();
 
             await processingStatusRepository.DeleteAsync(existStatus.Id);
             await processingStatusRepository.SaveChangesAsync();
