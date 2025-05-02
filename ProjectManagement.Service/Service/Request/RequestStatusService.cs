@@ -890,24 +890,21 @@ namespace ProjectManagement.Service.Service.Requests
 
             var allCategory = await requestStatusRepository.GetAll(x => x.IsDeleted == 0).ToListAsync();
 
-            var allStatus = await requestStatusRepository.GetAll(x => x.IsDeleted == 0).ToListAsync();
+            var allStatus = await processingStatusHistory.GetAll(x => x.IsDeleted == 0).ToListAsync();
 
             var result = new List<Dictionary<string, object>>();
 
-            foreach (var category in allCategory)
+            foreach (var status in allStatus)
             {
                 var dict = new Dictionary<string, object>
                 {
-                    ["name"] = category.Title
+                    ["name"] = status.Text
                 };
 
-                foreach (var status in allRequests)
+                foreach (var request in allRequests)
                 {
-                    var count = allRequests.Count(x =>
-                        x.RequestStatusId == category.Id &&
-                        x.ProcessingStatusId == status.Id);
-
-                    dict[status.RequestStatus.Title] = count;
+                    var count = allRequests.Count(x => x.ProcessingStatusId == status.Id);
+                    dict[request.RequestStatus.Title] = count;
                 }
 
                 result.Add(dict);
