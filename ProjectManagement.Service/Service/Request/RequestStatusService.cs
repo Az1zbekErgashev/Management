@@ -829,15 +829,11 @@ namespace ProjectManagement.Service.Service.Requests
                 .GetAll(x => x.IsDeleted == 0 && x.Status != null)
                 .ToListAsync();
 
-            allRequests = allRequests
-             .Where(x => DateTime.TryParse(x.Date, out var parsedDate) && parsedDate.Year == year)
-             .ToList();
-
             if (year is not null)
             {
                 allRequests = allRequests
-                .Where(x => DateTime.TryParse(x.Date, out var parsedDate) && parsedDate.Year == year)
-                .ToList();
+                    .Where(x => DateTime.TryParse(x.Date, out var parsedDate) && parsedDate.Year == year)
+                    .ToList();
             }
 
             var allCategory = await requestStatusRepository.GetAll(x => x.IsDeleted == 0).ToListAsync();
