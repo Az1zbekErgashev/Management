@@ -903,8 +903,11 @@ namespace ProjectManagement.Service.Service.Requests
 
                 foreach (var request in allRequests)
                 {
-                    var count = allRequests.Count(x => x.ProcessingStatusId == status.Id);
-                    dict[request.RequestStatus.Title] = count;
+                    foreach (var item in allCategory)
+                    {
+                        var count = allRequests.Count(x => x.ProcessingStatusId == status.Id && item.Id == x.RequestStatusId);
+                        dict[request.RequestStatus.Title] = count;
+                    }
                 }
 
                 result.Add(dict);
