@@ -11,6 +11,7 @@ using ClosedXML.Excel;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 using ProjectManagement.Domain.Entities.Requests;
+using DocumentFormat.OpenXml.Bibliography;
 
 namespace ProjectManagement.Api.Controllers.Request
 {
@@ -331,13 +332,10 @@ namespace ProjectManagement.Api.Controllers.Request
         [HttpGet("request-status-years")]
         public async Task<IActionResult> GetStatusYears() => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetAvailableYears()); 
         
-        [HttpGet("request-request-by-years")]
-        public async Task<IActionResult> GetMonthlyChartData(int year) => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetMonthlyChartData(year));
-        
         [HttpGet("request-pie-chart")]
-        public async Task<IActionResult> GetPieChartData() => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetPieChartData());     
+        public async Task<IActionResult> GetPieChartData(int year) => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetPieChartData(year));     
         
         [HttpGet("request-line-chart")]
-        public async Task<IActionResult> GetLineChartData() => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetLineChartData());
+        public async Task<IActionResult> GetLineChartData(int year) => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetLineChartData(year));
     }
 }

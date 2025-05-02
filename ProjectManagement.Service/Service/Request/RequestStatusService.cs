@@ -819,43 +819,15 @@ namespace ProjectManagement.Service.Service.Requests
 
             return years;
         }
-        public async ValueTask<List<Dictionary<string, object>>> GetMonthlyChartData(int year)
+        public async ValueTask<List<Dictionary<string, object>>> GetPieChartData(int year)
         {
             var allRequests = await requestRepository
                 .GetAll(x => x.IsDeleted == 0 && x.Status != null)
                 .ToListAsync();
 
-            var filtered = allRequests
-                .Where(x => DateTime.TryParse(x.Date, out var parsedDate) && parsedDate.Year == year)
-                .GroupBy(x => DateTime.Parse(x.Date).Month)
-                .OrderBy(x => x.Key);
-
-            var result = new List<Dictionary<string, object>>();
-
-            foreach (var group in filtered)
-            {
-                var month = group.Key; 
-
-                var dict = new Dictionary<string, object>
-                {
-                    ["month"] = month,
-                    ["Made"] = group.Count(x => x.Status == "Made"),
-                    ["Failed"] = group.Count(x => x.Status == "Failed"),
-                    ["On-going"] = group.Count(x => x.Status == "On-going"),
-                    ["On-Hold"] = group.Count(x => x.Status == "On-hold"),
-                    ["Dropped"] = group.Count(x => x.Status == "Dropped")
-                };
-
-                result.Add(dict);
-            }
-
-            return result;
-        }
-        public async ValueTask<List<Dictionary<string, object>>> GetPieChartData()
-        {
-            var allRequests = await requestRepository
-                .GetAll(x => x.IsDeleted == 0 && x.Status != null)
-                .ToListAsync();
+            allRequests = allRequests
+             .Where(x => DateTime.TryParse(x.Date, out var parsedDate) && parsedDate.Year == year)
+             .ToList();
 
             var allCategory = await requestStatusRepository.GetAll(x => x.IsDeleted == 0).ToListAsync();
 
@@ -881,14 +853,17 @@ namespace ProjectManagement.Service.Service.Requests
         }
 
 
-        public async ValueTask<List<Dictionary<string, object>>> GetLineChartData()
+        public async ValueTask<List<Dictionary<string, object>>> GetLineChartData(int year)
         {
             var allRequests = await requestRepository
                 .GetAll(x => x.IsDeleted == 0 && x.Status != null)
                 .Include(x => x.RequestStatus).Include(x => x.ProcessingStatus)
                 .ToListAsync();
 
-            var allCategory = await requestStatusRepository.GetAll(x => x.IsDeleted == 0).ToListAsync();
+            allRequests = allRequests
+            .Where(x => DateTime.TryParse(x.Date, out var parsedDate) && parsedDate.Year == year)
+            .ToList();
+            var allCategories = await requestStatusRepository.GetAll(x => x.IsDeleted == 0).ToListAsync();
 
             var allStatus = await processingStatusHistory.GetAll(x => x.IsDeleted == 0).ToListAsync();
 
@@ -901,13 +876,13 @@ namespace ProjectManagement.Service.Service.Requests
                     ["name"] = status.Text
                 };
 
-                foreach (var request in allRequests)
+                foreach (var category in allCategories)
                 {
-                    foreach (var item in allCategory)
-                    {
-                        var count = allRequests.Count(x => x.ProcessingStatusId == status.Id && item.Id == x.RequestStatusId);
-                        dict[request.RequestStatus.Title] = count;
-                    }
+                    var count = allRequests.Count(x =>
+                        x.ProcessingStatusId == status.Id &&
+                        x.RequestStatusId == category.Id);
+
+                    dict[category.Title] = count;
                 }
 
                 result.Add(dict);
