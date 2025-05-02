@@ -335,6 +335,9 @@ namespace ProjectManagement.Api.Controllers.Request
         public async Task<IActionResult> GetMonthlyChartData(int year) => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetMonthlyChartData(year));
         
         [HttpGet("request-pie-chart")]
-        public async Task<IActionResult> GetPieChartData() => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetPieChartData());
+        public async Task<IActionResult> GetPieChartData() => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetPieChartData());     
+        
+        [HttpGet("request-line-chart")]
+        public async Task<IActionResult> GetLineChartData() => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetLineChartData());
     }
 }

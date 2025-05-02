@@ -30,5 +30,6 @@ namespace ProjectManagement.Service.Interfaces.Request
         ValueTask<List<int>> GetAvailableYears();
         ValueTask<List<Dictionary<string, object>>> GetMonthlyChartData(int year);
         ValueTask<List<Dictionary<string, object>>> GetPieChartData();
+        ValueTask<List<Dictionary<string, object>>> GetLineChartData();
     }
 }

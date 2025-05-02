@@ -8,7 +8,6 @@ using ProjectManagement.Domain.Entities.Requests;
 using ProjectManagement.Domain.Enum;
 using ProjectManagement.Domain.Models.PagedResult;
 using ProjectManagement.Domain.Models.Request;
-using ProjectManagement.Domain.Models.User;
 using ProjectManagement.Service.DTOs.Request;
 using ProjectManagement.Service.Exception;
 using ProjectManagement.Service.Interfaces.Attachment;
@@ -32,6 +31,7 @@ namespace ProjectManagement.Service.Service.Requests
         private readonly IAttachmentService attachmentService;
         private readonly IGenericRepository<Comments> commentstService;
         private readonly IGenericRepository<RequestHistory> requestHistory;
+        private readonly IGenericRepository<ProcessingStatus> processingStatusHistory;
         public RequestStatusService(
             IGenericRepository<RequestStatus> requestStatusRepository,
             IGenericRepository<Domain.Entities.Requests.Request> requestRepository,
@@ -42,7 +42,8 @@ namespace ProjectManagement.Service.Service.Requests
 ,
             IAttachmentService attachmentService,
             IGenericRepository<Comments> commentstService,
-            IGenericRepository<RequestHistory> requestHistory)
+            IGenericRepository<RequestHistory> requestHistory,
+            IGenericRepository<ProcessingStatus> processingStatusHistory)
         {
             this.requestStatusRepository = requestStatusRepository;
             this.requestRepository = requestRepository;
@@ -53,6 +54,7 @@ namespace ProjectManagement.Service.Service.Requests
             this.attachmentService = attachmentService;
             this.commentstService = commentstService;
             this.requestHistory = requestHistory;
+            this.processingStatusHistory = processingStatusHistory;
         }
 
         public async ValueTask<List<RequestStatusModel>> GetAsync()
@@ -871,6 +873,42 @@ namespace ProjectManagement.Service.Service.Requests
                     ["On-Hold"] = allRequests.Where(x => x.RequestStatusId == item.Id).Count(x => x.Status == "On-hold"),
                     ["Dropped"] = allRequests.Where(x => x.RequestStatusId == item.Id).Count(x => x.Status == "Dropped")
                 };
+
+                result.Add(dict);
+            }
+
+            return result;
+        }
+
+
+        public async ValueTask<List<Dictionary<string, object>>> GetLineChartData()
+        {
+            var allRequests = await requestRepository
+                .GetAll(x => x.IsDeleted == 0 && x.Status != null)
+                .Include(x => x.RequestStatus).Include(x => x.ProcessingStatus)
+                .ToListAsync();
+
+            var allCategory = await requestStatusRepository.GetAll(x => x.IsDeleted == 0).ToListAsync();
+
+            var allStatus = await requestStatusRepository.GetAll(x => x.IsDeleted == 0).ToListAsync();
+
+            var result = new List<Dictionary<string, object>>();
+
+            foreach (var category in allCategory)
+            {
+                var dict = new Dictionary<string, object>
+                {
+                    ["name"] = category.Title
+                };
+
+                foreach (var status in allRequests)
+                {
+                    var count = allRequests.Count(x =>
+                        x.RequestStatusId == category.Id &&
+                        x.ProcessingStatusId == status.Id);
+
+                    dict[status.RequestStatus.Title] = count;
+                }
 
                 result.Add(dict);
             }
