@@ -92,12 +92,12 @@ namespace ProjectManagement.Api.Controllers.Request
             var worksheet = workbook.Worksheets.Add("Requests");
 
             var headers = languageId == 1
-               ? new string[] { "No.", "Date", "Last Updated",
-                   "Inquiry Type", "Company Name", "Department",
-                   "Responsible Person", "Inquiry Field", "Client Company", 
-                   "Project Details", "Client", "Contact Number",
-                   "Email", "Status", "Detailed Reason", 
-                   "Notes" }
+               ? new string[] { "구분", "접수일", "최종 업데이트",
+                   "문의 유형", "기업명", "담당부서",
+                   "담당자", "문의분야", "고객사 회사",
+                   "프로젝트 내용", "고객사", "연락처",
+                   "이메일", "대응 상황", "비고",
+                   "메모" }
                : new string[] { "구분", "접수일", "최종 업데이트",
                    "문의 유형", "기업명", "담당부서",
                    "담당자", "문의분야", "고객사 회사",
@@ -243,7 +243,7 @@ namespace ProjectManagement.Api.Controllers.Request
                         LastUpdated = GetSafeCellValue(currentRow, columnIndexes, "Last Updated"),
                         Date = GetSafeCellValue(currentRow, columnIndexes, "Date"),
                         InquiryType = GetSafeCellValue(currentRow, columnIndexes, "Inquiry Type"),
-                        CompanyName = GetSafeCellValue(currentRow, columnIndexes, "Company Name"),
+                        CompanyName = existCategory.Title,
                         Department = GetSafeCellValue(currentRow, columnIndexes, "Department"),
                         ResponsiblePerson = GetSafeCellValue(currentRow, columnIndexes, "Responsible Person"),
                         InquiryField = GetSafeCellValue(currentRow, columnIndexes, "Inquiry Field"),
@@ -252,8 +252,8 @@ namespace ProjectManagement.Api.Controllers.Request
                         Client = GetSafeCellValue(currentRow, columnIndexes, "Client"),
                         ContactNumber = GetSafeCellValue(currentRow, columnIndexes, "Contact Number"),
                         Email = GetSafeCellValue(currentRow, columnIndexes, "Email"),
-                        ProcessingStatusId = await ProccesStatus(GetSafeCellValue(currentRow, columnIndexes, "Detailed Reason")),
                         Status = GetSafeCellValue(currentRow, columnIndexes, "Status"),
+                        ProcessingStatusId = await ProccesStatus(GetSafeCellValue(currentRow, columnIndexes, "Detailed Reason")),
                         Notes = GetSafeCellValue(currentRow, columnIndexes, "Notes"),
                         RequestStatusId = requestStatusId,
                         CreatedAt = DateTime.UtcNow,
@@ -288,7 +288,7 @@ namespace ProjectManagement.Api.Controllers.Request
 
         async ValueTask<int?> ProccesStatus(string? text)
         {
-            if (!string.IsNullOrEmpty(text)) return null;
+            if (string.IsNullOrEmpty(text)) return null;
             var existStatus = await processingStatusRepository.GetAsync(x => x.Text == text);
             if (existStatus == null)
             {
@@ -333,9 +333,9 @@ namespace ProjectManagement.Api.Controllers.Request
         public async Task<IActionResult> GetStatusYears() => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetAvailableYears()); 
         
         [HttpGet("request-pie-chart")]
-        public async Task<IActionResult> GetPieChartData(int year) => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetPieChartData(year));     
+        public async Task<IActionResult> GetPieChartData(int? year) => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetPieChartData(year));     
         
         [HttpGet("request-line-chart")]
-        public async Task<IActionResult> GetLineChartData(int year) => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetLineChartData(year));
+        public async Task<IActionResult> GetLineChartData(int? year) => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetLineChartData(year));
     }
 }

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
+using NPOI.HSSF.Record.Aggregates;
 using ProjectManagement.Domain.Entities.Logs;
 using ProjectManagement.Domain.Entities.Requests;
 using ProjectManagement.Domain.Enum;
@@ -31,7 +32,7 @@ namespace ProjectManagement.Service.Service.Requests
         private readonly IAttachmentService attachmentService;
         private readonly IGenericRepository<Comments> commentstService;
         private readonly IGenericRepository<RequestHistory> requestHistory;
-        private readonly IGenericRepository<ProcessingStatus> processingStatusHistory;
+        private readonly IGenericRepository<ProcessingStatus> processingStatus;
         public RequestStatusService(
             IGenericRepository<RequestStatus> requestStatusRepository,
             IGenericRepository<Domain.Entities.Requests.Request> requestRepository,
@@ -43,7 +44,7 @@ namespace ProjectManagement.Service.Service.Requests
             IAttachmentService attachmentService,
             IGenericRepository<Comments> commentstService,
             IGenericRepository<RequestHistory> requestHistory,
-            IGenericRepository<ProcessingStatus> processingStatusHistory)
+            IGenericRepository<ProcessingStatus> processingStatus)
         {
             this.requestStatusRepository = requestStatusRepository;
             this.requestRepository = requestRepository;
@@ -54,7 +55,7 @@ namespace ProjectManagement.Service.Service.Requests
             this.attachmentService = attachmentService;
             this.commentstService = commentstService;
             this.requestHistory = requestHistory;
-            this.processingStatusHistory = processingStatusHistory;
+            this.processingStatus = processingStatus;
         }
 
         public async ValueTask<List<RequestStatusModel>> GetAsync()
@@ -327,11 +328,12 @@ namespace ProjectManagement.Service.Service.Requests
                 attachment = await attachmentService.UploadAsync(dto.File.ToAttachmentOrDefault());
             }
 
+            var existCategory = await requestStatusRepository.GetAll(x => x.Id == dto.RequestStatusId && x.IsDeleted == 0).FirstOrDefaultAsync();
             var request = new Domain.Entities.Requests.Request
             {
                 Client = dto.Client,
                 ClientCompany = dto.ClientCompany,
-                CompanyName = dto.CompanyName,
+                CompanyName = existCategory.Title,
                 ContactNumber = dto.ContactNumber,
                 Department = dto.Department,
                 Email = dto.Email,
@@ -342,7 +344,7 @@ namespace ProjectManagement.Service.Service.Requests
                 ProjectDetails = dto.ProjectDetails,
                 ResponsiblePerson = dto.ResponsiblePerson,
                 CreatedAt = DateTime.UtcNow,
-                RequestStatusId = dto.RequestStatusId,
+                RequestStatusId = existCategory.Id,
                 Date = DateTime.TryParse(dto.Date, out var parsedDate) ? parsedDate.ToString("yyyy.MM.dd") : DateTime.UtcNow.ToString("yyyy.MM.dd"),
                 Status = dto.Status,
                 File = attachment,
@@ -377,10 +379,12 @@ namespace ProjectManagement.Service.Service.Requests
                 attachment = null;
             }
 
+            var existCategory = await requestStatusRepository.GetAll(x => x.Id == dto.RequestStatusId && x.IsDeleted == 0).FirstOrDefaultAsync();
+
             existRequest.Client = dto.Client;
             existRequest.ClientCompany = dto.ClientCompany;
-            existRequest.CompanyName = dto.CompanyName;
             existRequest.ContactNumber = dto.ContactNumber;
+            existRequest.CompanyName = existCategory.Title;
             existRequest.Department = dto.Department;
             existRequest.Email = dto.Email;
             existRequest.InquiryField = dto.InquiryField;
@@ -819,7 +823,7 @@ namespace ProjectManagement.Service.Service.Requests
 
             return years;
         }
-        public async ValueTask<List<Dictionary<string, object>>> GetPieChartData(int year)
+        public async ValueTask<List<Dictionary<string, object>>> GetPieChartData(int? year)
         {
             var allRequests = await requestRepository
                 .GetAll(x => x.IsDeleted == 0 && x.Status != null)
@@ -828,6 +832,13 @@ namespace ProjectManagement.Service.Service.Requests
             allRequests = allRequests
              .Where(x => DateTime.TryParse(x.Date, out var parsedDate) && parsedDate.Year == year)
              .ToList();
+
+            if (year is not null)
+            {
+                allRequests = allRequests
+                .Where(x => DateTime.TryParse(x.Date, out var parsedDate) && parsedDate.Year == year)
+                .ToList();
+            }
 
             var allCategory = await requestStatusRepository.GetAll(x => x.IsDeleted == 0).ToListAsync();
 
@@ -853,19 +864,23 @@ namespace ProjectManagement.Service.Service.Requests
         }
 
 
-        public async ValueTask<List<Dictionary<string, object>>> GetLineChartData(int year)
+        public async ValueTask<List<Dictionary<string, object>>> GetLineChartData(int? year)
         {
             var allRequests = await requestRepository
                 .GetAll(x => x.IsDeleted == 0 && x.Status != null)
                 .Include(x => x.RequestStatus).Include(x => x.ProcessingStatus)
                 .ToListAsync();
 
-            allRequests = allRequests
-            .Where(x => DateTime.TryParse(x.Date, out var parsedDate) && parsedDate.Year == year)
-            .ToList();
+            if(year is not null)
+            {
+                allRequests = allRequests
+                .Where(x => DateTime.TryParse(x.Date, out var parsedDate) && parsedDate.Year == year)
+                .ToList();
+            }
+
             var allCategories = await requestStatusRepository.GetAll(x => x.IsDeleted == 0).ToListAsync();
 
-            var allStatus = await processingStatusHistory.GetAll(x => x.IsDeleted == 0).ToListAsync();
+            var allStatus = await processingStatus.GetAll(x => x.IsDeleted == 0).ToListAsync();
 
             var result = new List<Dictionary<string, object>>();
 
@@ -878,9 +893,9 @@ namespace ProjectManagement.Service.Service.Requests
 
                 foreach (var category in allCategories)
                 {
-                    var count = allRequests.Count(x =>
+                    var count = allRequests.Where(x =>
                         x.ProcessingStatusId == status.Id &&
-                        x.RequestStatusId == category.Id);
+                        x.RequestStatusId == category.Id).Count();
 
                     dict[category.Title] = count;
                 }
