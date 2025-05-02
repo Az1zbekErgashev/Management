@@ -333,9 +333,9 @@ namespace ProjectManagement.Api.Controllers.Request
         public async Task<IActionResult> GetStatusYears() => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetAvailableYears()); 
         
         [HttpGet("request-pie-chart")]
-        public async Task<IActionResult> GetPieChartData(int? year) => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetPieChartData(year));     
+        public async Task<IActionResult> GetPieChartData(int? year, int? month) => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetPieChartData(year, month));     
         
         [HttpGet("request-line-chart")]
-        public async Task<IActionResult> GetLineChartData(int? year) => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetLineChartData(year));
+        public async Task<IActionResult> GetLineChartData(int? year, int? month) => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetLineChartData(year, month));
     }
 }

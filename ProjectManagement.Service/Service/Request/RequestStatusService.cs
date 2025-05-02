@@ -823,7 +823,7 @@ namespace ProjectManagement.Service.Service.Requests
 
             return years;
         }
-        public async ValueTask<List<Dictionary<string, object>>> GetPieChartData(int? year)
+        public async ValueTask<List<Dictionary<string, object>>> GetPieChartData(int? year, int? month)
         {
             var allRequests = await requestRepository
                 .GetAll(x => x.IsDeleted == 0 && x.Status != null)
@@ -833,6 +833,13 @@ namespace ProjectManagement.Service.Service.Requests
             {
                 allRequests = allRequests
                     .Where(x => DateTime.TryParse(x.Date, out var parsedDate) && parsedDate.Year == year)
+                    .ToList();
+            }
+
+            if(month is not null)
+            {
+                allRequests = allRequests
+                    .Where(x => DateTime.TryParse(x.Date, out var parsedDate) && parsedDate.Month == month)
                     .ToList();
             }
 
@@ -860,7 +867,7 @@ namespace ProjectManagement.Service.Service.Requests
         }
 
 
-        public async ValueTask<List<Dictionary<string, object>>> GetLineChartData(int? year)
+        public async ValueTask<List<Dictionary<string, object>>> GetLineChartData(int? year, int? month)
         {
             var allRequests = await requestRepository
                 .GetAll(x => x.IsDeleted == 0 && x.Status != null)
@@ -872,6 +879,13 @@ namespace ProjectManagement.Service.Service.Requests
                 allRequests = allRequests
                 .Where(x => DateTime.TryParse(x.Date, out var parsedDate) && parsedDate.Year == year)
                 .ToList();
+            }
+
+            if (month is not null)
+            {
+                allRequests = allRequests
+                    .Where(x => DateTime.TryParse(x.Date, out var parsedDate) && parsedDate.Month == month)
+                    .ToList();
             }
 
             var allCategories = await requestStatusRepository.GetAll(x => x.IsDeleted == 0).ToListAsync();
