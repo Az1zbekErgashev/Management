@@ -343,5 +343,9 @@ namespace ProjectManagement.Api.Controllers.Request
 
         [HttpDelete("delete-deleted-request")]
         public async ValueTask<IActionResult> HardDeleteDeletedRequest(List<int> ids) => ResponseHandler.ReturnIActionResponse(await requestStatusService.HardDeleteDeletedRequest(ids));
+        
+        
+        [HttpDelete("soft-delete-open-request")]
+        public async ValueTask<IActionResult> SoftDeleteOpenRequest(List<int> ids) => ResponseHandler.ReturnIActionResponse(await requestStatusService.SoftDeleteOpenRequest(ids));
     }
 }

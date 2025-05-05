@@ -32,5 +32,6 @@ namespace ProjectManagement.Service.Interfaces.Request
         ValueTask<List<Dictionary<string, object>>> GetLineChartData(int? year, int? month);
         ValueTask<Dictionary<string, object>> GetLineByStatusChartData(int? year, string status);
         ValueTask<bool> HardDeleteDeletedRequest(List<int> ids);
+        ValueTask<bool> SoftDeleteOpenRequest(List<int> ids);
     }
 }
