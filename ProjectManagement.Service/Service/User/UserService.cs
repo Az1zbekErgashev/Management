@@ -57,6 +57,10 @@ namespace ProjectManagement.Service.Service.User
 
             var checkUserRole = await _userRepository.GetAsync(x => x.Id == userId && x.IsDeleted == 0);
 
+            var existEmail = await _userRepository.GetAsync(x => x.Email.ToLower() == dto.Email.ToLower());
+
+            if(existEmail is not null) throw new ProjectManagementException(400, "this_user_already_exist");
+
             Domain.Entities.Attachment.Attachment attachment = null;
 
             if (dto.Image is not null)
@@ -96,7 +100,7 @@ namespace ProjectManagement.Service.Service.User
             return true;
         }
 
-        public async ValueTask<string> DeleteUser(int userId)
+        public async ValueTask<string> DeleteUser(int userId, bool isHardDelete)
         {
             var user = await _userRepository.GetAsync(x => x.Id == userId);
 
@@ -107,15 +111,20 @@ namespace ProjectManagement.Service.Service.User
             {
                 user.IsDeleted = 1;
                 isDelete = true;
+                _userRepository.UpdateAsync(user);
             }
             else
             {
                 user.IsDeleted = 0;
+                _userRepository.UpdateAsync(user);
             }
 
-            _userRepository.UpdateAsync(user);
+            if (isHardDelete)
+            {
+               await _userRepository.DeleteAsync(user.Id);
+            }
+            
             await _userRepository.SaveChangesAsync();
-
             await StringExtensions.StringExtensions.SaveLogAsync(_logRepository, _httpContextAccessor, Domain.Enum.LogAction.UpdateUserInformation);
 
             if (isDelete) return "user_deleted";
@@ -327,8 +336,6 @@ namespace ProjectManagement.Service.Service.User
 
             return await ValueTask.FromResult(TokenGenerator(claims));
         }
-
-
         public async ValueTask<UserModel> GetProfile()
         {
             var context = _httpContextAccessor.HttpContext;

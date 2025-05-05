@@ -36,7 +36,7 @@ namespace ProjectManagement.Api.Controllers.User
 
         [HttpDelete("delete")]
         [Authorize]
-        public async ValueTask<IActionResult> DeleteOrRecover([Required] int userId) => ResponseHandler.ReturnIActionResponse(await userService.DeleteUser(userId));
+        public async ValueTask<IActionResult> DeleteOrRecover([Required] int userId, bool isHardDelete) => ResponseHandler.ReturnIActionResponse(await userService.DeleteUser(userId, isHardDelete));
 
 
         [HttpPatch("update")]
