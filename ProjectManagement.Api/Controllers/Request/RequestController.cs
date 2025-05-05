@@ -346,6 +346,9 @@ namespace ProjectManagement.Api.Controllers.Request
         
         
         [HttpDelete("soft-delete-open-request")]
-        public async ValueTask<IActionResult> SoftDeleteOpenRequest(List<int> ids) => ResponseHandler.ReturnIActionResponse(await requestStatusService.SoftDeleteOpenRequest(ids));
+        public async ValueTask<IActionResult> SoftDeleteOpenRequest(List<int> ids) => ResponseHandler.ReturnIActionResponse(await requestStatusService.SoftDeleteOpenRequest(ids)); 
+        
+        [HttpDelete("soft-recover-open-request")]
+        public async ValueTask<IActionResult> SoftRecoverOpenRequest(List<int> ids) => ResponseHandler.ReturnIActionResponse(await requestStatusService.SoftRecoverOpenRequest(ids));
     }
 }

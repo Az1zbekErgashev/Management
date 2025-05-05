@@ -33,5 +33,6 @@ namespace ProjectManagement.Service.Interfaces.Request
         ValueTask<Dictionary<string, object>> GetLineByStatusChartData(int? year, string status);
         ValueTask<bool> HardDeleteDeletedRequest(List<int> ids);
         ValueTask<bool> SoftDeleteOpenRequest(List<int> ids);
+        ValueTask<bool> SoftRecoverOpenRequest(List<int> ids);
     }
 }

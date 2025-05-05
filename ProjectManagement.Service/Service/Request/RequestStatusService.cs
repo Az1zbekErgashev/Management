@@ -988,5 +988,20 @@ namespace ProjectManagement.Service.Service.Requests
             await requestRepository.SaveChangesAsync();
             return true;
         }
+
+        public async ValueTask<bool> SoftRecoverOpenRequest(List<int> ids)
+        {
+            if (ids is null || ids.Count == 0) return false;
+
+            foreach (var item in ids)
+            {
+                var existRequest = await requestRepository.GetAsync(x => x.Id == item);
+                existRequest.IsDeleted = 0;
+                requestRepository.UpdateAsync(existRequest);
+            }
+
+            await requestRepository.SaveChangesAsync();
+            return true;
+        }
     }
 }
