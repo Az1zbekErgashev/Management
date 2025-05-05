@@ -899,7 +899,8 @@ namespace ProjectManagement.Service.Service.Requests
             {
                 var dict = new Dictionary<string, object>
                 {
-                    ["name"] = status.Text
+                    ["name"] = status.Text,
+                    ["color"] = status.Color
                 };
 
                 foreach (var category in allCategories)
