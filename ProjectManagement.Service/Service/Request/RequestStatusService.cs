@@ -917,10 +917,10 @@ namespace ProjectManagement.Service.Service.Requests
             return result;
         }
 
-        public async ValueTask<Dictionary<string, object>> GetLineByStatusChartData(int? year)
+        public async ValueTask<Dictionary<string, object>> GetLineByStatusChartData(int? year, string status)
         {
             var allRequests = await requestRepository
-                .GetAll(x => x.IsDeleted == 0 && x.Status != null)
+                .GetAll(x => x.IsDeleted == 0 && x.Status != null && x.Status == status)
                 .Include(x => x.RequestStatus).Include(x => x.ProcessingStatus)
                 .ToListAsync();
 
@@ -933,37 +933,30 @@ namespace ProjectManagement.Service.Service.Requests
 
             var allCategories = await requestStatusRepository.GetAll(x => x.IsDeleted == 0).ToListAsync();
 
-            var statusList = new List<string> { "Made", "Failed", "On-Hold", "On-going", "Dropped" };
 
             var result = new Dictionary<string, object>();
+            var monthlyData = new List<Dictionary<string, object>>();
 
-            foreach (var statusName in statusList)
+            for (int month = 1; month <= 12; month++)
             {
-                var monthlyData = new List<Dictionary<string, object>>();
-
-                for (int month = 1; month <= 12; month++)
+                var monthName = new DateTime(2000, month, 1).ToString("MMM", CultureInfo.InvariantCulture);
+                var dict = new Dictionary<string, object>
                 {
-                    var monthName = new DateTime(2000, month, 1).ToString("MMM", CultureInfo.InvariantCulture);
-                    var dict = new Dictionary<string, object>
-                    {
-                        ["month"] = monthName
-                    };
+                    ["month"] = monthName
+                };
 
-                    foreach (var category in allCategories)
-                    {
-                        var count = allRequests.Count(x => x.RequestStatusId == category.Id &&
-                            DateTime.TryParse(x.Date, out var parsedDate) &&
-                            parsedDate.Month == month);
+                foreach (var category in allCategories)
+                {
+                    var count = allRequests.Count(x => x.RequestStatusId == category.Id &&
+                        DateTime.TryParse(x.Date, out var parsedDate) &&
+                        parsedDate.Month == month);
 
-                        dict[category.Title] = count;
-                    }
-
-                    monthlyData.Add(dict);
+                    dict[category.Title] = count;
                 }
 
-                result[statusName] = monthlyData;
+                monthlyData.Add(dict);
             }
-
+            result[status] = monthlyData;
             return result;
         }
     }
