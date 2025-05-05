@@ -15,6 +15,7 @@ using ProjectManagement.Service.Interfaces.Attachment;
 using ProjectManagement.Service.Interfaces.IRepositories;
 using ProjectManagement.Service.Interfaces.Request;
 using ProjectManagement.Service.StringExtensions;
+using System.Globalization;
 using System.Security.Authentication;
 using System.Security.Claims;
 using System.Text;
@@ -916,11 +917,10 @@ namespace ProjectManagement.Service.Service.Requests
             return result;
         }
 
-        public async ValueTask<Dictionary<string, object>> GetLineByStatusChartData(int? year, string status)
+        public async ValueTask<Dictionary<string, object>> GetLineByStatusChartData(int? year)
         {
             var allRequests = await requestRepository
                 .GetAll(x => x.IsDeleted == 0 && x.Status != null)
-                .Where(x => x.Status == status)
                 .Include(x => x.RequestStatus).Include(x => x.ProcessingStatus)
                 .ToListAsync();
 
@@ -943,7 +943,7 @@ namespace ProjectManagement.Service.Service.Requests
 
                 for (int month = 1; month <= 12; month++)
                 {
-                    var monthName = new DateTime(2000, month, 1).ToString("MMM");
+                    var monthName = new DateTime(2000, month, 1).ToString("MMM", CultureInfo.InvariantCulture);
                     var dict = new Dictionary<string, object>
                     {
                         ["month"] = monthName
@@ -951,20 +951,17 @@ namespace ProjectManagement.Service.Service.Requests
 
                     foreach (var category in allCategories)
                     {
-                        var count = allRequests.Count(x =>
-                            x.ProcessingStatus != null &&
-                            string.Equals(x.ProcessingStatus.Text, statusName, StringComparison.OrdinalIgnoreCase) &&
-                            x.RequestStatusId == category.Id &&
+                        var count = allRequests.Count(x => x.RequestStatusId == category.Id &&
                             DateTime.TryParse(x.Date, out var parsedDate) &&
                             parsedDate.Month == month);
 
-                        dict[category.Title.ToLower()] = count;
+                        dict[category.Title] = count;
                     }
 
                     monthlyData.Add(dict);
                 }
 
-                result[statusName.ToLower()] = monthlyData;
+                result[statusName] = monthlyData;
             }
 
             return result;

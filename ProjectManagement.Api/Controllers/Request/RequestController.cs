@@ -339,6 +339,6 @@ namespace ProjectManagement.Api.Controllers.Request
         public async Task<IActionResult> GetLineChartData(int? year, int? month) => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetLineChartData(year, month));
         
         [HttpGet("request-line-by-status-chart")]
-        public async Task<IActionResult> GetLineByStatusChartData(int? year, string status) => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetLineByStatusChartData(year, status));
+        public async Task<IActionResult> GetLineByStatusChartData(int? year) => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetLineByStatusChartData(year));
     }
 }
