@@ -960,5 +960,18 @@ namespace ProjectManagement.Service.Service.Requests
             result[status] = monthlyData;
             return result;
         }
+
+        public async ValueTask<bool> HardDeleteDeletedRequest(List<int> ids)
+        {
+            if (ids is null || ids.Count == 0) return false;
+
+            foreach (var item in ids)
+            {
+                await requestRepository.DeleteAsync(item);
+            }
+
+            await requestRepository.SaveChangesAsync();
+            return true;
+        }
     }
 }

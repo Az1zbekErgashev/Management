@@ -340,5 +340,8 @@ namespace ProjectManagement.Api.Controllers.Request
         
         [HttpGet("request-line-by-status-chart")]
         public async Task<IActionResult> GetLineByStatusChartData(int? year, string status) => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetLineByStatusChartData(year, status));
+
+        [HttpDelete("delete-deleted-request")]
+        public async ValueTask<IActionResult> HardDeleteDeletedRequest(List<int> ids) => ResponseHandler.ReturnIActionResponse(await requestStatusService.HardDeleteDeletedRequest(ids));
     }
 }
