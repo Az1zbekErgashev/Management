@@ -14,7 +14,7 @@ namespace ProjectManagement.Service.DTOs.User
 
         [Required]
         public int UserId { get; set; }
-        public required Role Role { get; set; }
+        public Role? Role { get; set; }
         public IFormFile? Image { get; set; }
         public bool UpdateImage { get; set; }
         public int CountryId { get; set; }

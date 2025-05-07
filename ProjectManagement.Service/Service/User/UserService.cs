@@ -316,6 +316,7 @@ namespace ProjectManagement.Service.Service.User
             existUser.ImageId = attachment?.Id;
             existUser.DateOfBirth = dto.DateOfBirth;
             existUser.UpdatedAt = DateTime.UtcNow;
+            existUser.IndividualRole = (Domain.Enum.Role)(dto.Role == null ? existUser.IndividualRole : dto.Role);
 
             if (dto.Password is not null)
             {
