@@ -132,9 +132,24 @@ namespace ProjectManagement.Service.Service.Request
             await processingStatusRepository.SaveChangesAsync();
             return true;
         }
+
+        public async ValueTask<bool> DeleteListAsync(List<int> ints)
+        {
+            if (ints == null || ints.Count == 0) return false;
+
+            foreach (var item in ints)
+            {
+                var existStatus = await processingStatusRepository.DeleteAsync(item);
+            }
+
+            await processingStatusRepository.SaveChangesAsync();
+            return true;
+        }
     }
 
     public class ProcessingStatusFilter : PaginationParams
     {
     }
+
+
 }
