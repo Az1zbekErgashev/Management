@@ -60,7 +60,7 @@ namespace ProjectManagement.Service.Service.Request
 
         public async ValueTask<PagedResult<ProcessingStatusModel>> GetAllAsync(ProcessingStatusFilter dto)
         {
-            var query = processingStatusRepository.GetAll()
+            var query = processingStatusRepository.GetAll(x => x.IsDeleted == dto.IsDeleted)
                .AsQueryable();
 
             query = query.OrderBy(x => x.Id);
