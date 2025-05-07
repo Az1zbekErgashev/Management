@@ -139,6 +139,15 @@ namespace ProjectManagement.Service.Service.Request
 
             foreach (var item in ints)
             {
+                var allRequests = await requestsRepository.GetAll(x => x.ProcessingStatusId == item).ToListAsync();
+
+                foreach (var request in allRequests)
+                {
+                    request.ProcessingStatusId = null;
+                    requestsRepository.UpdateAsync(request);
+                }
+
+                await requestsRepository.SaveChangesAsync();
                 var existStatus = await processingStatusRepository.DeleteAsync(item);
             }
 
