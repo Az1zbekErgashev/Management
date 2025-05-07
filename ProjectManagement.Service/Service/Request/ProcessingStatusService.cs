@@ -170,6 +170,7 @@ namespace ProjectManagement.Service.Service.Request
 
     public class ProcessingStatusFilter : PaginationParams
     {
+        public int IsDeleted { get; set; }
     }
 
 
