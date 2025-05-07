@@ -43,9 +43,9 @@ namespace ProjectManagement.Domain.Models.User
             switch (num)
             {
                 case Enum.Role.Employees:
-                    return "employees";
+                    return "Employees";
                 case Enum.Role.SuperAdmin:
-                    return "admin";
+                    return "Admin";
                 default:
                     return "employees";
             }
