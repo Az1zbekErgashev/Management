@@ -95,8 +95,16 @@ CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("ru-RU");
 
 var app = builder.Build();
 
-app.UseSwagger();
-app.UseSwaggerUI();
+app.UseSwagger(options =>
+{
+    options.RouteTemplate = "api/swagger/{documentname}/swagger.json";
+});
+
+app.UseSwaggerUI(options =>
+{
+    options.SwaggerEndpoint("/api/swagger/v1/swagger.json", "My Chat bot API V1");
+    options.RoutePrefix = "api/swagger";
+});
 
 app.UseCors(options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 
