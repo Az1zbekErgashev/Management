@@ -29,10 +29,16 @@ namespace ProjectManagement.Api.Controllers.Request
         public async ValueTask<IActionResult> CreateAsync(ProcessingStatusDTO dto) => ResponseHandler.ReturnIActionResponse(await processingStatusService.CreateAsync(dto));    
         
         [HttpDelete]
-        public async ValueTask<IActionResult> DeleteAsync(int id) => ResponseHandler.ReturnIActionResponse(await processingStatusService.DeleteAsync(id)); 
+        public async ValueTask<IActionResult> DeleteAsync(int id) => ResponseHandler.ReturnIActionResponse(await processingStatusService.DeleteAsync(id));    
+        
+        [HttpDelete("recover")]
+        public async ValueTask<IActionResult> RecoverAsync(int id) => ResponseHandler.ReturnIActionResponse(await processingStatusService.RecoverAsync(id)); 
         
         [HttpDelete("list")]
-        public async ValueTask<IActionResult> DeleteListAsync(List<int> ids) => ResponseHandler.ReturnIActionResponse(await processingStatusService.DeleteListAsync(ids)); 
+        public async ValueTask<IActionResult> DeleteListAsync(List<int> ids) => ResponseHandler.ReturnIActionResponse(await processingStatusService.DeleteListAsync(ids));
+        
+        [HttpDelete("recover-list")]
+        public async ValueTask<IActionResult> RecoverListAsync(List<int> ids) => ResponseHandler.ReturnIActionResponse(await processingStatusService.RecoverListAsync(ids)); 
         
         [HttpGet("{id}")]
         public async ValueTask<IActionResult> GetAsync(int id) => ResponseHandler.ReturnIActionResponse(await processingStatusService.GetByIdAsync(id));

@@ -24,6 +24,7 @@ using ProjectManagement.Service.Service.Repositories;
 using ProjectManagement.Service.Service.Request;
 using ProjectManagement.Service.Service.Requests;
 using ProjectManagement.Service.Service.User;
+using System.Reflection;
 using System.Text;
 using TrustyTalents.Service.Services.Background;
 using TrustyTalents.Service.Services.Emails;

@@ -1,7 +1,9 @@
-﻿using ProjectManagement.Domain.Enum;
+﻿using Microsoft.AspNetCore.Http;
+using ProjectManagement.Domain.Enum;
 using ProjectManagement.Domain.Models.PagedResult;
 using ProjectManagement.Domain.Models.Request;
 using ProjectManagement.Service.DTOs.Request;
+using System.ComponentModel.DataAnnotations;
 
 namespace ProjectManagement.Service.Interfaces.Request
 {
@@ -13,7 +15,6 @@ namespace ProjectManagement.Service.Interfaces.Request
         ValueTask<bool> UpdateAsync(int id, RequestStatusForCreateDTO dto);
         ValueTask<PagedResult<RequestModel>> GetRequeststAsync(RequestForFilterDTO dto);
         ValueTask<RequestModel> GetRequestById(int id);
-        ValueTask<PagedResult<RequestModel>> GetDeletedRequeststAsync(RequestForFilterDTO dto);
         ValueTask<bool> CreateRequest(RequestForCreateDTO dto);
         ValueTask<bool> DeleteRequest(int id);
         ValueTask<bool> RecoverRequest(int id);
@@ -34,5 +35,6 @@ namespace ProjectManagement.Service.Interfaces.Request
         ValueTask<bool> HardDeleteDeletedRequest(List<int> ids);
         ValueTask<bool> SoftDeleteOpenRequest(List<int> ids);
         ValueTask<bool> SoftRecoverOpenRequest(List<int> ids);
+        ValueTask<bool> UploadFile([Required] int id, IFormFile? file);
     }
 }

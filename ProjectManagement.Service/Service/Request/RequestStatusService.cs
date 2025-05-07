@@ -15,6 +15,7 @@ using ProjectManagement.Service.Interfaces.Attachment;
 using ProjectManagement.Service.Interfaces.IRepositories;
 using ProjectManagement.Service.Interfaces.Request;
 using ProjectManagement.Service.StringExtensions;
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Security.Authentication;
 using System.Security.Claims;
@@ -117,7 +118,7 @@ namespace ProjectManagement.Service.Service.Requests
 
         public async ValueTask<PagedResult<RequestModel>> GetRequeststAsync(RequestForFilterDTO dto)
         {
-            var query = requestRepository.GetAll(null)
+            var query = requestRepository.GetAll()
                .Include(x => x.ProcessingStatus)
                .Include(x => x.RequestStatus)
                .AsQueryable();
@@ -216,108 +217,10 @@ namespace ProjectManagement.Service.Service.Requests
                 .Include(x => x.ProcessingStatus)
                 .FirstOrDefaultAsync();
 
-
-            if(request is null) throw new ProjectManagementException(404, "request_not_found");
+     
+            if (request is null) throw new ProjectManagementException(404, "request_not_found");
 
             return new RequestModel().MapFromEntity(request);
-        }
-
-        public async ValueTask<PagedResult<RequestModel>> GetDeletedRequeststAsync(RequestForFilterDTO dto)
-        {
-            var connectionString = configuration.GetConnectionString("PostgresConnection");
-            using (var db = new NpgsqlConnection(connectionString))
-            {
-                var sql = new StringBuilder(@"
-                SELECT 
-                    r.*, 
-                    rs.""Id"" AS RequestStatus_Id, 
-                    rs.""Title"", rs.""Id""
-                FROM ""Requests"" r
-                LEFT JOIN ""RequestStatuses"" rs ON r.""RequestStatusId"" = rs.""Id""
-                ");
-
-                var countSql = new StringBuilder(@"SELECT COUNT(*) FROM ""Requests"" r
-                    LEFT JOIN ""RequestStatuses"" rs ON r.""RequestStatusId"" = rs.""Id""
-                ");
-
-                var parameters = new DynamicParameters();
-                var conditions = new List<string>();
-
-                conditions.Add("r.\"IsDeleted\" = 1");
-
-                if (!string.IsNullOrWhiteSpace(dto.Text))
-                {
-                    var searchableColumns = new List<string>
-                    {
-                        "InquiryType", "InquiryField", "CompanyName", "Department", "ResponsiblePerson",
-                        "ClientCompany", "Email", "ProcessingStatus", "Status", "Notes", "Date", "LastUpdated",
-                        "Client", "ContactNumber", "ProjectDetails"
-                    };
-
-                    var searchConditions = new List<string>();
-                    foreach (var column in searchableColumns)
-                    {
-                        searchConditions.Add($"r.\"{column}\" ILIKE @searchText");
-                    }
-
-                    conditions.Add($"({string.Join(" OR ", searchConditions)})");
-                    parameters.Add("@searchText", $"%{dto.Text}%");
-                }
-
-                if (dto?.Category != null)
-                {
-                    conditions.Add("r.\"RequestStatusId\" = @RequestStatusId");
-                    parameters.Add("@RequestStatusId", dto.Category);
-                }
-
-                // Append WHERE clause if there are conditions
-                if (conditions.Any())
-                {
-                    sql.Append(" WHERE " + string.Join(" AND ", conditions));
-                    countSql.Append(" WHERE " + string.Join(" AND ", conditions));
-                }
-
-                sql.Append(" ORDER BY r.\"CreatedAt\" DESC");
-
-
-                // Pagination
-                int totalCount = await db.ExecuteScalarAsync<int>(countSql.ToString(), parameters);
-
-                if (totalCount == 0)
-                {
-                    return PagedResult<RequestModel>.Create(new List<RequestModel>(), 0, dto.PageSize, 0, dto.PageIndex, 0);
-                }
-
-                if (dto.PageIndex == 0) dto.PageIndex = 1;
-                if (dto.PageSize == 0) dto.PageSize = totalCount;
-
-                int itemsPerPage = dto.PageSize;
-                int totalPages = (totalCount / itemsPerPage) + (totalCount % itemsPerPage == 0 ? 0 : 1);
-
-                if (dto.PageIndex > totalPages)
-                {
-                    dto.PageIndex = totalPages;
-                }
-
-                int skip = (dto.PageIndex - 1) * dto.PageSize;
-                sql.Append(" LIMIT @PageSize OFFSET @Offset");
-                parameters.Add("@PageSize", dto.PageSize);
-                parameters.Add("@Offset", skip);
-
-                // Fetch data
-                var list = await db.QueryAsync<RequestModel, RequestStatusModel, RequestModel>(
-                    sql.ToString(),
-                    (request, status) =>
-                    {
-                        request.RequestStatus = status;
-                        return request;
-                    },
-                    parameters,
-                    splitOn: "RequestStatus_Id"
-                );
-
-                return PagedResult<RequestModel>.Create(list.ToList(), totalCount, dto.PageSize, list.Count(), dto.PageIndex, totalPages);
-            }
         }
 
         public async ValueTask<bool> CreateRequest(RequestForCreateDTO dto)
@@ -369,16 +272,6 @@ namespace ProjectManagement.Service.Service.Requests
 
             if (existRequest is null) throw new ProjectManagementException(404, "request_not_found");
 
-            Domain.Entities.Attachment.Attachment attachment = existRequest.File;
-
-            if (dto.UpdateFile)
-            {
-                attachment = await attachmentService.UploadAsync(dto.File.ToAttachmentOrDefault());
-            }
-            else if (dto.RemoveFile)
-            {
-                attachment = null;
-            }
 
             var existCategory = await requestStatusRepository.GetAll(x => x.Id == dto.RequestStatusId && x.IsDeleted == 0).FirstOrDefaultAsync();
 
@@ -396,7 +289,6 @@ namespace ProjectManagement.Service.Service.Requests
             existRequest.ResponsiblePerson = dto.ResponsiblePerson;
             existRequest.Date = DateTime.TryParse(dto.Date, out var parsedDate) ? parsedDate.ToString("yyyy.MM.dd") : DateTime.UtcNow.ToString("yyyy.MM.dd");
             existRequest.Status = dto.Status;
-            existRequest.FileId = attachment?.Id;
             existRequest.RequestStatusId = dto.RequestStatusId;
             existRequest.UpdatedAt = DateTime.UtcNow;
             existRequest.CreatedAt = existRequest.CreatedAt ?? DateTime.UtcNow;
@@ -875,7 +767,15 @@ namespace ProjectManagement.Service.Service.Requests
                 .Include(x => x.RequestStatus).Include(x => x.ProcessingStatus)
                 .ToListAsync();
 
-            if(year is not null)
+            foreach (var request in allRequests)
+            {
+                if (request.ProcessingStatus != null && request.ProcessingStatus.IsDeleted == 1)
+                {
+                    request.ProcessingStatus = null;
+                }
+            }
+
+            if (year is not null)
             {
                 allRequests = allRequests
                 .Where(x => DateTime.TryParse(x.Date, out var parsedDate) && parsedDate.Year == year)
@@ -924,6 +824,14 @@ namespace ProjectManagement.Service.Service.Requests
                 .GetAll(x => x.IsDeleted == 0 && x.Status != null && x.Status == status)
                 .Include(x => x.RequestStatus).Include(x => x.ProcessingStatus)
                 .ToListAsync();
+
+            foreach (var request in allRequests)
+            {
+                if (request.ProcessingStatus != null && request.ProcessingStatus.IsDeleted == 1)
+                {
+                    request.ProcessingStatus = null;
+                }
+            }
 
             if (year is not null)
             {
@@ -1000,6 +908,19 @@ namespace ProjectManagement.Service.Service.Requests
                 requestRepository.UpdateAsync(existRequest);
             }
 
+            await requestRepository.SaveChangesAsync();
+            return true;
+        }
+
+        public async ValueTask<bool> UploadFile([Required] int id, IFormFile? file)
+        {
+            var existRequest = await requestRepository.GetAll(x => x.Id == id).FirstOrDefaultAsync();
+            if (existRequest is null) throw new ProjectManagementException(404, "request_not_found");
+            Domain.Entities.Attachment.Attachment attachment = null;
+            if(file is null) attachment = null;
+            else attachment = await attachmentService.UploadAsync(file.ToAttachmentOrDefault());
+            existRequest.FileId = attachment?.Id;
+            requestRepository.UpdateAsync(existRequest);
             await requestRepository.SaveChangesAsync();
             return true;
         }

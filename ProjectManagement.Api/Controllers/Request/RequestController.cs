@@ -46,10 +46,6 @@ namespace ProjectManagement.Api.Controllers.Request
         public async ValueTask<IActionResult> GetRequestsByIdAsync(int id) => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetRequestById(id));
 
 
-        [HttpGet("deleted-requets")]
-        public async ValueTask<IActionResult> GetDeletedRequeststAsync([FromQuery] RequestForFilterDTO dto) => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetDeletedRequeststAsync(dto));
-
-
         [HttpPost("create")]
         public async ValueTask<IActionResult> CreateAsync([FromBody] RequestStatusForCreateDTO dto) => ResponseHandler.ReturnIActionResponse(await requestStatusService.CreateAsync(dto));
 
@@ -350,5 +346,8 @@ namespace ProjectManagement.Api.Controllers.Request
         
         [HttpDelete("soft-recover-open-request")]
         public async ValueTask<IActionResult> SoftRecoverOpenRequest(List<int> ids) => ResponseHandler.ReturnIActionResponse(await requestStatusService.SoftRecoverOpenRequest(ids));
+
+        [HttpPost("upload-file")]
+        public async ValueTask<IActionResult> UploadFile([FromForm] int id,  IFormFile? file) => ResponseHandler.ReturnIActionResponse(await requestStatusService.UploadFile(id, file));
     }
 }

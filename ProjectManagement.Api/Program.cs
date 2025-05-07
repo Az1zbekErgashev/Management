@@ -106,6 +106,7 @@ app.UseSwaggerUI(options =>
     options.RoutePrefix = "api/swagger";
 });
 
+
 app.UseCors(options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 
 var env = app.Services.GetRequiredService<IWebHostEnvironment>();
@@ -118,5 +119,5 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 app.UseMiddleware<ExceptionMiddleware>();
 app.MapControllers();
-
+app.UseDeveloperExceptionPage();
 app.Run();

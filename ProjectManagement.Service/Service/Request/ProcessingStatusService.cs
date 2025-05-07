@@ -41,24 +41,26 @@ namespace ProjectManagement.Service.Service.Request
             var existStatus = await processingStatusRepository.GetAsync(x => x.Id == id);
             if (existStatus == null) throw new ProjectManagementException(404, "status_not_found");
 
-            var allRequests = await requestsRepository.GetAll(x => x.ProcessingStatusId == existStatus.Id).ToListAsync();
+            existStatus.IsDeleted = 1;
+            processingStatusRepository.UpdateAsync(existStatus);
+            await processingStatusRepository.SaveChangesAsync();
+            return true;
+        }
 
-            foreach (var item in allRequests)
-            {
-                item.ProcessingStatusId = null;
-                requestsRepository.UpdateAsync(item);
-            }
+        public async ValueTask<bool> RecoverAsync(int id)
+        {
+            var existStatus = await processingStatusRepository.GetAsync(x => x.Id == id);
+            if (existStatus == null) throw new ProjectManagementException(404, "status_not_found");
 
-            await requestsRepository.SaveChangesAsync();
-
-            await processingStatusRepository.DeleteAsync(existStatus.Id);
+            existStatus.IsDeleted = 0;
+            processingStatusRepository.UpdateAsync(existStatus);
             await processingStatusRepository.SaveChangesAsync();
             return true;
         }
 
         public async ValueTask<PagedResult<ProcessingStatusModel>> GetAllAsync(ProcessingStatusFilter dto)
         {
-            var query = processingStatusRepository.GetAll(null)
+            var query = processingStatusRepository.GetAll()
                .AsQueryable();
 
             query = query.OrderBy(x => x.Id);
@@ -139,16 +141,26 @@ namespace ProjectManagement.Service.Service.Request
 
             foreach (var item in ints)
             {
-                var allRequests = await requestsRepository.GetAll(x => x.ProcessingStatusId == item).ToListAsync();
+                var existStatus = await processingStatusRepository.GetAsync(x => x.Id == item);
 
-                foreach (var request in allRequests)
-                {
-                    request.ProcessingStatusId = null;
-                    requestsRepository.UpdateAsync(request);
-                }
+                existStatus.IsDeleted = 1;
+                processingStatusRepository.UpdateAsync(existStatus);
+            }
 
-                await requestsRepository.SaveChangesAsync();
-                var existStatus = await processingStatusRepository.DeleteAsync(item);
+            await processingStatusRepository.SaveChangesAsync();
+            return true;
+        }
+
+        public async ValueTask<bool> RecoverListAsync(List<int> ints)
+        {
+            if (ints == null || ints.Count == 0) return false;
+
+            foreach (var item in ints)
+            {
+                var existStatus = await processingStatusRepository.GetAsync(x => x.Id == item);
+
+                existStatus.IsDeleted = 0;
+                processingStatusRepository.UpdateAsync(existStatus);
             }
 
             await processingStatusRepository.SaveChangesAsync();
