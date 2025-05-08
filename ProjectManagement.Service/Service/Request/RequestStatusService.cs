@@ -912,13 +912,13 @@ namespace ProjectManagement.Service.Service.Requests
             return true;
         }
 
-        public async ValueTask<bool> UploadFile([Required] int id, IFormFile? file)
+        public async ValueTask<bool> UploadFile(CreateUploadData dto)
         {
-            var existRequest = await requestRepository.GetAll(x => x.Id == id).FirstOrDefaultAsync();
+            var existRequest = await requestRepository.GetAll(x => x.Id == dto.Id).FirstOrDefaultAsync();
             if (existRequest is null) throw new ProjectManagementException(404, "request_not_found");
             Domain.Entities.Attachment.Attachment attachment = null;
-            if(file is null) attachment = null;
-            else attachment = await attachmentService.UploadAsync(file.ToAttachmentOrDefault());
+            if(dto.File is null) attachment = null;
+            else attachment = await attachmentService.UploadAsync(dto.File.ToAttachmentOrDefault());
             existRequest.FileId = attachment?.Id;
             requestRepository.UpdateAsync(existRequest);
             await requestRepository.SaveChangesAsync();
@@ -928,7 +928,14 @@ namespace ProjectManagement.Service.Service.Requests
         public async ValueTask<string> GetUploadedFile(int id)
         {
             var existRequest = await requestRepository.GetAll(x => x.Id == id).Include(x => x.File).FirstOrDefaultAsync();
+            if (existRequest is null) throw new ProjectManagementException(404, "request_not_found");
             return existRequest?.File?.Path == null ? null : existRequest?.File?.Path;
         }
+    }
+
+    public class CreateUploadData
+    {
+        public IFormFile File { get; set; }
+        public int Id { get; set; }
     }
 }

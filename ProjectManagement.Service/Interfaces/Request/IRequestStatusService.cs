@@ -3,6 +3,7 @@ using ProjectManagement.Domain.Enum;
 using ProjectManagement.Domain.Models.PagedResult;
 using ProjectManagement.Domain.Models.Request;
 using ProjectManagement.Service.DTOs.Request;
+using ProjectManagement.Service.Service.Requests;
 using System.ComponentModel.DataAnnotations;
 
 namespace ProjectManagement.Service.Interfaces.Request
@@ -35,7 +36,7 @@ namespace ProjectManagement.Service.Interfaces.Request
         ValueTask<bool> HardDeleteDeletedRequest(List<int> ids);
         ValueTask<bool> SoftDeleteOpenRequest(List<int> ids);
         ValueTask<bool> SoftRecoverOpenRequest(List<int> ids);
-        ValueTask<bool> UploadFile([Required] int id, IFormFile? file);
+        ValueTask<bool> UploadFile(CreateUploadData dto);
         ValueTask<string> GetUploadedFile(int id);
     }
 }

@@ -12,6 +12,7 @@ using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 using ProjectManagement.Domain.Entities.Requests;
 using DocumentFormat.OpenXml.Bibliography;
+using ProjectManagement.Service.Service.Requests;
 
 namespace ProjectManagement.Api.Controllers.Request
 {
@@ -348,7 +349,7 @@ namespace ProjectManagement.Api.Controllers.Request
         public async ValueTask<IActionResult> SoftRecoverOpenRequest(List<int> ids) => ResponseHandler.ReturnIActionResponse(await requestStatusService.SoftRecoverOpenRequest(ids));
 
         [HttpPost("upload-file")]
-        public async ValueTask<IActionResult> UploadFile([FromForm] int id,  IFormFile? file) => ResponseHandler.ReturnIActionResponse(await requestStatusService.UploadFile(id, file));
+        public async ValueTask<IActionResult> UploadFile([FromForm] CreateUploadData dto) => ResponseHandler.ReturnIActionResponse(await requestStatusService.UploadFile(dto));
 
         [HttpGet("get-uploaded-file")]
         public async ValueTask<IActionResult> GetUploadedFile([FromQuery]int id) => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetUploadedFile(id));
