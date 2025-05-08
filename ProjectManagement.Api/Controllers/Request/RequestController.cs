@@ -116,20 +116,19 @@ namespace ProjectManagement.Api.Controllers.Request
             {
                 worksheet.Cell(row, 1).Value = index++;
                 worksheet.Cell(row, 2).Value = request.Date;
-                worksheet.Cell(row, 3).Value = request.LastUpdated;
-                worksheet.Cell(row, 4).Value = request.InquiryType;
-                worksheet.Cell(row, 5).Value = request.CompanyName;
-                worksheet.Cell(row, 6).Value = request.Department;
-                worksheet.Cell(row, 7).Value = request.ResponsiblePerson;
-                worksheet.Cell(row, 8).Value = request.InquiryField;
-                worksheet.Cell(row, 9).Value = request.ClientCompany;
-                worksheet.Cell(row, 10).Value = request.ProjectDetails;
-                worksheet.Cell(row, 11).Value = request.Client;
-                worksheet.Cell(row, 12).Value = request.ContactNumber;
-                worksheet.Cell(row, 13).Value = request.Email;
-                worksheet.Cell(row, 14).Value = request.Status;
-                worksheet.Cell(row, 15).Value = request?.ProcessingStatus?.Text;
-                worksheet.Cell(row, 16).Value = request.Notes;
+                worksheet.Cell(row, 3).Value = request.InquiryType;
+                worksheet.Cell(row, 4).Value = request.CompanyName;
+                worksheet.Cell(row, 5).Value = request.Department;
+                worksheet.Cell(row, 6).Value = request.ResponsiblePerson;
+                worksheet.Cell(row, 7).Value = request.InquiryField;
+                worksheet.Cell(row, 8).Value = request.ClientCompany;
+                worksheet.Cell(row, 9).Value = request.ProjectDetails;
+                worksheet.Cell(row, 10).Value = request.Client;
+                worksheet.Cell(row, 11).Value = request.ContactNumber;
+                worksheet.Cell(row, 12).Value = request.Email;
+                worksheet.Cell(row, 13).Value = request.Status;
+                worksheet.Cell(row, 14).Value = request?.ProcessingStatus?.Text;
+                worksheet.Cell(row, 15).Value = request.Notes;
                 row++;
             }
 
