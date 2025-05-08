@@ -615,7 +615,7 @@ namespace ProjectManagement.Service.Service.Requests
         public async ValueTask<List<RequestRateModel>> GetRequestProcent()
         {
             var allRequestsRaw = await requestRepository
-               .GetAll(x => x.IsDeleted == 0 && x.Status != null)
+               .GetAll(x => x.IsDeleted == 0 && x.RequestStatusId != null)
                .Include(x => x.RequestStatus)
                .ToListAsync();
 
@@ -627,21 +627,42 @@ namespace ProjectManagement.Service.Service.Requests
 
             var result = new List<RequestRateModel>();
 
-            result.Add(new RequestRateModel().MapFromEntity("all_requests", 100, totalCount));
-
             var grouped = allRequestsRaw
                 .GroupBy(x => x.RequestStatusId)
-                .ToDictionary(g => g.Key, g => g.ToList());
+                .ToDictionary(g => g.Key, g => g.Count());
+
+            var percentList = new List<CategoryPercent>();
+
+            double totalPercent = 0;
 
             foreach (var category in allCategory)
             {
-                grouped.TryGetValue(category.Id, out var requestList);
-                requestList ??= new List<Domain.Entities.Requests.Request>();
+                grouped.TryGetValue(category.Id, out var statusCount);
+                var percent = totalCount > 0 ? ((double)statusCount / totalCount * 100) : 0;
+                totalPercent += percent;
+                percentList.Add(new CategoryPercent
+                {
+                    Title = category.Title,
+                    Count = statusCount,
+                    RawPercent = percent,
+                    RoundedPercent = (int)Math.Floor(percent),
+                    Fraction = percent - Math.Floor(percent)
+                });
+            }
 
-                var statusCount = requestList.Count;
-                var statusPercent = totalCount > 0 ? (int)Math.Round((double)statusCount / totalCount * 100) : 0;
+            int currentTotalPercent = percentList.Sum(x => x.RoundedPercent);
+            int diff = 100 - currentTotalPercent;
 
-                result.Add(new RequestRateModel().MapFromEntity(category.Title, statusPercent, statusCount));
+            foreach (var item in percentList.OrderByDescending(x => x.Fraction).Take(diff))
+            {
+                item.RoundedPercent += 1;
+            }
+
+            result.Add(new RequestRateModel().MapFromEntity("all_requests", 100, totalCount));
+
+            foreach (var item in percentList)
+            {
+                result.Add(new RequestRateModel().MapFromEntity(item.Title, item.RoundedPercent, item.Count));
             }
 
             return result;
@@ -934,5 +955,14 @@ namespace ProjectManagement.Service.Service.Requests
     {
         public IFormFile File { get; set; }
         public int Id { get; set; }
+    }
+
+    public class CategoryPercent
+    {
+        public string Title { get; set; }
+        public int Count { get; set; }
+        public double RawPercent { get; set; }
+        public int RoundedPercent { get; set; }
+        public double Fraction { get; set; }
     }
 }
