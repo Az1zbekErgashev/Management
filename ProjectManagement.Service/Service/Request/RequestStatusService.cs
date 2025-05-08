@@ -924,5 +924,11 @@ namespace ProjectManagement.Service.Service.Requests
             await requestRepository.SaveChangesAsync();
             return true;
         }
+
+        public async ValueTask<string> GetUploadedFile(int id)
+        {
+            var existRequest = await requestRepository.GetAll(x => x.Id == id).Include(x => x.File).FirstOrDefaultAsync();
+            return existRequest?.File?.Path == null ? null : existRequest?.File?.Path;
+        }
     }
 }

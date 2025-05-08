@@ -36,5 +36,6 @@ namespace ProjectManagement.Service.Interfaces.Request
         ValueTask<bool> SoftDeleteOpenRequest(List<int> ids);
         ValueTask<bool> SoftRecoverOpenRequest(List<int> ids);
         ValueTask<bool> UploadFile([Required] int id, IFormFile? file);
+        ValueTask<string> GetUploadedFile(int id);
     }
 }

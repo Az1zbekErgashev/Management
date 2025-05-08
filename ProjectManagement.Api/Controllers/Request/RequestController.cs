@@ -349,5 +349,8 @@ namespace ProjectManagement.Api.Controllers.Request
 
         [HttpPost("upload-file")]
         public async ValueTask<IActionResult> UploadFile([FromForm] int id,  IFormFile? file) => ResponseHandler.ReturnIActionResponse(await requestStatusService.UploadFile(id, file));
+
+        [HttpGet("get-uploaded-file")]
+        public async ValueTask<IActionResult> GetUploadedFile([FromQuery]int id) => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetUploadedFile(id));
     }
 }
