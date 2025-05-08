@@ -169,7 +169,6 @@ namespace ProjectManagement.Api.Controllers.Request
                 var columnMapping = new Dictionary<string, string>
                 {
                     { "접수일", "Date" },
-                    { "최종 업데이트", "Last Updated" },
                     { "문의 유형", "Inquiry Type" },
                     { "기업명", "Company Name" },
                     { "담당부서", "Department" },
