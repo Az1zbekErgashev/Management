@@ -16,5 +16,6 @@ namespace ProjectManagement.Service.Interfaces.Request
         ValueTask<ProcessingStatusModel> GetByIdAsync(int id);
         ValueTask<bool> RecoverListAsync(List<int> ints);
         ValueTask<bool> RecoverAsync(int id);
+        ValueTask<bool> HardDeleteListAsync(List<int> ints);
     }
 }

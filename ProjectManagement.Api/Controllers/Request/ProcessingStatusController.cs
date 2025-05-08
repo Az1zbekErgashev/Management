@@ -38,7 +38,11 @@ namespace ProjectManagement.Api.Controllers.Request
         public async ValueTask<IActionResult> DeleteListAsync(List<int> ids) => ResponseHandler.ReturnIActionResponse(await processingStatusService.DeleteListAsync(ids));
         
         [HttpDelete("recover-list")]
-        public async ValueTask<IActionResult> RecoverListAsync(List<int> ids) => ResponseHandler.ReturnIActionResponse(await processingStatusService.RecoverListAsync(ids)); 
+        public async ValueTask<IActionResult> RecoverListAsync(List<int> ids) => ResponseHandler.ReturnIActionResponse(await processingStatusService.RecoverListAsync(ids));  
+        
+        
+        [HttpDelete("hard-delete-list")]
+        public async ValueTask<IActionResult> HardDeleteListAsync(List<int> ids) => ResponseHandler.ReturnIActionResponse(await processingStatusService.HardDeleteListAsync(ids)); 
         
         [HttpGet("{id}")]
         public async ValueTask<IActionResult> GetAsync(int id) => ResponseHandler.ReturnIActionResponse(await processingStatusService.GetByIdAsync(id));

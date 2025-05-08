@@ -166,11 +166,37 @@ namespace ProjectManagement.Service.Service.Request
             await processingStatusRepository.SaveChangesAsync();
             return true;
         }
+
+        public async ValueTask<bool> HardDeleteListAsync(List<int> ints)
+        {
+            if (ints == null || ints.Count == 0) return false;
+
+            foreach (var item in ints)
+            {
+                var existStatus = await processingStatusRepository.GetAsync(x => x.Id == item);
+
+                var allRequests = await requestsRepository.GetAll(x => x.ProcessingStatusId == existStatus.Id).ToListAsync();
+
+                foreach (var item1 in allRequests)
+                {
+                    item1.ProcessingStatusId = null;
+                    item1.ProcessingStatus = null;
+
+                    requestsRepository.UpdateAsync(item1);
+                }
+
+                await requestsRepository.SaveChangesAsync();
+                existStatus.IsDeleted = 0;
+               await processingStatusRepository.DeleteAsync(item);
+            }
+            await processingStatusRepository.SaveChangesAsync();
+            return true;
+        }
     }
 
     public class ProcessingStatusFilter : PaginationParams
     {
-        public int IsDeleted { get; set; }
+        public int IsDeleted { get; set; } = 0;
     }
 
 
