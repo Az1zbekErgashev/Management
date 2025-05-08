@@ -624,12 +624,10 @@ namespace ProjectManagement.Service.Service.Requests
                 .ToListAsync();
 
             var totalCount = allRequestsRaw.Count;
-            var madeCount = allRequestsRaw.Count(x => x.Status == "Made");
 
             var result = new List<RequestRateModel>();
 
-            var totalPercent = totalCount > 0 ? (int)Math.Round((double)madeCount / totalCount * 100) : 0;
-            result.Add(new RequestRateModel().MapFromEntity("all_requests", totalPercent, totalCount));
+            result.Add(new RequestRateModel().MapFromEntity("all_requests", 100, totalCount));
 
             var grouped = allRequestsRaw
                 .GroupBy(x => x.RequestStatusId)
@@ -638,13 +636,12 @@ namespace ProjectManagement.Service.Service.Requests
             foreach (var category in allCategory)
             {
                 grouped.TryGetValue(category.Id, out var requestList);
-                requestList ??= new List<Domain.Entities.Requests.Request>(); 
+                requestList ??= new List<Domain.Entities.Requests.Request>();
 
-                var categoryTotal = requestList.Count;
-                var categoryMade = requestList.Count(x => x.Status == "Made");
-                var categoryPercent = categoryTotal > 0 ? (int)Math.Round((double)categoryMade / categoryTotal * 100) : 0;
+                var statusCount = requestList.Count;
+                var statusPercent = totalCount > 0 ? (int)Math.Round((double)statusCount / totalCount * 100) : 0;
 
-                result.Add(new RequestRateModel().MapFromEntity(category.Title, categoryPercent, categoryTotal));
+                result.Add(new RequestRateModel().MapFromEntity(category.Title, statusPercent, statusCount));
             }
 
             return result;
@@ -925,7 +922,7 @@ namespace ProjectManagement.Service.Service.Requests
             return true;
         }
 
-        public async ValueTask<string> GetUploadedFile(int id)
+        public async ValueTask<string>  GetUploadedFile(int id)
         {
             var existRequest = await requestRepository.GetAll(x => x.Id == id).Include(x => x.File).FirstOrDefaultAsync();
             if (existRequest is null) throw new ProjectManagementException(404, "request_not_found");

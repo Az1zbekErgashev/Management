@@ -13,7 +13,7 @@ using System.Text.Json.Serialization;
 using Telegram.Bot;
 using static ProjectManagement.Service.Service.Attachment.AttachmentService;
 
-var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
+ var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
 
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 {
@@ -119,5 +119,4 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 app.UseMiddleware<ExceptionMiddleware>();
 app.MapControllers();
-app.UseDeveloperExceptionPage();
 app.Run();
