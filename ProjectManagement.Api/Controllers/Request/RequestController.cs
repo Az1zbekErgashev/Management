@@ -89,13 +89,13 @@ namespace ProjectManagement.Api.Controllers.Request
             var worksheet = workbook.Worksheets.Add("Requests");
 
             var headers = languageId == 1
-               ? new string[] { "구분", "접수일", "최종 업데이트",
+               ? new string[] { "구분", "접수일", 
                    "문의 유형", "기업명", "담당부서",
                    "담당자", "문의분야", "고객사 회사",
                    "프로젝트 내용", "고객사", "연락처",
                    "이메일", "대응 상황", "비고",
                    "메모" }
-               : new string[] { "구분", "접수일", "최종 업데이트",
+               : new string[] { "구분", "접수일", 
                    "문의 유형", "기업명", "담당부서",
                    "담당자", "문의분야", "고객사 회사",
                    "프로젝트 내용", "고객사", "연락처",
