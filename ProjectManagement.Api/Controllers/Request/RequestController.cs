@@ -235,7 +235,6 @@ namespace ProjectManagement.Api.Controllers.Request
 
                     var record = new Domain.Entities.Requests.Request
                     {
-                        LastUpdated = GetSafeCellValue(currentRow, columnIndexes, "Last Updated"),
                         Date = GetSafeCellValue(currentRow, columnIndexes, "Date"),
                         InquiryType = GetSafeCellValue(currentRow, columnIndexes, "Inquiry Type"),
                         CompanyName = existCategory.Title,
