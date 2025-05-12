@@ -741,7 +741,7 @@ namespace ProjectManagement.Service.Service.Requests
                     Status = status.Text,
                     Count = allRequestsRaw.Count(x => x.ProcessingStatus != null && x.ProcessingStatus.IsDeleted == 0 && x.ProcessingStatus.Id == status.Id)
                 }).ToList(),
-                Total = allRequestsRaw.Count()
+                Total = allRequestsRaw.Count(x => x.ProcessingStatus != null && x.ProcessingStatus.IsDeleted == 0)
             };
 
             result.Add(allRequestsModel);
@@ -759,7 +759,7 @@ namespace ProjectManagement.Service.Service.Requests
                         Status = status.Text,
                         Count = allRequestsRaw.Count(x => x.ProcessingStatus != null && x.ProcessingStatus.IsDeleted == 0 && x.ProcessingStatus.Id == status.Id)
                     }).ToList(),
-                    Total = requestList.Count
+                    Total = requestList.Count(x => x.ProcessingStatus != null && x.ProcessingStatus.IsDeleted == 0)
                 };
 
                 result.Add(model);
