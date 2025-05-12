@@ -757,7 +757,7 @@ namespace ProjectManagement.Service.Service.Requests
                     Counts = allProccesingStatus.Select(status => new StatusCountItem
                     {
                         Status = status.Text,
-                        Count = allRequestsRaw.Count(x => x.ProcessingStatus != null && x.ProcessingStatus.IsDeleted == 0 && x.ProcessingStatus.Id == status.Id)
+                        Count = allRequestsRaw.Count(x => x.ProcessingStatus != null && x.ProcessingStatus.IsDeleted == 0 && x.ProcessingStatus.Id == status.Id && x.RequestStatusId == category.Id)
                     }).ToList(),
                     Total = requestList.Count(x => x.ProcessingStatus != null && x.ProcessingStatus.IsDeleted == 0)
                 };
