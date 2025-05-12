@@ -322,7 +322,10 @@ namespace ProjectManagement.Api.Controllers.Request
         
         
         [HttpGet("request-status-count")]
-        public async Task<IActionResult> GetStatusCounts() => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetStatusCounts());
+        public async Task<IActionResult> GetStatusCounts() => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetStatusCounts()); 
+        
+        [HttpGet("request-procces-status-count")]
+        public async Task<IActionResult> GetProccesingStatusCounts() => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetProccesingStatusCounts());
         
         [HttpGet("request-status-years")]
         public async Task<IActionResult> GetStatusYears() => ResponseHandler.ReturnIActionResponse(await requestStatusService.GetAvailableYears()); 

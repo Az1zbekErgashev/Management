@@ -38,5 +38,6 @@ namespace ProjectManagement.Service.Interfaces.Request
         ValueTask<bool> SoftRecoverOpenRequest(List<int> ids);
         ValueTask<bool> UploadFile(CreateUploadData dto);
         ValueTask<string> GetUploadedFile(int id);
+        ValueTask<List<RequestCountByStatusModel>> GetProccesingStatusCounts();
     }
 }

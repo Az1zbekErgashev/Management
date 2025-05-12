@@ -719,6 +719,55 @@ namespace ProjectManagement.Service.Service.Requests
 
             return result;
         }
+
+        public async ValueTask<List<RequestCountByStatusModel>> GetProccesingStatusCounts()
+        {
+            var allRequestsRaw = await requestRepository.GetAll(x => x.IsDeleted == 0 && x.Status != null).Include(x => x.RequestStatus).Include(x => x.ProcessingStatus).ToListAsync();
+            var allCategory = await requestStatusRepository.GetAll(x => x.IsDeleted == 0).ToListAsync();
+
+            var allProccesingStatus = await processingStatus.GetAll(x => x.IsDeleted == 0).ToListAsync();
+
+            var groupedRequests = allRequestsRaw
+             .GroupBy(x => x.RequestStatusId)
+             .ToDictionary(g => g.Key, g => g.ToList());
+
+            var result = new List<RequestCountByStatusModel>();
+
+            var allRequestsModel = new RequestCountByStatusModel
+            {
+                CategoryText = "all_requests",
+                Counts = allProccesingStatus.Select(status => new StatusCountItem
+                {
+                    Status = status.Text,
+                    Count = allRequestsRaw.Count(x => x.ProcessingStatus != null && x.ProcessingStatus.IsDeleted == 0 && x.ProcessingStatus.Text == status.Text)
+                }).ToList(),
+                Total = allRequestsRaw.Count()
+            };
+
+            result.Add(allRequestsModel);
+
+            foreach (var category in allCategory)
+            {
+                groupedRequests.TryGetValue(category.Id, out var requestList);
+                requestList ??= new List<Domain.Entities.Requests.Request>();
+
+                var model = new RequestCountByStatusModel
+                {
+                    CategoryText = category.Title,
+                    Counts = allProccesingStatus.Select(status => new StatusCountItem
+                    {
+                        Status = status.Text,
+                        Count = allRequestsRaw.Count(x => x.ProcessingStatus != null && x.ProcessingStatus.IsDeleted == 1 && x.ProcessingStatus.Text == status.Text)
+                    }).ToList(),
+                    Total = requestList.Count
+                };
+
+                result.Add(model);
+            }
+
+            return result;
+        }
+
         public async ValueTask<List<int>> GetAvailableYears()
         {
             var allRequests = await requestRepository
