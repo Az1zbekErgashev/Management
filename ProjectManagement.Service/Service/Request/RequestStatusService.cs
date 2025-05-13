@@ -159,6 +159,8 @@ namespace ProjectManagement.Service.Service.Requests
             if (dto.IsDeleted != null)
             {
                 query = query.Where(x => x.IsDeleted == dto.IsDeleted);
+
+                if (dto.IsDeleted == 1) query = query.OrderByDescending(x => x.UpdatedAt);
             }
 
             int totalCount = await query.CountAsync();
@@ -385,6 +387,7 @@ namespace ProjectManagement.Service.Service.Requests
             if (existRequest is null) throw new ProjectManagementException(404, "request_not_found");
 
             existRequest.IsDeleted = 1;
+            existRequest.UpdatedAt = DateTime.UtcNow;
 
             requestRepository.UpdateAsync(existRequest);
             await requestRepository.SaveChangesAsync();
@@ -401,6 +404,7 @@ namespace ProjectManagement.Service.Service.Requests
             if (existRequest is null) throw new ProjectManagementException(404, "request_not_found");
 
             existRequest.IsDeleted = 0;
+            existRequest.UpdatedAt = DateTime.UtcNow;
 
             requestRepository.UpdateAsync(existRequest);
             await requestRepository.SaveChangesAsync();
@@ -1056,6 +1060,8 @@ namespace ProjectManagement.Service.Service.Requests
             {
                 var existRequest = await requestRepository.GetAsync(x => x.Id == item);
                 existRequest.IsDeleted = 1;
+                existRequest.UpdatedAt = DateTime.UtcNow;
+
                 requestRepository.UpdateAsync(existRequest);
             }
 
@@ -1071,6 +1077,8 @@ namespace ProjectManagement.Service.Service.Requests
             {
                 var existRequest = await requestRepository.GetAsync(x => x.Id == item);
                 existRequest.IsDeleted = 0;
+                existRequest.UpdatedAt = DateTime.UtcNow;
+
                 requestRepository.UpdateAsync(existRequest);
             }
 
