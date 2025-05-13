@@ -122,6 +122,7 @@ namespace ProjectManagement.Service.Service.Requests
             var query = requestRepository.GetAll()
                .Include(x => x.ProcessingStatus)
                .Include(x => x.RequestStatus)
+               .Include(x => x.Comments)
                .AsQueryable();
 
             query = query.OrderBy(x => x.Id);
@@ -325,12 +326,6 @@ namespace ProjectManagement.Service.Service.Requests
                 updatedLogs.Add(RequestLog.UpdateProcessingStatus);
             }
 
-            if (existRequest.Notes != dto.Notes)
-            {
-                existRequest.Notes = dto.Notes;
-                updatedLogs.Add(RequestLog.UpdateNotes);
-            }
-
             if (existRequest.ProjectDetails != dto.ProjectDetails)
             {
                 existRequest.ProjectDetails = dto.ProjectDetails;
@@ -363,12 +358,6 @@ namespace ProjectManagement.Service.Service.Requests
             {
                 existRequest.RequestStatusId = dto.RequestStatusId;
                 updatedLogs.Add(RequestLog.UpdateCompanyName);
-            }
-
-            if (existRequest.LastUpdated != dto?.LastUpdated?.ToString())
-            {
-                existRequest.LastUpdated = dto?.LastUpdated?.ToString();
-                updatedLogs.Add(RequestLog.UpdateLastUpdated);
             }
 
             existRequest.UpdatedAt = DateTime.UtcNow;
@@ -698,7 +687,7 @@ namespace ProjectManagement.Service.Service.Requests
             commentstService.UpdateAsync(existComment);
             await commentstService.SaveChangesAsync();
 
-            await StringExtensions.StringExtensions.SaveRequestHistory(requestHistory, RequestLog.UpdateFile, _httpContextAccessor, existRequest.Id, RequestLogType.Update);
+            await StringExtensions.StringExtensions.SaveRequestHistory(requestHistory, RequestLog.UpdateComments, _httpContextAccessor, existRequest.Id, RequestLogType.Update);
             return true;
         }
         public async ValueTask<bool> DeleteComment(int commentId)
@@ -713,7 +702,6 @@ namespace ProjectManagement.Service.Service.Requests
             await commentstService.SaveChangesAsync();
             return true;
         }
-
 
         public async ValueTask<List<RequestRateModel>> GetRequestProcent()
         {
