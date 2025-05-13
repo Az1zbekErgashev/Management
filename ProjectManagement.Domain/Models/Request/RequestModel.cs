@@ -45,7 +45,7 @@ namespace ProjectManagement.Domain.Models.Request
                 ContactNumber = entity.ContactNumber,
                 Email = entity.Email,
                 ProcessingStatus = entity.ProcessingStatus != null && entity.ProcessingStatus.IsDeleted == 0 ? new ProcessingStatusModel().MapFromEntity(entity.ProcessingStatus) : null,
-                Notes = entity.Comments is null || entity.Comments.Count == 0 ? null : entity.Comments.OrderByDescending(x => x.Id).FirstOrDefault()?.Text,
+                Notes = entity.Comments is null || entity?.Comments?.Count == 0 ? null : entity.Comments.OrderByDescending(x => x.Id).FirstOrDefault()?.Text,
                 RequestStatus = entity?.RequestStatus != null ? new RequestStatusModel().MapFromEntity(entity.RequestStatus) : null,
                 IsDeleted = entity.IsDeleted,
                 Date = entity.Date,
