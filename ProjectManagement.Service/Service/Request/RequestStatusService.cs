@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
 using NPOI.HSSF.Record.Aggregates;
+using Org.BouncyCastle.Asn1.Ocsp;
 using ProjectManagement.Domain.Entities.Logs;
 using ProjectManagement.Domain.Entities.Requests;
 using ProjectManagement.Domain.Enum;
@@ -148,7 +149,7 @@ namespace ProjectManagement.Service.Service.Requests
                     EF.Functions.Like(x.Department, searchText) ||
                     EF.Functions.Like(x.InquiryType, searchText) ||
                     EF.Functions.Like(x.Status, searchText) ||
-                    EF.Functions.Like(x.ProcessingStatus == null ? x.ProcessingStatus.Text : "", searchText) ||
+                    (x.ProcessingStatus != null && EF.Functions.Like(x.ProcessingStatus.Text, searchText)) ||
                     EF.Functions.Like(x.LastUpdated, searchText));
             }
 
@@ -272,33 +273,116 @@ namespace ProjectManagement.Service.Service.Requests
 
             if (existRequest is null) throw new ProjectManagementException(404, "request_not_found");
 
-
             var existCategory = await requestStatusRepository.GetAll(x => x.Id == dto.RequestStatusId && x.IsDeleted == 0).FirstOrDefaultAsync();
 
-            existRequest.Client = dto.Client;
-            existRequest.ClientCompany = dto.ClientCompany;
-            existRequest.ContactNumber = dto.ContactNumber;
-            existRequest.CompanyName = existCategory.Title;
-            existRequest.Department = dto.Department;
-            existRequest.Email = dto.Email;
-            existRequest.InquiryField = dto.InquiryField;
-            existRequest.InquiryType = dto.InquiryType;
-            existRequest.ProcessingStatusId = dto.ProcessingStatus;
-            existRequest.Notes = dto.Notes;
-            existRequest.ProjectDetails = dto.ProjectDetails;
-            existRequest.ResponsiblePerson = dto.ResponsiblePerson;
-            existRequest.Date = DateTime.TryParse(dto.Date, out var parsedDate) ? parsedDate.ToString("yyyy.MM.dd") : DateTime.UtcNow.ToString("yyyy.MM.dd");
-            existRequest.Status = dto.Status;
-            existRequest.RequestStatusId = dto.RequestStatusId;
+            var updatedLogs = new List<RequestLog>();
+
+            if (existRequest.Client != dto.Client)
+            {
+                existRequest.Client = dto.Client;
+                updatedLogs.Add(RequestLog.UpdateClient);
+            }
+
+            if (existRequest.ClientCompany != dto.ClientCompany)
+            {
+                existRequest.ClientCompany = dto.ClientCompany;
+                updatedLogs.Add(RequestLog.UpdateClientCompany);
+            }
+
+            if (existRequest.ContactNumber != dto.ContactNumber)
+            {
+                existRequest.ContactNumber = dto.ContactNumber;
+                updatedLogs.Add(RequestLog.UpdateContactNumber);
+            }
+
+            if (existRequest.Department != dto.Department)
+            {
+                existRequest.Department = dto.Department;
+                updatedLogs.Add(RequestLog.UpdateDepartment);
+            }
+
+            if (existRequest.Email != dto.Email)
+            {
+                existRequest.Email = dto.Email;
+                updatedLogs.Add(RequestLog.UpdateEmail);
+            }
+
+            if (existRequest.InquiryField != dto.InquiryField)
+            {
+                existRequest.InquiryField = dto.InquiryField;
+                updatedLogs.Add(RequestLog.UpdateInquiryField);
+            }
+
+            if (existRequest.InquiryType != dto.InquiryType)
+            {
+                existRequest.InquiryType = dto.InquiryType;
+                updatedLogs.Add(RequestLog.UpdateInquiryType);
+            }
+
+            if (existRequest.ProcessingStatusId != dto.ProcessingStatus)
+            {
+                existRequest.ProcessingStatusId = dto.ProcessingStatus;
+                updatedLogs.Add(RequestLog.UpdateProcessingStatus);
+            }
+
+            if (existRequest.Notes != dto.Notes)
+            {
+                existRequest.Notes = dto.Notes;
+                updatedLogs.Add(RequestLog.UpdateNotes);
+            }
+
+            if (existRequest.ProjectDetails != dto.ProjectDetails)
+            {
+                existRequest.ProjectDetails = dto.ProjectDetails;
+                updatedLogs.Add(RequestLog.UpdateProjectDetails);
+            }
+
+            if (existRequest.ResponsiblePerson != dto.ResponsiblePerson)
+            {
+                existRequest.ResponsiblePerson = dto.ResponsiblePerson;
+                updatedLogs.Add(RequestLog.UpdateResponsiblePerson);
+            }
+
+            var newDate = DateTime.TryParse(dto.Date, out var parsedDate)
+                ? parsedDate.ToString("yyyy.MM.dd")
+                : DateTime.UtcNow.ToString("yyyy.MM.dd");
+
+            if (existRequest.Date != newDate)
+            {
+                existRequest.Date = newDate;
+                updatedLogs.Add(RequestLog.UpdateDate);
+            }
+
+            if (existRequest.Status != dto.Status)
+            {
+                existRequest.Status = dto.Status;
+                updatedLogs.Add(RequestLog.UpdateStatus);
+            }
+
+            if (existRequest.RequestStatusId != dto.RequestStatusId)
+            {
+                existRequest.RequestStatusId = dto.RequestStatusId;
+                updatedLogs.Add(RequestLog.UpdateCompanyName);
+            }
+
+            if (existRequest.LastUpdated != dto?.LastUpdated?.ToString())
+            {
+                existRequest.LastUpdated = dto?.LastUpdated?.ToString();
+                updatedLogs.Add(RequestLog.UpdateLastUpdated);
+            }
+
             existRequest.UpdatedAt = DateTime.UtcNow;
             existRequest.CreatedAt = existRequest.CreatedAt ?? DateTime.UtcNow;
-            existRequest.LastUpdated = dto?.LastUpdated?.ToString();
 
             requestRepository.UpdateAsync(existRequest);
             await requestRepository.SaveChangesAsync();
 
             await StringExtensions.StringExtensions.SaveLogAsync(_logRepository, _httpContextAccessor, Domain.Enum.LogAction.UpdateRequest);
-            await StringExtensions.StringExtensions.SaveRequestHistory(requestHistory, RequestLog.UpdateRequest, _httpContextAccessor, id, RequestLogType.Update);
+
+            foreach (var log in updatedLogs)
+            {
+                await StringExtensions.StringExtensions.SaveRequestHistory(requestHistory, log, _httpContextAccessor, id, RequestLogType.Update);
+            }
 
             return true;
         }
@@ -467,7 +551,7 @@ namespace ProjectManagement.Service.Service.Requests
                     .Where(x => x.ParentCommentId == rootModel.Id)
                     .ToList();
 
-                var queue = new Queue<Comments>(repliesToProcess); // Replace CommentEntity with actual type
+                var queue = new Queue<Comments>(repliesToProcess);
                 while (queue.Count > 0 && (!applyReplyLimit || allReplies.Count < dto.ReplyPageSize))
                 {
                     var reply = queue.Dequeue();
@@ -583,12 +667,17 @@ namespace ProjectManagement.Service.Service.Requests
             }
 
             await commentstService.SaveChangesAsync();
+            await StringExtensions.StringExtensions.SaveRequestHistory(requestHistory, RequestLog.UpdateFile, _httpContextAccessor, existRequest.Id, RequestLogType.Update);
             return true;
         }
         public async ValueTask<bool> UpdateComment(CommentForCreateDTO dto)
         {
             var existComment = await commentstService.GetAsync(x => x.Id == dto.CommentId);
+            var existRequest = await requestRepository.GetAsync(x => x.Id == dto.RequestId);
+
             if (existComment is null) throw new ProjectManagementException(404, "comment_not_found");
+
+            if (existRequest is null) throw new ProjectManagementException(404, "request_not_found");
 
             existComment.UpdatedAt = DateTime.UtcNow;
             existComment.Text = dto.Text;
@@ -609,6 +698,7 @@ namespace ProjectManagement.Service.Service.Requests
             commentstService.UpdateAsync(existComment);
             await commentstService.SaveChangesAsync();
 
+            await StringExtensions.StringExtensions.SaveRequestHistory(requestHistory, RequestLog.UpdateFile, _httpContextAccessor, existRequest.Id, RequestLogType.Update);
             return true;
         }
         public async ValueTask<bool> DeleteComment(int commentId)
@@ -1008,6 +1098,8 @@ namespace ProjectManagement.Service.Service.Requests
             existRequest.FileId = attachment?.Id;
             requestRepository.UpdateAsync(existRequest);
             await requestRepository.SaveChangesAsync();
+
+            await StringExtensions.StringExtensions.SaveRequestHistory(requestHistory, RequestLog.UpdateFile, _httpContextAccessor, existRequest.Id, RequestLogType.Update);
             return true;
         }
 

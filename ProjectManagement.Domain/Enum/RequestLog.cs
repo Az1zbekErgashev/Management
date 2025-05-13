@@ -3,10 +3,26 @@ namespace ProjectManagement.Domain.Enum
 {
     public enum RequestLog
     {
-        UpdateRequest,
         UploadExcelFile,
         DownloadExcel,
         CreateRequest,
-        DeleteRequest
+        DeleteRequest,
+        UpdateInquiryType,
+        UpdateLastUpdated,
+        UpdateDepartment,
+        UpdateResponsiblePerson,
+        UpdateInquiryField,
+        UpdateClientCompany,
+        UpdateProjectDetails,
+        UpdateClient,
+        UpdateContactNumber,
+        UpdateEmail,
+        UpdateProcessingStatus,
+        UpdateNotes,
+        UpdateCompanyName,
+        UpdateDate,
+        UpdateStatus,
+        UpdateFile,
+        UpdateComments,
     }
 }
