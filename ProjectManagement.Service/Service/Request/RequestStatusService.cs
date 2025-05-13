@@ -123,6 +123,7 @@ namespace ProjectManagement.Service.Service.Requests
                .Include(x => x.ProcessingStatus)
                .Include(x => x.RequestStatus)
                .Include(x => x.Comments)
+               .ThenInclude(x => x.User)
                .AsQueryable();
 
             query = query.OrderBy(x => x.Id);
@@ -656,7 +657,7 @@ namespace ProjectManagement.Service.Service.Requests
             }
 
             await commentstService.SaveChangesAsync();
-            await StringExtensions.StringExtensions.SaveRequestHistory(requestHistory, RequestLog.UpdateFile, _httpContextAccessor, existRequest.Id, RequestLogType.Update);
+            await StringExtensions.StringExtensions.SaveRequestHistory(requestHistory, RequestLog.CreateComment, _httpContextAccessor, existRequest.Id, RequestLogType.Update);
             return true;
         }
         public async ValueTask<bool> UpdateComment(CommentForCreateDTO dto)

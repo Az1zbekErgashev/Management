@@ -24,5 +24,6 @@ namespace ProjectManagement.Domain.Enum
         UpdateStatus,
         UpdateFile,
         UpdateComments,
+        CreateComment
     }
 }
