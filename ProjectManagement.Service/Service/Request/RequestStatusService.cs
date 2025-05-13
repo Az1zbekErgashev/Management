@@ -340,14 +340,27 @@ namespace ProjectManagement.Service.Service.Requests
             var connectionString = configuration.GetConnectionString("PostgresConnection");
             using (var db = new NpgsqlConnection(connectionString))
             {
-                var query = "SELECT * FROM \"Requests\" r LEFT JOIN \"ProcessingStatus\" rs ON r.\"ProcessingStatusId\" = rs.\"Id\" WHERE r.\"IsDeleted\" = @IsDeleted";
+                var query = @"
+                SELECT r.*, rs.* 
+                FROM ""Requests"" r 
+                LEFT JOIN ""ProcessingStatus"" rs ON r.""ProcessingStatusId"" = rs.""Id"" 
+                WHERE r.""IsDeleted"" = @IsDeleted";
                 if (dto.Status is not null)
                 {
                     query += " AND \"Status\" = @Status";
                 }
 
                 var parameters = new { IsDeleted = dto.IsDeleted, Status = dto.Status };
-                var existRequest = (await db.QueryAsync<Domain.Entities.Requests.Request>(query, parameters)).ToList();
+                var existRequest = (await db.QueryAsync<Domain.Entities.Requests.Request, ProcessingStatus, Domain.Entities.Requests.Request>(
+                       query,
+                       (request, processingStatus) =>
+                       {
+                           request.ProcessingStatus = processingStatus;
+                           return request;
+                       },
+                       param: parameters,
+                       splitOn: "Id"
+                   )).ToList();
                 var groupedFilters = new List<RequestFilterModel>();
                 var fields = new Dictionary<string, Func<Domain.Entities.Requests.Request, string>>
                 {
@@ -682,6 +695,7 @@ namespace ProjectManagement.Service.Service.Requests
             var allRequestsModel = new RequestCountByStatusModel
             {
                 CategoryText = "all_requests",
+                CategoryId = null,
                 Counts = new List<StatusCountItem>
                 {
                     new StatusCountItem { Status = "Failed", Count = allRequestsRaw.Count(x => x.Status == "Failed") },
@@ -703,6 +717,7 @@ namespace ProjectManagement.Service.Service.Requests
                 var model = new RequestCountByStatusModel
                 {
                     CategoryText = category.Title,
+                    CategoryId = category.Id,
                     Counts = new List<StatusCountItem>
                     {
                         new StatusCountItem { Status = "Failed", Count = requestList.Count(x => x.Status == "Failed") },
@@ -736,6 +751,7 @@ namespace ProjectManagement.Service.Service.Requests
             var allRequestsModel = new RequestCountByStatusModel
             {
                 CategoryText = "all_requests",
+                CategoryId = null,
                 Counts = allProccesingStatus.Select(status => new StatusCountItem
                 {
                     Status = status.Text,
@@ -755,6 +771,7 @@ namespace ProjectManagement.Service.Service.Requests
                 var model = new RequestCountByStatusModel
                 {
                     CategoryText = category.Title,
+                    CategoryId = category.Id,
                     Counts = allProccesingStatus.Select(status => new StatusCountItem
                     {
                         Status = status.Text,

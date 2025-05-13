@@ -3,6 +3,7 @@
     public class RequestCountByStatusModel
     {
         public string CategoryText { get; set; }
+        public int? CategoryId { get; set; }
         public List<StatusCountItem> Counts { get; set; } = new();
         public int Total { get; set; }
 
