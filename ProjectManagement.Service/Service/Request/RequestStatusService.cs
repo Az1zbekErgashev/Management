@@ -137,22 +137,23 @@ namespace ProjectManagement.Service.Service.Requests
             {
                 string searchText = $"%{dto.Text}%";
 
-                query = query.Where(x =>
-                    EF.Functions.Like(x.InquiryField, searchText) ||
-                    EF.Functions.Like(x.Email, searchText) ||
-                    EF.Functions.Like(x.ProjectDetails, searchText) ||
-                    EF.Functions.Like(x.ResponsiblePerson, searchText) ||
-                    EF.Functions.Like(x.Date, searchText) ||
-                    EF.Functions.Like(x.ContactNumber, searchText) ||
-                    EF.Functions.Like(x.CompanyName, searchText) ||
-                    EF.Functions.Like(x.Notes, searchText) ||
-                    EF.Functions.Like(x.Client, searchText) ||
-                    EF.Functions.Like(x.ClientCompany, searchText) ||
-                    EF.Functions.Like(x.Department, searchText) ||
-                    EF.Functions.Like(x.InquiryType, searchText) ||
-                    EF.Functions.Like(x.Status, searchText) ||
-                    (x.ProcessingStatus != null && EF.Functions.Like(x.ProcessingStatus.Text, searchText)) ||
-                    EF.Functions.Like(x.LastUpdated, searchText));
+                        query = query.Where(x =>
+                            x.InquiryField == dto.Text ||
+                            x.Email == dto.Text ||
+                            x.ProjectDetails == dto.Text ||
+                            x.ResponsiblePerson == dto.Text ||
+                            x.Date == dto.Text ||
+                            x.ContactNumber == dto.Text ||
+                            x.CompanyName == dto.Text ||
+                            x.Notes == dto.Text ||
+                            x.Client == dto.Text ||
+                            x.ClientCompany == dto.Text ||
+                            x.Department == dto.Text ||
+                            x.InquiryType == dto.Text ||
+                            x.Status == dto.Text ||
+                            (x.ProcessingStatus != null && x.ProcessingStatus.Text == dto.Text) ||
+                            x.LastUpdated == dto.Text
+                         );
             }
 
             if (dto.IsDeleted != null)
