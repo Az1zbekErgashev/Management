@@ -37,6 +37,7 @@ Paste the following content and update it with your values:
     }
   }
 }
+```
 2. 🔐 Configure JWT
 Make sure you provide a secure and long secret key in JwtSettings:Secret. This key will be used to sign the JWT tokens.
 
