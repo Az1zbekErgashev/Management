@@ -19,7 +19,7 @@ In the root of the project, create two files:
 
 Paste the following content and update it with your values:
 
-```json
+```bash
 {
   "ConnectionStrings": {
     "DefaultConnection": "Host=localhost;Port=5432;Database=your_db;Username=your_user;Password=your_password"
@@ -76,10 +76,10 @@ Click Start or press F5
 🔌 API URL
 By default, the API will be available at:
 ```
-https://localhost:5001
+https://localhost:7234/api/swagger
 ```
 ```
-http://localhost:5000
+http://localhost:7235/api/swagger
 ```
 🛠 Tech Stack
 ASP.NET Core 7 / 8
