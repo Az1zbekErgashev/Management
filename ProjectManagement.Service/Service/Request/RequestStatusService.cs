@@ -3,8 +3,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
-using NPOI.HSSF.Record.Aggregates;
-using Org.BouncyCastle.Asn1.Ocsp;
 using ProjectManagement.Domain.Entities.Logs;
 using ProjectManagement.Domain.Entities.Requests;
 using ProjectManagement.Domain.Enum;
@@ -16,11 +14,9 @@ using ProjectManagement.Service.Interfaces.Attachment;
 using ProjectManagement.Service.Interfaces.IRepositories;
 using ProjectManagement.Service.Interfaces.Request;
 using ProjectManagement.Service.StringExtensions;
-using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Security.Authentication;
 using System.Security.Claims;
-using System.Text;
 using TrustyTalents.Service.Services.Emails;
 namespace ProjectManagement.Service.Service.Requests
 {
@@ -264,7 +260,7 @@ namespace ProjectManagement.Service.Service.Requests
             await requestRepository.SaveChangesAsync();
 
             await StringExtensions.StringExtensions.SaveLogAsync(_logRepository, _httpContextAccessor, Domain.Enum.LogAction.CreateRequest);
-            await StringExtensions.StringExtensions.SaveRequestHistory(requestHistory, RequestLog.CreateRequest, _httpContextAccessor, request.Id, RequestLogType.Create);
+            await StringExtensions.StringExtensions.SaveRequestHistory(requestHistory, new List<RequestLog> { RequestLog.CreateRequest }, _httpContextAccessor, request.Id, RequestLogType.Create);
 
             return true;
         }
@@ -369,10 +365,7 @@ namespace ProjectManagement.Service.Service.Requests
 
             await StringExtensions.StringExtensions.SaveLogAsync(_logRepository, _httpContextAccessor, Domain.Enum.LogAction.UpdateRequest);
 
-            foreach (var log in updatedLogs)
-            {
-                await StringExtensions.StringExtensions.SaveRequestHistory(requestHistory, log, _httpContextAccessor, id, RequestLogType.Update);
-            }
+            await StringExtensions.StringExtensions.SaveRequestHistory(requestHistory, updatedLogs, _httpContextAccessor, id, RequestLogType.Update);
 
             return true;
         }
@@ -389,7 +382,7 @@ namespace ProjectManagement.Service.Service.Requests
             await requestRepository.SaveChangesAsync();
 
             await StringExtensions.StringExtensions.SaveLogAsync(_logRepository, _httpContextAccessor, Domain.Enum.LogAction.DeleteRequest);
-            await StringExtensions.StringExtensions.SaveRequestHistory(requestHistory, RequestLog.DeleteRequest, _httpContextAccessor, id, RequestLogType.Delete);
+            await StringExtensions.StringExtensions.SaveRequestHistory(requestHistory, new List<RequestLog> { RequestLog.DeleteRequest }, _httpContextAccessor, id, RequestLogType.Delete);
             return true;
         }
 
@@ -657,7 +650,7 @@ namespace ProjectManagement.Service.Service.Requests
             }
 
             await commentstService.SaveChangesAsync();
-            await StringExtensions.StringExtensions.SaveRequestHistory(requestHistory, RequestLog.CreateComment, _httpContextAccessor, existRequest.Id, RequestLogType.Update);
+            await StringExtensions.StringExtensions.SaveRequestHistory(requestHistory, new List<RequestLog> { RequestLog.CreateComment }, _httpContextAccessor, existRequest.Id, RequestLogType.Update);
             return true;
         }
         public async ValueTask<bool> UpdateComment(CommentForCreateDTO dto)
@@ -688,7 +681,7 @@ namespace ProjectManagement.Service.Service.Requests
             commentstService.UpdateAsync(existComment);
             await commentstService.SaveChangesAsync();
 
-            await StringExtensions.StringExtensions.SaveRequestHistory(requestHistory, RequestLog.UpdateComments, _httpContextAccessor, existRequest.Id, RequestLogType.Update);
+            await StringExtensions.StringExtensions.SaveRequestHistory(requestHistory, new List<RequestLog> { RequestLog.UpdateComments }, _httpContextAccessor, existRequest.Id, RequestLogType.Update);
             return true;
         }
         public async ValueTask<bool> DeleteComment(int commentId)
@@ -1088,7 +1081,7 @@ namespace ProjectManagement.Service.Service.Requests
             requestRepository.UpdateAsync(existRequest);
             await requestRepository.SaveChangesAsync();
 
-            await StringExtensions.StringExtensions.SaveRequestHistory(requestHistory, RequestLog.UpdateFile, _httpContextAccessor, existRequest.Id, RequestLogType.Update);
+            await StringExtensions.StringExtensions.SaveRequestHistory(requestHistory, new List<RequestLog> { RequestLog.UpdateFile }, _httpContextAccessor, existRequest.Id, RequestLogType.Update);
             return true;
         }
 

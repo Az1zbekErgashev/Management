@@ -9,7 +9,7 @@ namespace ProjectManagement.Domain.Entities.Requests
         public int UserId { get; set; }
         public Entities.Requests.Request Request { get; set; }
         public int RequestId { get; set; }
-        public RequestLog Log { get; set; }
+        public List<RequestLog> Log { get; set; }
         public RequestLogType Type { get; set; }
     }
 }

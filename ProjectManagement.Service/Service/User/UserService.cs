@@ -140,14 +140,10 @@ namespace ProjectManagement.Service.Service.User
 
             query = query.OrderBy(x => x.Id);
 
-            if (!string.IsNullOrEmpty(dto.Text))
+            if (!string.IsNullOrWhiteSpace(dto.Text))
             {
-                string searchText = $"%{dto.Text}%";
-
-                query = query.Where(x =>
-                    EF.Functions.Like(x.Name, searchText) ||
-                    EF.Functions.Like(x.Surname, searchText) ||
-                    EF.Functions.Like(x.Email, searchText));
+                var searchText = dto.Text.Trim().ToLower();
+                query = query.Where(x => x.Email.ToLower().Contains(searchText));
             }
 
             if (dto.Role != null)

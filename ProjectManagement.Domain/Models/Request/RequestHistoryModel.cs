@@ -7,7 +7,7 @@ namespace ProjectManagement.Domain.Models.Request
     public class RequestHistoryModel
     {
         public UserModel? User { get; set; }
-        public RequestLog Log { get; set; }
+        public List<RequestLog>? Log { get; set; }
         public RequestLogType Type { get; set; }
         public int Id { get; set; }
         public DateTime? CreatedAt { get; set; }
@@ -17,7 +17,7 @@ namespace ProjectManagement.Domain.Models.Request
         public virtual RequestHistoryModel MapFromEntity(RequestHistory entity)
         {
             User = new UserModel().MapFromEntity(entity.User);
-            Log = entity.Log;
+            Log = entity?.Log?.ToList();
             Id = entity.Id;
             CreatedAt = entity.CreatedAt;
             UpdatedAt = entity.UpdatedAt;

@@ -245,9 +245,9 @@ namespace ProjectManagement.Service.Service.MultilingualText
             }
 
             dto.Key = string.IsNullOrEmpty(dto.Key) ? "" : dto.Key;
-            Expression<Func<Domain.Entities.MultilingualText.MultilingualText, bool>> frontendTextExpression = dto.IsDeleted.HasValue ?
-                (f => !string.IsNullOrEmpty(f.Key) && !string.IsNullOrWhiteSpace(f.Key) && f.IsDeleted == (dto.IsDeleted.Value ? 1 : 0))
-                : f => !string.IsNullOrEmpty(f.Key) && !string.IsNullOrWhiteSpace(f.Key);
+            Expression<Func<Domain.Entities.MultilingualText.MultilingualText, bool>> frontendTextExpression = dto.IsDeleted.HasValue
+                 ? f => !string.IsNullOrWhiteSpace(f.Key) && f.IsDeleted == (dto.IsDeleted.Value ? 1 : 0)
+                 : f => !string.IsNullOrWhiteSpace(f.Key);
 
             var query = multilingualRepository.GetAll(frontendTextExpression)
                 .Join(multilingualRepository.GetAll(),
@@ -264,8 +264,13 @@ namespace ProjectManagement.Service.Service.MultilingualText
                 .AsNoTracking()
                 .AsEnumerable()
                 .GroupBy(x => new { x.Key, x.IsDeleted })
-                .Where(x => (!string.IsNullOrEmpty(x.Key.Key) && !string.IsNullOrWhiteSpace(x.Key.Key) && x.Key.Key.Contains(dto.Key))
-                || x.Any(y => (y.Text?.ToLower() ?? "").Contains(dto.Key?.ToLower())));
+               .Where(x =>
+                (!string.IsNullOrEmpty(x.Key.Key) &&
+                 !string.IsNullOrWhiteSpace(x.Key.Key) &&
+                 x.Key.Key.Contains(dto.Key))
+                ||
+                x.Any(y => (y.Text?.ToLower() ?? "").Contains(dto.Key?.ToLower()))
+            );
 
             int totalCount = query.Count();
 

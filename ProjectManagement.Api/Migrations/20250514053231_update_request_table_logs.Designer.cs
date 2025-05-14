@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using ProjectManagement.Infrastructure.Contexts;
@@ -11,9 +12,11 @@ using ProjectManagement.Infrastructure.Contexts;
 namespace ProjectManagement.Api.Migrations
 {
     [DbContext(typeof(ProjectManagementDB))]
-    partial class ProjectManagementDBModelSnapshot : ModelSnapshot
+    [Migration("20250514053231_update_request_table_logs")]
+    partial class update_request_table_logs
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2412,7 +2415,7 @@ namespace ProjectManagement.Api.Migrations
                         {
                             Id = 1,
                             CountryId = 1,
-                            CreatedAt = new DateTime(2025, 5, 14, 6, 57, 42, 895, DateTimeKind.Utc).AddTicks(7067),
+                            CreatedAt = new DateTime(2025, 5, 14, 5, 32, 31, 189, DateTimeKind.Utc).AddTicks(281),
                             DateOfBirth = new DateTime(2023, 11, 23, 16, 13, 56, 461, DateTimeKind.Utc),
                             Email = "admin@gmail.com",
                             IndividualRole = 1,

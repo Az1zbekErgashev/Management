@@ -93,7 +93,7 @@ namespace ProjectManagement.Service.StringExtensions
             return true;
         }
 
-        public static async ValueTask<bool> SaveRequestHistory(IGenericRepository<RequestHistory> requestHistoryRepository, RequestLog log, IHttpContextAccessor _httpContextAccessor, int requestId, RequestLogType type)
+        public static async ValueTask<bool> SaveRequestHistory(IGenericRepository<RequestHistory> requestHistoryRepository, List<RequestLog> log, IHttpContextAccessor _httpContextAccessor, int requestId, RequestLogType type)
         {
             if (!int.TryParse(_httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
             {
