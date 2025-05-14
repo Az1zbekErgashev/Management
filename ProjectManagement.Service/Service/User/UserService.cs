@@ -143,7 +143,13 @@ namespace ProjectManagement.Service.Service.User
             if (!string.IsNullOrWhiteSpace(dto.Text))
             {
                 var searchText = dto.Text.Trim().ToLower();
-                query = query.Where(x => x.Email.ToLower().Contains(searchText));
+                query = query.Where(x =>
+                    (x.Email ?? "").ToLower().Contains(searchText) ||
+                    (x.PhoneNumber ?? "").ToLower().Contains(searchText) ||
+                    (x.Name ?? "").ToLower().Contains(searchText) ||
+                    (x.Surname ?? "").ToLower().Contains(searchText) ||
+                    (x.Country != null && x.Country.Name.ToLower().Contains(searchText))
+                );
             }
 
             if (dto.Role != null)
