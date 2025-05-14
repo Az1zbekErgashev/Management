@@ -122,8 +122,6 @@ namespace ProjectManagement.Service.Service.Requests
                .ThenInclude(x => x.User)
                .AsQueryable();
 
-            query = query.OrderBy(x => x.Id);
-
             if (dto.Category != null)
             {
                 query = query.Where(x => x.RequestStatusId == dto.Category);
@@ -157,6 +155,7 @@ namespace ProjectManagement.Service.Service.Requests
                 query = query.Where(x => x.IsDeleted == dto.IsDeleted);
 
                 if (dto.IsDeleted == 1) query = query.OrderByDescending(x => x.UpdatedAt);
+                else query = query.OrderByDescending(x => x.CreatedAt);
             }
 
             int totalCount = await query.CountAsync();
